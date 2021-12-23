@@ -1,0 +1,211 @@
+@font-face {
+  font-family: "Segoe UI";
+  src: local("Segoe UI"), url("../fonts/Segoe UI.woff") format("woff"),
+    url("../fonts/Segoe UI.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Segoe UI Italic";
+  src: local("Segoe UI Italic"),
+    url("../fonts/Segoe UI Italic.woff") format("woff"),
+    url("../fonts/Segoe UI Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Segoe UI Bold";
+  src: local("Segoe UI Bold"), url("../fonts/Segoe UI Bold.woff") format("woff"),
+    url("../fonts/Segoe UI Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Segoe UI Bold Italic";
+  src: local("Segoe UI Bold Italic"),
+    url("../fonts/Segoe UI Bold Italic.woff") format("woff"),
+    url("../fonts/Segoe UI Bold Italic.ttf") format("truetype");
+}
+body {
+  font-family: "Zurich Sans", sans-serif, Segoe UI;
+  font-size: 14px;
+  color: #21356e;
+  word-spacing: normal;
+  letter-spacing: normal;
+  margin: 0px 0px 0px 0px;
+  height: auto;
+  background-color: #f3f3f3;
+  line-height: 1.2;
+}
+.main-container {
+  width: 100%;
+  background: #ebedef 0% 0% no-repeat padding-box;
+  border: 1px solid #dce3e3;
+}
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  height: 80px;
+  border-bottom: 1px solid #dce3e3;
+  background-color: #fff;
+  align-items: center;
+}
+.site-logo {
+  width: 200px;
+  height: 100%;
+  border-right: 1px solid #dce3e3;
+  background-image: url("../../src/assets/Zurich_72_Logo_Horz_Blue_RGB.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.header-title {
+  width: 860px;
+  font-size: 25px;
+  font-weight: 600;
+}
+.loggeduser-container {
+  display: flex;
+  width: 200px;
+  align-items: center;
+  justify-content: space-around;
+  margin-right: 20px;
+}
+.loggeduser-container .userregion-container {
+  width: 120px;
+  text-align: right;
+}
+.loggeduser-container .userregion-logo {
+  width: 20px;
+  text-align: center;
+}
+.loggeduser-container .user-image {
+  text-align: center;
+}
+.profile-picture {
+  width: 35px;
+  height: 35px;
+  border-radius: 30px;
+  display: inline-block;
+  vertical-align: top;
+  background-color: #f0f9fd;
+  border: 1px solid #ffffff;
+  text-align: center;
+  color: #009ee0;
+  overflow: hidden;
+}
+.site-container {
+  display: flex;
+}
+
+.menu-nav {
+  width: 200px;
+  background-color: #ebf4fb;
+}
+
+.nav-links {
+  width: 100%;
+}
+.nav-links a {
+  text-decoration: none;
+}
+.nav-links .menu-item {
+  width: 100%;
+  height: 40px;
+  border-bottom: 1px solid #dce3e3;
+  line-height: 40px;
+  padding-left: 40px;
+  color: #21356e;
+}
+.nav-links .submenu-container .menu-item {
+  padding-left: 50px;
+}
+.nav-links .menu-item:hover,
+.nav-links .menu-item.active {
+  background-color: #cee3f4;
+  font-weight: bold;
+}
+.nav-links .menu-item:hover {
+  cursor: pointer;
+}
+.pageview-container {
+  margin: 5px;
+  width: 1125px;
+  background-color: #fff;
+}
+.page-title {
+  width: 100%;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 10px 20px;
+}
+.page-filter {
+  width: 100%;
+  min-height: 79px;
+  border-top: 1px solid #1dafe4;
+  border-bottom: 1px solid #1dafe4;
+  background-color: #ebf4fb;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.dropdown-filter-container .label {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.dropdown-filter-container .dropdown {
+  width: 260px;
+}
+.dropdown-filter-container .dropdown select {
+  background-color: #fff;
+  width: 260px;
+  height: 25px;
+  color: #21356e;
+  border: 1px solid #add8ef;
+}
+.btn-container {
+  display: flex;
+  justify-content: space-between;
+}
+.btn-container div:not(:last-child) {
+  margin-right: 20px;
+}
+
+.btn-blue {
+  min-width: 89px;
+  height: 26px;
+  background-color: #1dafe4;
+  text-align: center;
+  line-height: 25px;
+  color: #fff;
+  border-radius: 13px;
+  padding: 0 7px;
+}
+.btn-blue:hover {
+  cursor: pointer;
+  background-color: #21356e;
+}
+
+/*overiding bootstrap styles */
+.site-pagination-table .react-bootstrap-table th .order-4:before {
+  content: "\25be";
+}
+.site-pagination-table .react-bootstrap-table th .order-4::after {
+  content: "\25B4";
+}
+.site-pagination-table .react-bootstrap-table th .caret-4-asc:before {
+  content: "\25be";
+}
+.site-pagination-table .react-bootstrap-table th .caret-4-asc::after {
+  content: "\25B4";
+}
+.site-pagination-table .react-bootstrap-table th .caret-4-desc:before {
+  content: "\25be";
+}
+.site-pagination-table .react-bootstrap-table th .caret-4-desc::after {
+  content: "\25B4";
+}
+.page-item.active .page-link {
+  background-color: #fff;
+  color: #21356e;
+}
+.page-link:focus {
+  box-shadow: none;
+}
