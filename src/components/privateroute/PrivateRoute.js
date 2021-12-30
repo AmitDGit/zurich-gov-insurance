@@ -1,13 +1,14 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
-import { getAccessToken } from "../../helpers";
+import TokenService from "../../services/Tokenservice";
 export const PrivateRoute = ({ component: Component, ...rest }) => {
+  let userProfile = TokenService.getUser();
   return (
     <Route
       {...rest}
       render={(props) => {
-        return getAccessToken() ? (
-          <Component {...rest} />
+        return TokenService.getLocalAccessToken() ? (
+          <Component userProfile={userProfile} {...rest} />
         ) : (
           <Redirect
             to={{

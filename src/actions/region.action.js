@@ -1,5 +1,5 @@
 import { regionConstants } from "../constants";
-import axios from "axios";
+import Axios from "../services/Axios";
 const getAll = () => {
   const request = () => {
     return { type: regionConstants.GETALL_REQUEST };
@@ -10,18 +10,122 @@ const getAll = () => {
   const failure = (error) => {
     return { type: regionConstants.GETALL_FAILURE, payload: error };
   };
+  const requestParams = {
+    PageIndex: 1,
+    PageSize: 50,
+  };
+
   return async (dispatch) => {
     dispatch(request());
     try {
-      const response = await axios.get(
-        "https://jsonplaceholder.typicode.com/albums"
-      );
+      const response = await regionService.getAllService(requestParams);
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
     }
   };
 };
+const getById = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await regionService.getByIdService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
+const checkRegionExist = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await regionService.checkRegionExistService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {}
+  };
+};
+const checkRegionInUse = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await regionService.checkRegionInUseService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
+const postItem = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await regionService.postItemService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
+
+const deleteItem = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await regionService.deleteItemService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const regionActions = {
   getAll,
+  getById,
+  postItem,
+  deleteItem,
+  checkRegionExist,
+  checkRegionInUse,
+};
+
+const getAllService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`region/getallregionlist`, param);
+  return response;
+};
+const getByIdService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`region/getregion`, param);
+  return response;
+};
+const checkRegionExistService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`region/isregionnameinuse`, param);
+  return response;
+};
+const checkRegionInUseService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`region/isinusecount`, param);
+  return response;
+};
+const postItemService = async (requestParam) => {
+  const response = await Axios.post(`region/addeditregion`, requestParam);
+  return response;
+};
+const putItemService = async (requestParam) => {
+  const response = await Axios.put();
+  return response;
+};
+const deleteItemService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.delete(`region/deleteregion`, param);
+  return response;
+};
+const regionService = {
+  getAllService,
+  getByIdService,
+  postItemService,
+  putItemService,
+  deleteItemService,
+  checkRegionExistService,
+  checkRegionInUseService,
 };

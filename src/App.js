@@ -20,12 +20,22 @@ import Lobchapter from "./components/manage/lobchapter/Lobchapter";
 import { PrivateRoute } from "./components/privateroute/PrivateRoute";
 import { connect } from "react-redux";
 import { appmenuActions } from "./actions/appmenu.action";
+import TokenService from "./services/Tokenservice";
+import Loginpage from "./components/loginpage/Loginpage";
+function ScrollToTop() {
+  window.scrollTo(0, 0);
+  return null;
+}
 function App({ state, menuClick }) {
+  if (window.location.pathname === "/login") {
+    //TokenService.removeUser();
+  }
   return (
     <div className="container-fluid">
       <div className="main-container">
         <Router>
           <Header state={state}></Header>
+          <ScrollToTop />
           <div className="site-container">
             <Route
               path="/"
@@ -92,7 +102,7 @@ function App({ state, menuClick }) {
                 />
                 <Route
                   path="/login"
-                  component={Login}
+                  component={Loginpage}
                   state={state}
                   menuClick={menuClick}
                 />

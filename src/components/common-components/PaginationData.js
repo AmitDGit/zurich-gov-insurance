@@ -4,8 +4,8 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.css";
 import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
 import paginationFactory from "react-bootstrap-table2-paginator";
 import ToolkitProvider, { Search } from "react-bootstrap-table2-toolkit";
-function Regionview(props) {
-  const { column, data, showAddPopup, defaultSorted } = props;
+function PaginationData(props) {
+  const { column, data, showAddPopup, defaultSorted, buttonTitle } = props;
   const { SearchBar, ClearSearchButton } = Search;
   const pagination = paginationFactory({
     page: 1,
@@ -58,7 +58,7 @@ function Regionview(props) {
                 </div>
                 <div className="btn-container">
                   <div className="btn-blue" onClick={() => showAddPopup()}>
-                    + New Region
+                    {buttonTitle}
                   </div>
                 </div>
               </div>
@@ -76,4 +76,4 @@ function Regionview(props) {
   );
 }
 
-export default Regionview;
+export default PaginationData;

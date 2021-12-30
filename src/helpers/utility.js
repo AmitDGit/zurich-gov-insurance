@@ -1,25 +1,26 @@
-const localstorageId = "zchuser";
-export const setAccessToken = (user) => {
-  window.localStorage.setItem(localstorageId, JSON.stringify(user));
-};
-export const getAccessToken = () => {
-  return window.localStorage.getItem(localstorageId);
-};
-export const removeAccessToken = () => {
-  window.localStorage.removeItem(localstorageId);
-};
-export const setLocalValue = (DATA) => {
-  let users = JSON.parse(localStorage.getItem("TNA")) || [];
-  users = { ...users, DATA };
-  localStorage.setItem("TNA", JSON.stringify(users));
-};
+export const dynamicSort = (property, dir) => {
+  return function(obj1, obj2) {
+    if (typeof obj1[property] == "string") {
+      if (typeof obj1[property] == "undefined" || obj1[property] == "undefined")
+        return false;
+      if (typeof obj2[property] == "undefined" || obj2[property] == "undefined")
+        return false;
 
-export const getLocalValue = (ParamVal) => {
-  let users = JSON.parse(localStorage.getItem("TNA")) || [];
+      var c1 = obj1[property].toLowerCase();
+      var c2 = obj2[property].toLowerCase();
+    } else {
+      if (typeof obj1[property] == "undefined" || obj1[property] == "undefined")
+        return false;
+      if (typeof obj2[property] == "undefined" || obj2[property] == "undefined")
+        return false;
 
-  return users.DATA && users.DATA[ParamVal] ? users.DATA[ParamVal] : "";
-};
-
-export const getAPIPath = () => {
-  return "http://tekserver/TnaApi/api/";
+      var c1 = obj1[property];
+      var c2 = obj2[property];
+    }
+    if (dir == "Des") {
+      return c1 < c2 ? 1 : c1 > c2 ? -1 : 0;
+    } else {
+      return c1 > c2 ? 1 : c1 < c2 ? -1 : 0;
+    }
+  };
 };
