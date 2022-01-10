@@ -5,7 +5,15 @@ import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 import paginationFactory from "react-bootstrap-table2-paginator";
 import ToolkitProvider, { Search } from "react-bootstrap-table2-toolkit";
 function PaginationData(props) {
-  const { column, data, showAddPopup, defaultSorted, buttonTitle } = props;
+  const {
+    column,
+    data,
+    showAddPopup,
+    defaultSorted,
+    buttonTitle,
+    id,
+    hidesearch,
+  } = props;
   const { SearchBar, ClearSearchButton } = Search;
   const pagination = paginationFactory({
     page: 1,
@@ -43,7 +51,7 @@ function PaginationData(props) {
       <div className="site-pagination-table">
         <ToolkitProvider
           bootstrap4
-          keyField="id"
+          keyField={id}
           data={data}
           columns={column}
           search
@@ -52,9 +60,13 @@ function PaginationData(props) {
             <>
               <div className="pagination-top-container">
                 <div className="searchbox">
-                  <div className="search-title">Search:</div>
-                  <SearchBar {...props.searchProps} />
-                  <ClearSearchButton {...props.searchProps} />
+                  {!hidesearch && (
+                    <>
+                      <div className="search-title">Search:</div>
+                      <SearchBar {...props.searchProps} />
+                      <ClearSearchButton {...props.searchProps} />
+                    </>
+                  )}
                 </div>
                 <div className="btn-container">
                   <div className="btn-blue" onClick={() => showAddPopup()}>

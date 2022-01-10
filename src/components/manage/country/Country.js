@@ -5,7 +5,7 @@ import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import Dropdown from "../../common-components/Dropdown";
 import PaginationData from "../../common-components/PaginationData";
-import { alertMessage } from "../../../helpers";
+import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
 function Country({ ...props }) {
   const { countryState } = props.state;
@@ -25,13 +25,16 @@ function Country({ ...props }) {
   const [countryFilterOpts, setcountryFilterOpts] = useState([
     { title: "Select", value: "" },
   ]);
+  const [countryFilterAllOpts, setcountryFilterAllOpts] = useState([]);
   const [regionFilterOpts, setregionFilterOpts] = useState([
     { title: "Select", value: "" },
   ]);
-  const [selfilter, setselfilter] = useState({
+  const [countrymapping, setcountrymapping] = useState([]);
+  const intialfilterval = {
     country: "",
     region: "",
-  });
+  };
+  const [selfilter, setselfilter] = useState(intialfilterval);
   const onSearchFilterSelect = (e) => {
     const { name, value } = e.target;
     setselfilter({
@@ -65,9 +68,24 @@ function Country({ ...props }) {
     }
   };
   const clearFilter = () => {
-    setselfilter({ region: "" });
+    setselfilter(intialfilterval);
     setpaginationdata(data);
   };
+  useEffect(() => {
+    if (selfilter.region !== "") {
+      let tempFilterOpts = countrymapping.filter((item) => {
+        if (item.region == selfilter.region) {
+          return item;
+        }
+      });
+      setcountryFilterOpts([
+        { title: "Select", value: "" },
+        ...tempFilterOpts[0].country.sort(dynamicSort("title")),
+      ]);
+    } else {
+      setcountryFilterOpts([...countryFilterAllOpts]);
+    }
+  }, [selfilter.region]);
   //set pagination data and functionality
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
@@ -151,6 +169,7 @@ function Country({ ...props }) {
     let tempCountryFilterOpts = [];
     let tempRegionFilterOpts = [];
     let tempRegionListObj = {};
+    let tempCountryMapping = [];
     countryState.items.forEach((item) => {
       if (item.isActive) {
         tempdata.push(item);
@@ -163,13 +182,37 @@ function Country({ ...props }) {
             title: item.regionName,
             value: item.regionID,
           });
+          tempCountryMapping.push({
+            region: item.regionID,
+            country: [
+              {
+                title: item.countryName,
+                value: item.countryID,
+              },
+            ],
+          });
+        } else {
+          tempCountryMapping.forEach((countryitem) => {
+            if (countryitem.region === item.regionID) {
+              countryitem.country.push({
+                title: item.countryName,
+                value: item.countryID,
+              });
+            }
+          });
         }
         tempRegionListObj[item.regionID] = item.regionName;
       }
     });
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    tempCountryFilterOpts.sort(dynamicSort("title"));
+    tempRegionFilterOpts.sort(dynamicSort("title"));
     setcountryFilterOpts([
+      { title: "Select", value: "" },
+      ...tempCountryFilterOpts,
+    ]);
+    setcountryFilterAllOpts([
       { title: "Select", value: "" },
       ...tempCountryFilterOpts,
     ]);
@@ -177,6 +220,7 @@ function Country({ ...props }) {
       { title: "Select", value: "" },
       ...tempRegionFilterOpts,
     ]);
+    setcountrymapping([...tempCountryMapping]);
   }, [countryState.items]);
 
   const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([
@@ -305,16 +349,16 @@ function Country({ ...props }) {
     <>
       <div className="page-title">Manage Country</div>
       <div className="page-filter">
-        <div className="dropdown-filter-container">
+        <div className="filter-container">
           <Dropdown
-            label={"Region Name"}
+            label={"Region"}
             name={"region"}
             selectopts={regionFilterOpts}
             onSelectHandler={onSearchFilterSelect}
             initvalue={selfilter.region}
           />
           <Dropdown
-            label={"Country Name"}
+            label={"Country"}
             name={"country"}
             selectopts={countryFilterOpts}
             onSelectHandler={onSearchFilterSelect}
@@ -344,6 +388,7 @@ function Country({ ...props }) {
           <div>{countryState.error}</div>
         ) : (
           <PaginationData
+            id={"countryID"}
             column={columns}
             data={paginationdata}
             showAddPopup={showAddPopup}
@@ -368,6 +413,11 @@ function Country({ ...props }) {
     </>
   );
 }
+const mapStateToProp = (state) => {
+  return {
+    state: state,
+  };
+};
 const mapActions = {
   getAll: countryActions.getAll,
   getAllRegions: countryActions.getAllRegions,
@@ -377,4 +427,4 @@ const mapActions = {
   postItem: countryActions.postItem,
   deleteItem: countryActions.deleteItem,
 };
-export default connect(null, mapActions)(Country);
+export default connect(mapStateToProp, mapActions)(Country);

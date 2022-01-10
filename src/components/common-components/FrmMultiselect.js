@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Multiselect from "multiselect-react-dropdown";
 function FrmMultiselect(props) {
   const {
@@ -13,13 +13,35 @@ function FrmMultiselect(props) {
   } = props;
 
   const [selectedItems, setselectedItems] = useState(value);
+  useEffect(() => {
+    setselectedItems(value);
+  }, [value]);
   const onSelect = (selectedList, selectedItem) => {
-    setselectedItems([...selectedList]);
-    handleChange(name, [...selectedList]);
-    console.log(selectedList);
+    let tempSelectedList = [...selectedList];
+    if (
+      selectedItem.value === "*" ||
+      selectedList.length == selectopts.length - 1
+    ) {
+      tempSelectedList = [...selectopts];
+    }
+    setselectedItems([...tempSelectedList]);
+    handleChange(name, [...tempSelectedList]);
+  };
+  const onRemove = (selectedList, selectedItem) => {
+    let tempSelectedList = [...selectedList];
+    if (selectedItem.value === "*") {
+      tempSelectedList = [];
+    } else {
+      tempSelectedList = selectedList.filter((item) => item.value !== "*");
+    }
+    setselectedItems([...tempSelectedList]);
+    handleChange(name, [...tempSelectedList]);
   };
   const removeSelectedItem = (value) => {
-    const tempItems = selectedItems.filter((item) => item.value != value);
+    let tempItems = selectedItems.filter((item) => item.value !== value);
+    if (value === "*") {
+      tempItems = [];
+    }
     setselectedItems([...tempItems]);
     handleChange(name, [...tempItems]);
   };
@@ -35,6 +57,7 @@ function FrmMultiselect(props) {
         placeholder="Select"
         selectedValues={selectedItems}
         onSelect={onSelect}
+        onRemove={onRemove}
       ></Multiselect>
       {isRequired && issubmitted && !selectedItems.length ? (
         <div className="validationError">{validationmsg}</div>
@@ -42,15 +65,25 @@ function FrmMultiselect(props) {
         ""
       )}
       <div className="multi-selected-opts-container">
-        {selectedItems.map((item) => (
-          <div className="multi-selected-opts">
-            <div>{item.title}</div>
+        {selectopts.length && selectedItems.length === selectopts.length ? (
+          <div className="multi-selected-opts" key={selectopts[0].value}>
+            <div>{selectopts[0].title}</div>
             <div
               className="delete-icon"
-              onClick={() => removeSelectedItem(item.value)}
+              onClick={() => removeSelectedItem(selectopts[0].value)}
             ></div>
           </div>
-        ))}
+        ) : (
+          selectedItems.map((item) => (
+            <div className="multi-selected-opts" key={item.value}>
+              <div>{item.title}</div>
+              <div
+                className="delete-icon"
+                onClick={() => removeSelectedItem(item.value)}
+              ></div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

@@ -174,6 +174,7 @@ function Segment({ ...props }) {
         }
       }
     });
+    tempsegmentFilterOpts.sort(dynamicSort("title"));
     tempCountryFilterOpts.sort(dynamicSort("title"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
@@ -200,7 +201,10 @@ function Segment({ ...props }) {
       });
       tempCountryObj[item.countryID] = item.countryName.trim();
     });
-    setfrmCountrySelectOpts([...countryselectOpts]);
+    setfrmCountrySelectOpts([
+      { title: "All", value: "*" },
+      ...countryselectOpts,
+    ]);
 
     setcountryObj(tempCountryObj);
   }, [segmentState.countryItems]);
@@ -232,18 +236,20 @@ function Segment({ ...props }) {
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
     const response = await getById({ SegmentID: itemid });
+    let selectedCountryList = response.segmentCountryList.map((item) => {
+      return { title: item.countryName, value: item.countryID };
+    });
+    if (selectedCountryList.length == frmCountrySelectOpts.length - 1) {
+      selectedCountryList = [
+        { title: "All", value: "*" },
+        ...selectedCountryList,
+      ];
+    }
     setisEditMode(true);
     setformIntialState({
       segmentID: response.segmentID,
       segmentName: response.segmentName,
-      countryList: response.countryList
-        ? response.countryList.split(",").map((item) => {
-            return {
-              title: countryObj[item],
-              value: item,
-            };
-          })
-        : [],
+      countryList: selectedCountryList,
       segmentDescription: response.segmentDescription
         ? response.segmentDescription
         : "",
@@ -261,6 +267,7 @@ function Segment({ ...props }) {
       });
     }
     let tempcountryList = item.countryList.map((item) => item.value);
+    tempcountryList = tempcountryList.filter((value) => value !== "*");
     tempcountryList = tempcountryList.join(",");
     if (!response) {
       response = await postItem({
@@ -273,10 +280,10 @@ function Segment({ ...props }) {
       if (response) {
         getAll();
         hideAddPopup();
-        alert(alertMessage.country.update);
+        alert(alertMessage.segment.update);
       }
     } else {
-      alert(alertMessage.country.nameExist);
+      alert(alertMessage.segment.nameExist);
     }
     setisEditMode(false);
   };
@@ -284,7 +291,9 @@ function Segment({ ...props }) {
     let response = await checkNameExist({
       segmentName: item.segmentName,
     });
+
     let tempcountryList = item.countryList.map((item) => item.value);
+    tempcountryList = tempcountryList.filter((value) => value !== "*");
     tempcountryList = tempcountryList.join(",");
     if (!response) {
       response = await postItem({
@@ -297,15 +306,15 @@ function Segment({ ...props }) {
       if (response) {
         getAll();
         hideAddPopup();
-        alert(alertMessage.country.add);
+        alert(alertMessage.segment.add);
       }
     } else {
-      alert(alertMessage.country.nameExist);
+      alert(alertMessage.segment.nameExist);
     }
   };
   const handleDelete = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    if (!window.confirm(alertMessage.country.deleteConfirm)) {
+    if (!window.confirm(alertMessage.segment.deleteConfirm)) {
       return;
     }
     let resonse = await checkIsInUse({ segmentID: itemid });
@@ -313,26 +322,26 @@ function Segment({ ...props }) {
       resonse = await deleteItem({ segmentID: itemid });
       if (resonse) {
         getAll();
-        alert(alertMessage.country.delete);
+        alert(alertMessage.segment.delete);
       }
     } else {
-      alert(alertMessage.country.isInUse);
+      alert(alertMessage.segment.isInUse);
     }
   };
   return (
     <>
       <div className="page-title">Manage Segment</div>
       <div className="page-filter">
-        <div className="dropdown-filter-container">
+        <div className="filter-container">
           <Dropdown
-            label={"Segment Name"}
+            label={"Segment"}
             name={"segment"}
             selectopts={segmentFilterOpts}
             onSelectHandler={onSearchFilterSelect}
             initvalue={selfilter.segment}
           />
           <Dropdown
-            label={"Country Name"}
+            label={"Country"}
             name={"country"}
             selectopts={countryFilterOpts}
             onSelectHandler={onSearchFilterSelect}
@@ -342,7 +351,7 @@ function Segment({ ...props }) {
         <div className="btn-container">
           <div
             className={`btn-blue ${
-              selfilter.region === "" && selfilter.country === ""
+              selfilter.segment === "" && selfilter.country === ""
                 ? "disable"
                 : ""
             }`}
@@ -362,6 +371,7 @@ function Segment({ ...props }) {
           <div>{segmentState.error}</div>
         ) : (
           <PaginationData
+            id={"segmentID"}
             column={columns}
             data={paginationdata}
             showAddPopup={showAddPopup}
@@ -386,6 +396,11 @@ function Segment({ ...props }) {
     </>
   );
 }
+const mapStateToProp = (state) => {
+  return {
+    state: state,
+  };
+};
 const mapActions = {
   getAll: segmentActions.getAll,
   getAllCountry: segmentActions.getAllCountry,
@@ -395,4 +410,4 @@ const mapActions = {
   postItem: segmentActions.postItem,
   deleteItem: segmentActions.deleteItem,
 };
-export default connect(null, mapActions)(Segment);
+export default connect(mapStateToProp, mapActions)(Segment);

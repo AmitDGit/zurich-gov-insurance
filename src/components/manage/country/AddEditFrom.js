@@ -51,7 +51,7 @@ function AddEditForm(props) {
               type={"text"}
               handleChange={handleChange}
               isRequired={true}
-              validationmsg={"Required field"}
+              validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
             />
             <FrmSelect
@@ -60,7 +60,7 @@ function AddEditForm(props) {
               value={formfield.regionID}
               handleChange={handleChange}
               isRequired={true}
-              validationmsg={"Required field"}
+              validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
               selectopts={frmRegionSelectOpts}
             />

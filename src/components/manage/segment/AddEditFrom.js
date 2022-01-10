@@ -55,7 +55,7 @@ function AddEditForm(props) {
               type={"text"}
               handleChange={handleChange}
               isRequired={true}
-              validationmsg={"Required field"}
+              validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
             />
             <FrmMultiselect
@@ -64,7 +64,7 @@ function AddEditForm(props) {
               value={formfield.countryList}
               handleChange={handleMultiSelectChange}
               isRequired={true}
-              validationmsg={"Required field"}
+              validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
               selectopts={frmCountrySelectOpts}
             />

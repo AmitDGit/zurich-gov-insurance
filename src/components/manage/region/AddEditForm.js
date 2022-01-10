@@ -34,7 +34,7 @@ function AddEditForm(props) {
     <Popup {...props}>
       <div className="popup-box">
         <div className="popup-header-container">
-          <div className="popup-header-title">New Region</div>
+          <div className="popup-header-title">New/Edit Region</div>
           <div className="popup-close" onClick={() => hideAddPopup()}>
             X
           </div>
@@ -48,7 +48,7 @@ function AddEditForm(props) {
               type={"text"}
               handleChange={handleChange}
               isRequired={true}
-              validationmsg={"Required field"}
+              validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
             />
             <FrmTextArea

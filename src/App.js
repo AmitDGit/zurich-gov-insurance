@@ -17,6 +17,7 @@ import Navbar from "./components/navbar/Navbar";
 import User from "./components/manage/user/User";
 import Lookup from "./components/manage/lookup/Lookup";
 import Lobchapter from "./components/manage/lobchapter/Lobchapter";
+import Testcomponent from "./components/manage/testcomponent/Testcomponent";
 import { PrivateRoute } from "./components/privateroute/PrivateRoute";
 import { connect } from "react-redux";
 import { appmenuActions } from "./actions/appmenu.action";
@@ -49,55 +50,46 @@ function App({ state, menuClick }) {
                   path="/"
                   exact
                   component={Dashboard}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/region"
                   component={Region}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/country"
                   component={Country}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/segment"
                   component={Segment}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/lob"
                   component={Lob}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/sublob"
                   component={Sublob}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/lobchapter"
                   component={Lobchapter}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/lookup"
                   component={Lookup}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
                   path="/user"
                   component={User}
-                  state={state}
                   menuClick={menuClick}
                 />
                 <Route

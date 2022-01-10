@@ -8,9 +8,7 @@ function Dropdown(props) {
       <div className="dropdown">
         <select onChange={onSelectHandler} name={name} value={initvalue}>
           {selectopts.map((option) => (
-            <option value={option.value} key={option.title}>
-              {option.title}
-            </option>
+            <option value={option.value}>{option.title}</option>
           ))}
         </select>
       </div>

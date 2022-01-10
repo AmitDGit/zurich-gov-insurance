@@ -228,9 +228,9 @@ function Region({ ...props }) {
     <>
       <div className="page-title">Manage Region</div>
       <div className="page-filter">
-        <div className="dropdown-filter-container">
+        <div className="filter-container">
           <Dropdown
-            label={"Region Name"}
+            label={"Region"}
             selectopts={regionFilterOpts}
             onSelectHandler={onRegionSelect}
             initvalue={selfilter.region}
@@ -255,6 +255,7 @@ function Region({ ...props }) {
           <div>{regionState.error}</div>
         ) : (
           <PaginationData
+            id={"id"}
             column={columns}
             data={paginationdata}
             showAddPopup={showAddPopup}
@@ -272,15 +273,16 @@ function Region({ ...props }) {
           formIntialState={formIntialState}
         ></AddEditForm>
       ) : (
-        /* <AddEditSegmentForm
-          hideAddPopup={hideAddPopup}
-          postItems={postRegionItem}
-        />*/
         ""
       )}
     </>
   );
 }
+const mapStateToProp = (state) => {
+  return {
+    state: state,
+  };
+};
 const mapActions = {
   getAllRegions: regionActions.getAll,
   postItem: regionActions.postItem,
@@ -289,4 +291,4 @@ const mapActions = {
   checkRegionExist: regionActions.checkRegionExist,
   checkRegionInUse: regionActions.checkRegionInUse,
 };
-export default connect(null, mapActions)(Region);
+export default connect(mapStateToProp, mapActions)(Region);

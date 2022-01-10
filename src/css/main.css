@@ -1,30 +1,68 @@
 @font-face {
-  font-family: "Segoe UI";
-  src: local("Segoe UI"), url("../fonts/Segoe UI.woff") format("woff"),
-    url("../fonts/Segoe UI.ttf") format("truetype");
+  font-family: "Zurich Sans Bold";
+  src: local("Zurich Sans Bold"),
+    url("../fonts/ZurichSans-Bold.woff") format("woff"),
+    url("../fonts/ZurichSans-Bold.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: "Segoe UI Italic";
-  src: local("Segoe UI Italic"),
-    url("../fonts/Segoe UI Italic.woff") format("woff"),
-    url("../fonts/Segoe UI Italic.ttf") format("truetype");
+  font-family: "Zurich Sans Bold Italic";
+  src: local("Zurich Sans Bold Italic"),
+    url("../fonts/ZurichSans-BoldItalic.woff") format("woff"),
+    url("../fonts/ZurichSans-BoldItalic.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: "Segoe UI Bold";
-  src: local("Segoe UI Bold"), url("../fonts/Segoe UI Bold.woff") format("woff"),
-    url("../fonts/Segoe UI Bold.ttf") format("truetype");
+  font-family: "Zurich Sans Italic";
+  src: local("Zurich Sans Italic"),
+    url("../fonts/ZurichSans-Italic.woff") format("woff"),
+    url("../fonts/ZurichSans-Italic.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: "Segoe UI Bold Italic";
-  src: local("Segoe UI Bold Italic"),
-    url("../fonts/Segoe UI Bold Italic.woff") format("woff"),
-    url("../fonts/Segoe UI Bold Italic.ttf") format("truetype");
+  font-family: "Zurich Sans Light";
+  src: local("Zurich Sans Light"),
+    url("../fonts/ZurichSans-Light.woff") format("woff"),
+    url("../fonts/ZurichSans-Light.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Zurich Sans Light Italic";
+  src: local("Zurich Sans Light Italic"),
+    url("../fonts/ZurichSans-LightItalic.woff") format("woff"),
+    url("../fonts/ZurichSans-LightItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Zurich Sans Medium";
+  src: local("Zurich Sans Medium"),
+    url("../fonts/ZurichSans-Medium.woff") format("woff"),
+    url("../fonts/ZurichSans-Medium.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Zurich Sans Medium Italic";
+  src: local("Zurich Sans Medium Italic"),
+    url("../fonts/ZurichSans-MediumItalic.woff") format("woff"),
+    url("../fonts/ZurichSans-MediumItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Zurich Sans";
+  src: local("Zurich Sans"),
+    url("../fonts/ZurichSans-Regular.woff") format("woff"),
+    url("../fonts/ZurichSans-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Zurich Sans Semi Bold";
+  src: local("Zurich Sans Semi Bold"),
+    url("../fonts/ZurichSans-SemiBold.woff") format("woff"),
+    url("../fonts/ZurichSans-SemiBold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Zurich Sans Semi Bold Italic";
+  src: local("Zurich Sans Semi Bold Italic"),
+    url("../fonts/ZurichSans-SemiBoldItalic.woff") format("woff"),
+    url("../fonts/ZurichSans-SemiBoldItalic.ttf") format("truetype");
 }
 body {
-  font-family: "Zurich Sans", sans-serif, Segoe UI;
+  font-family: "ZurichSans", sans-serif, Segoe UI;
   font-size: 14px;
   color: #21356e;
   word-spacing: normal;
@@ -112,13 +150,14 @@ body {
 }
 .popup-formitems {
   padding: 20px;
-  min-height: 500px;
+  min-height: 530px;
   max-height: 550px;
   overflow-y: auto;
   font-size: 14px;
 }
 /* form styles */
 .frm-field {
+  position: relative;
   margin-bottom: 20px;
 }
 .frm-field label {
@@ -145,8 +184,47 @@ body {
   color: #21356e;
   padding: 2px 4px;
 }
+.frm-field input[type="radio"],
+.frm-field input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+}
+.frm-field .frm-radiobtns-container {
+  display: flex;
+}
+.frm-field .radiobtn-container {
+  display: flex;
+  width: 170px;
+  justify-content: flex-start;
+  align-items: center;
+}
+.frm-checkbox-container {
+  display: flex;
+}
 .frm-field textarea {
   resize: none;
+}
+textarea::-webkit-input-placeholder {
+  color: #c5c2c2;
+}
+
+textarea:-moz-placeholder {
+  /* Firefox 18- */
+  color: #c5c2c2;
+}
+
+textarea::-moz-placeholder {
+  /* Firefox 19+ */
+  color: #c5c2c2;
+}
+
+textarea:-ms-input-placeholder {
+  color: #c5c2c2;
+}
+
+textarea::placeholder {
+  color: #c5c2c2;
 }
 
 input:focus,
@@ -158,6 +236,7 @@ button:focus {
 .frm-field textarea {
   height: 70px;
 }
+
 .custom-multiselect {
   color: #21356e;
   font-size: 14px;
@@ -168,6 +247,7 @@ button:focus {
 .custom-multiselect.multiSelectContainer ul {
   border-radius: 0px;
   border: 1px solid #add8ef;
+  max-height: 200px;
 }
 .multiSelectContainer li {
   padding: 5px !important;
@@ -217,6 +297,67 @@ button:focus {
 
 .multi-selected-opts-container .delete-icon {
   width: 22px;
+}
+.frm-tabs-container {
+  width: 100%;
+  height: 45px;
+  display: flex;
+  align-items: end;
+  border-bottom: 1px solid #21356e;
+  padding: 0 20px;
+}
+.tab-btn {
+  height: 34px;
+  line-height: 33px;
+  padding: 0px 10px;
+  color: #fff;
+  background: #1dafe4 0% 0% no-repeat padding-box;
+  border-radius: 5px 5px 0px 0px;
+  margin-right: 10px;
+}
+.tab-btn.normal:hover {
+  cursor: pointer;
+  background: #21356e 0% 0% no-repeat padding-box;
+}
+.tab-btn.selected {
+  cursor: default;
+  background: #21356e 0% 0% no-repeat padding-box;
+}
+.approver-container {
+  padding: 10px 5px;
+}
+.site-pagination-table .approver-container {
+  padding: 10px 0px;
+  margin-left: -7px;
+}
+.searched-container {
+  position: absolute;
+  top: 52px;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #add8ef;
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1;
+}
+.searched-container .user-view {
+  padding: 5px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.searched-container .addbtn {
+  width: 22px;
+  height: 15px;
+  color: #fff;
+  background-color: #1dafe4;
+  text-align: center;
+  line-height: 15px;
+  color: #fff;
+  border-radius: 7px;
+  cursor: pointer;
 }
 /* end of form styles */
 .main-container {
@@ -332,24 +473,38 @@ button:focus {
   justify-content: space-between;
   align-items: flex-end;
 }
-.dropdown-filter-container {
+.page-filter .btn-container {
+  margin-bottom: 10px;
+}
+.filter-container {
+  max-width: 820px;
   display: flex;
   justify-content: left;
+  flex-wrap: wrap;
 }
-.dropdown-filter-container .dropdown-filter {
+.filter-container .dropdown-filter {
   margin-right: 10px;
+  margin-bottom: 10px;
 }
-.dropdown-filter-container .label {
+.filter-container .label {
   font-weight: 600;
   margin-bottom: 5px;
 }
 
-.dropdown-filter-container .dropdown select {
+.filter-container .dropdown select,
+.filter-container input {
   background-color: #fff;
   width: 260px;
   height: 30px;
   color: #21356e;
   border: 1px solid #add8ef;
+}
+.dropdown select option {
+  max-width: 100%;
+  overflow: hidden;
+  /*Altered two below to make word wrap work */
+  word-wrap: normal !important;
+  white-space: normal;
 }
 .btn-container {
   display: flex;
@@ -391,7 +546,7 @@ button:not(:last-child) {
   background: url("../assets/edit_hover.png") center no-repeat;
 }
 .delete-icon {
-  width: 100%;
+  width: 22px;
   height: 22px;
   background: url("../assets/trash_normal.png") center no-repeat;
 }
@@ -443,6 +598,9 @@ button:not(:last-child) {
 .pagination .page-item {
   margin: 0 1px;
 }
+.pagination .page-item.active .page-link {
+  cursor: default;
+}
 .pagination-top-container {
   width: 100%;
   padding: 15px 20px;
@@ -456,9 +614,10 @@ button:not(:last-child) {
   font-size: 12px;
   align-items: center;
 }
-.serachperpage .dropdown-filter-container .dropdown select {
+.serachperpage .filter-container .dropdown select {
   width: 60px;
 }
+
 .pagination-top-container .searchbox {
   display: flex;
   align-items: center;
@@ -541,4 +700,27 @@ button:not(:last-child) {
 }
 .pagination {
   margin-right: 20px;
+}
+
+.approver-container {
+  display: flex;
+  align-items: center;
+}
+.approver-detail-block {
+  width: 90%;
+  display: flex;
+  align-items: center;
+}
+.approver-img {
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+  border-radius: 30px;
+  display: inline-block;
+  vertical-align: top;
+  background-color: #f0f9fd;
+}
+.approver-email {
+  color: #1dafe4;
+  font-size: 12px;
 }
