@@ -10,6 +10,7 @@ function InputFilter(props) {
         name={name}
         value={initvalue}
         onChange={onSelectHandler}
+        autocomplete="off"
       ></input>
     </div>
   );

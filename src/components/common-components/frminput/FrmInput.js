@@ -1,25 +1,30 @@
 import React from "react";
-
-function FrmTextArea(props) {
+import "./Style.css";
+function FrmInput(props) {
   const {
     title,
     name,
     value,
+    type,
     handleChange,
     isRequired,
     validationmsg,
     issubmitted,
+    handleClick,
   } = props;
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>{title}</label>
-      <textarea
-        placeholder="Character limit 250..."
+      <label htmlFor={name}>
+        <div className="label">{title}</div>
+      </label>
+      <input
+        type={type}
         name={name}
         value={value}
         onChange={handleChange}
-        maxlength="250"
-      ></textarea>
+        onClick={handleClick}
+        maxLength="60"
+      ></input>
       {isRequired && issubmitted && !value ? (
         <div className="validationError">{validationmsg}</div>
       ) : (
@@ -29,4 +34,4 @@ function FrmTextArea(props) {
   );
 }
 
-export default FrmTextArea;
+export default FrmInput;

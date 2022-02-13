@@ -1,5 +1,5 @@
 import React from "react";
-
+import "./Style.css";
 function FrmCheckbox(props) {
   const {
     title,
@@ -14,20 +14,27 @@ function FrmCheckbox(props) {
   } = props;
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      {title ? <label htmlFor={name}>{title}</label> : ""}
+      {title ? (
+        <label htmlFor={name} className={`${isdisabled ? "disabled" : ""}`}>
+          <div className="label">{title}</div>
+        </label>
+      ) : (
+        ""
+      )}
       <div className="frm-radiobtns-container">
-        {selectopts.map((option) => (
+        {selectopts.map((option, index) => (
           <div className="radiobtn-container">
             <input
               type="checkbox"
-              id={option.title}
+              id={`opt${name}`}
+              className="regular-checkbox"
               name={name}
               value={option.value}
               checked={value}
               onChange={handleChange}
               disabled={isdisabled}
             />
-            <div htmlFor={option.title}>{option.title}</div>
+            <label for={`opt${name}`}></label>
           </div>
         ))}
       </div>

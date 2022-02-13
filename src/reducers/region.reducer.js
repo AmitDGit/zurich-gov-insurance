@@ -2,6 +2,7 @@ import { regionConstants } from "../constants";
 const initialState = {
   loading: true,
   items: [],
+  regionItems: [],
   error: "",
 };
 export const regionReducer = (state = initialState, action) => {
@@ -30,6 +31,16 @@ export const regionReducer = (state = initialState, action) => {
         ...state,
         loading: false,
         error: action.payload,
+      };
+    case regionConstants.GETALLREGION_SUCCESS:
+      return {
+        ...state,
+        regionItems: action.payload,
+      };
+    case regionConstants.GETALLREGION_FAILURE:
+      return {
+        ...state,
+        regionItems: [],
       };
     default:
       return state;

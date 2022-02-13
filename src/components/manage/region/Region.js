@@ -3,12 +3,11 @@ import { connect } from "react-redux";
 import { regionActions } from "../../../actions";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import AddEditForm from "./AddEditForm";
-import Regionview from "./Regionview";
 import Loading from "../../common-components/Loading";
-import AddEditSegmentForm from "./AddEditSegmentForm";
 import PaginationData from "../../common-components/PaginationData";
-import { alertMessage } from "../../../helpers";
+import { alertMessage, dynamicSort } from "../../../helpers";
 function Region({ ...props }) {
   const { regionState } = props.state;
   const {
@@ -21,14 +20,15 @@ function Region({ ...props }) {
     userProfile,
   } = props;
   useSetNavMenu({ currentMenu: "Region", isSubmenu: true }, props.menuClick);
-
+  //console.log(props.state);
   //initialize filter/search functionality
-  const [regionFilterOpts, setregionFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [selfilter, setselfilter] = useState({ region: "" });
-  const onRegionSelect = (e) => {
-    setselfilter({ ...selfilter, region: e.target.value });
+  const [regionFilterOpts, setregionFilterOpts] = useState([]);
+  const intialFilterState = {
+    region: "",
+  };
+  const [selfilter, setselfilter] = useState(intialFilterState);
+  const onSearchFilterSelect = (name, value) => {
+    setselfilter({ ...selfilter, [name]: value });
   };
   const handleFilterSearch = () => {
     if (selfilter.region !== "") {
@@ -38,7 +38,7 @@ function Region({ ...props }) {
     }
   };
   const clearFilter = () => {
-    setselfilter({ region: "" });
+    setselfilter(intialFilterState);
     setpaginationdata(data);
   };
 
@@ -124,14 +124,15 @@ function Region({ ...props }) {
         };
         tempdata.push(tempItem);
         tempFilterOpts.push({
-          title: item.regionName,
+          label: item.regionName,
           value: item.regionID,
         });
       }
     });
+    tempFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-    setregionFilterOpts([{ title: "Select", value: "" }, ...tempFilterOpts]);
+    setregionFilterOpts([...tempFilterOpts]);
   }, [regionState.items]);
 
   /* Add Edit Delete functionality & show popup*/
@@ -176,6 +177,7 @@ function Region({ ...props }) {
         isActive: true,
       });
       if (response) {
+        setselfilter(intialFilterState);
         getAllRegions();
         hideAddPopup();
         alert(alertMessage.region.add);
@@ -195,6 +197,7 @@ function Region({ ...props }) {
         requesterUserId: userProfile.userId,
       });
       if (response) {
+        setselfilter(intialFilterState);
         getAllRegions();
         hideAddPopup();
         alert(alertMessage.region.update);
@@ -229,12 +232,15 @@ function Region({ ...props }) {
       <div className="page-title">Manage Region</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"Region"}
-            selectopts={regionFilterOpts}
-            onSelectHandler={onRegionSelect}
-            initvalue={selfilter.region}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Region"}
+              name={"region"}
+              selectopts={regionFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.region}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -260,7 +266,7 @@ function Region({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New Region"}
+            buttonTitle={"New Region"}
           />
         )}
       </div>

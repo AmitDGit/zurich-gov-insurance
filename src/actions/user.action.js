@@ -37,38 +37,7 @@ const getAllUsers = (requestParam) => {
     }
   };
 };
-const getAllRegion = (requestParam) => {
-  const success = (data) => {
-    return { type: userConstants.GETALLREGION_SUCCESS, payload: data };
-  };
-  const failure = (error) => {
-    return { type: userConstants.GETALLREGION_FAILURE, payload: error };
-  };
-  return async (dispatch) => {
-    try {
-      const response = await userService.getAllRegionService(requestParam);
-      dispatch(success(response.data));
-    } catch (err) {
-      dispatch(failure(err));
-    }
-  };
-};
-const getAllCountry = (requestParam) => {
-  const success = (data) => {
-    return { type: userConstants.GETALLCOUNTRY_SUCCESS, payload: data };
-  };
-  const failure = (error) => {
-    return { type: userConstants.GETALLCOUNTRY_FAILURE, payload: error };
-  };
-  return async (dispatch) => {
-    try {
-      const response = await userService.getAllCountryService(requestParam);
-      dispatch(success(response.data));
-    } catch (err) {
-      dispatch(failure(err));
-    }
-  };
-};
+
 const getAllUsersRoles = (requestParam) => {
   const success = (data) => {
     return { type: userConstants.GETALLUSERROLE_SUCCESS, payload: data };
@@ -149,8 +118,6 @@ const deleteItem = (requestParam) => {
 export const userActions = {
   getAll,
   getAllUsers,
-  getAllCountry,
-  getAllRegion,
   getAllSpecialUsers,
   getAllUsersRoles,
   getById,
@@ -167,16 +134,6 @@ const getAllService = async (requestParam) => {
 const getAllUserService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`user/getalladuserlist`, param);
-  return response;
-};
-const getAllRegionService = async (requestParam) => {
-  const param = { params: requestParam };
-  const response = await Axios.get(`region/getallregion`, param);
-  return response;
-};
-const getAllCountryService = async (requestParam) => {
-  const param = { params: requestParam };
-  const response = await Axios.get(`country/getallcountry`, param);
   return response;
 };
 
@@ -217,8 +174,6 @@ const deleteItemService = async (requestParam) => {
 const userService = {
   getAllService,
   getAllUserService,
-  getAllRegionService,
-  getAllCountryService,
   getAllSpecialUsersService,
   getAllUsersRolesService,
   getByIdService,

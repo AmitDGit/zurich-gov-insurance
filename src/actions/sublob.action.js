@@ -21,21 +21,19 @@ const getAll = (requestParam) => {
     }
   };
 };
-const getAlllob = () => {
+
+const getAllSublob = () => {
   const success = (data) => {
-    return { type: sublobConstants.GETALLLOB_SUCCESS, payload: data };
+    return { type: sublobConstants.GETALLSUBLOB_SUCCESS, payload: data };
   };
   const failure = (error) => {
-    return { type: sublobConstants.GETALLLOB_FAILURE, payload: error };
+    return { type: sublobConstants.GETALLSUBLOB_FAILURE, payload: error };
   };
-  const requestParams = {
-    PageIndex: 1,
-    PageSize: 50,
-  };
+  const requestParams = {};
 
   return async (dispatch) => {
     try {
-      const response = await sublobService.getAlllobService(requestParams);
+      const response = await sublobService.getAllSublobService(requestParams);
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
@@ -92,7 +90,7 @@ const deleteItem = (requestParam) => {
 };
 export const sublobActions = {
   getAll,
-  getAlllob,
+  getAllSublob,
   getById,
   checkNameExist,
   checkIsInUse,
@@ -104,9 +102,9 @@ const getAllService = async (requestParam) => {
   const response = await Axios.get(`sublob/getallsubloblist`, param);
   return response;
 };
-const getAlllobService = async (requestParam) => {
+const getAllSublobService = async (requestParam) => {
   const param = { params: requestParam };
-  const response = await Axios.get(`lob/getalllob`, param);
+  const response = await Axios.get(`sublob/getallsublob`, param);
   return response;
 };
 const getByIdService = async (requestParam) => {
@@ -135,7 +133,7 @@ const deleteItemService = async (requestParam) => {
 };
 const sublobService = {
   getAllService,
-  getAlllobService,
+  getAllSublobService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,

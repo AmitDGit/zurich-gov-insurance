@@ -25,6 +25,27 @@ const getAll = () => {
     }
   };
 };
+const getAllRegions = () => {
+  const success = (data) => {
+    return { type: regionConstants.GETALLREGION_SUCCESS, payload: data };
+  };
+  const failure = (error) => {
+    return { type: regionConstants.GETALLREGION_FAILURE, payload: error };
+  };
+  const requestParams = {
+    PageIndex: 1,
+    PageSize: 50,
+  };
+
+  return async (dispatch) => {
+    try {
+      const response = await regionService.getAllRegionsService(requestParams);
+      dispatch(success(response.data));
+    } catch (err) {
+      dispatch(failure(err));
+    }
+  };
+};
 const getById = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -80,6 +101,7 @@ const deleteItem = (requestParam) => {
 };
 export const regionActions = {
   getAll,
+  getAllRegions,
   getById,
   postItem,
   deleteItem,
@@ -90,6 +112,11 @@ export const regionActions = {
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`region/getallregionlist`, param);
+  return response;
+};
+const getAllRegionsService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`region/getallregion`, param);
   return response;
 };
 const getByIdService = async (requestParam) => {
@@ -122,6 +149,7 @@ const deleteItemService = async (requestParam) => {
 };
 const regionService = {
   getAllService,
+  getAllRegionsService,
   getByIdService,
   postItemService,
   putItemService,

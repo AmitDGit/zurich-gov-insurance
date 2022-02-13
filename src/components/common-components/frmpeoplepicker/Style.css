@@ -1,0 +1,35 @@
+.searched-container {
+  position: absolute;
+  top: 52px;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #add8ef;
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1;
+  border-radius: 0 0 10px 10px;
+}
+.searched-container .user-view {
+  padding: 5px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.searched-container .addbtn {
+  width: 22px;
+  height: 15px;
+  color: #fff;
+  background-color: rgba(33, 103, 173, 1);
+  text-align: center;
+  line-height: 15px;
+  color: #fff;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.people-picker input.open {
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}

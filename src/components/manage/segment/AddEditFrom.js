@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import FrmInput from "../../common-components/FrmInput";
-import FrmSelect from "../../common-components/FrmSelect";
-import FrmTextArea from "../../common-components/FrmTextArea";
-import FrmMultiselect from "../../common-components/FrmMultiselect";
+import FrmInput from "../../common-components/frminput/FrmInput";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
+import FrmMultiselect from "../../common-components/frmmultiselect/FrmMultiselect";
 import Popup from "../../common-components/Popup";
 
 function AddEditForm(props) {
@@ -20,6 +20,9 @@ function AddEditForm(props) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setformfield({ ...formfield, [name]: value });
+  };
+  const handleSelectChange = (name, value) => {
     setformfield({ ...formfield, [name]: value });
   };
   const handleMultiSelectChange = (name, value) => {

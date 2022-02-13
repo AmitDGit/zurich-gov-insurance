@@ -21,23 +21,7 @@ const getAll = (requestParam) => {
     }
   };
 };
-const getAllCountry = (requestParam) => {
-  const success = (data) => {
-    return { type: lobConstants.GETALLCOUNTRY_SUCCESS, payload: data };
-  };
-  const failure = (error) => {
-    return { type: lobConstants.GETALLCOUNTRY_FAILURE, payload: error };
-  };
 
-  return async (dispatch) => {
-    try {
-      const response = await lobService.getAllCountryService(requestParam);
-      dispatch(success(response.data));
-    } catch (err) {
-      dispatch(failure(err));
-    }
-  };
-};
 const getAllApprover = (requestParam) => {
   const success = (data) => {
     return { type: lobConstants.GETALLAPPROVER_SUCCESS, payload: data };
@@ -48,6 +32,27 @@ const getAllApprover = (requestParam) => {
   return async (dispatch) => {
     try {
       const response = await lobService.getAllApproverService(requestParam);
+      dispatch(success(response.data));
+    } catch (err) {
+      dispatch(failure(err));
+    }
+  };
+};
+const getAlllob = () => {
+  const success = (data) => {
+    return { type: lobConstants.GETALLLOB_SUCCESS, payload: data };
+  };
+  const failure = (error) => {
+    return { type: lobConstants.GETALLLOB_FAILURE, payload: error };
+  };
+  const requestParams = {
+    PageIndex: 1,
+    PageSize: 50,
+  };
+
+  return async (dispatch) => {
+    try {
+      const response = await lobService.getAlllobService(requestParams);
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
@@ -104,7 +109,7 @@ const deleteItem = (requestParam) => {
 };
 export const lobActions = {
   getAll,
-  getAllCountry,
+  getAlllob,
   getAllApprover,
   getById,
   checkNameExist,
@@ -117,9 +122,9 @@ const getAllService = async (requestParam) => {
   const response = await Axios.get(`lob/getallloblist`, param);
   return response;
 };
-const getAllCountryService = async (requestParam) => {
+const getAlllobService = async (requestParam) => {
   const param = { params: requestParam };
-  const response = await Axios.get(`country/getallcountry`, param);
+  const response = await Axios.get(`lob/getalllob`, param);
   return response;
 };
 const getAllApproverService = async (requestParam) => {
@@ -153,7 +158,7 @@ const deleteItemService = async (requestParam) => {
 };
 const lobService = {
   getAllService,
-  getAllCountryService,
+  getAlllobService,
   getAllApproverService,
   getByIdService,
   checkNameExistService,

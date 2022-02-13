@@ -21,21 +21,17 @@ const getAll = (requestParam) => {
     }
   };
 };
-const getAllCountry = () => {
+const getAllSegment = (requestParam) => {
   const success = (data) => {
-    return { type: segmentConstants.GETALLCOUNTRY_SUCCESS, payload: data };
+    return { type: segmentConstants.GETALLSEGMENT_SUCCESS, payload: data };
   };
   const failure = (error) => {
-    return { type: segmentConstants.GETALLCOUNTRY_FAILURE, payload: error };
-  };
-  const requestParams = {
-    PageIndex: 1,
-    PageSize: 50,
+    return { type: segmentConstants.GETALLSEGMENT_FAILURE, payload: error };
   };
 
   return async (dispatch) => {
     try {
-      const response = await segmentService.getAllCountryService(requestParams);
+      const response = await segmentService.getAllService(requestParam);
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
@@ -92,7 +88,7 @@ const deleteItem = (requestParam) => {
 };
 export const segmentActions = {
   getAll,
-  getAllCountry,
+  getAllSegment,
   getById,
   checkNameExist,
   checkIsInUse,
@@ -104,11 +100,7 @@ const getAllService = async (requestParam) => {
   const response = await Axios.get(`segment/getallsegmentlist`, param);
   return response;
 };
-const getAllCountryService = async (requestParam) => {
-  const param = { params: requestParam };
-  const response = await Axios.get(`country/getallcountry`, param);
-  return response;
-};
+
 const getByIdService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`segment/getsegment`, param);
@@ -135,7 +127,6 @@ const deleteItemService = async (requestParam) => {
 };
 const segmentService = {
   getAllService,
-  getAllCountryService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,

@@ -1,0 +1,26 @@
+.form-control {
+  border: 1px solid #add8ef;
+  border-radius: 15px;
+  color: #2167ad;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: #add8ef;
+  color: #2167ad;
+}
+.form-control::placeholder {
+  color: rgba(33, 103, 173, 0.5);
+  font-style: italic;
+}
+
+.form-control::-ms-input-placeholder {
+  color: rgba(33, 103, 173, 0.5);
+  font-style: italic;
+}
+.jumbotron {
+  background-color: #edeef0;
+  min-height: 525px;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}

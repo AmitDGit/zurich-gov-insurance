@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { lobchapterActions } from "../../../actions/lobchapter.action";
+import { lobchapterActions, lobActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
 function Lobchapter({ ...props }) {
-  const { lobchapterState } = props.state;
+  const { lobchapterState, lobState } = props.state;
   const {
     getAll,
     getAllLob,
@@ -25,18 +25,15 @@ function Lobchapter({ ...props }) {
   );
   //console.log(lobchapterState);
   //initialize filter/search functionality
-  const [lobFilterOpts, setlobFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [lobchapterFilterOpts, setlobchapterFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [selfilter, setselfilter] = useState({
+  const [lobFilterOpts, setlobFilterOpts] = useState([]);
+  const [lobchapterFilterOpts, setlobchapterFilterOpts] = useState([]);
+  const intialfilterval = {
     lobchapter: "",
     lob: "",
-  });
-  const onSearchFilterSelect = (e) => {
-    const { name, value } = e.target;
+  };
+  const [selfilter, setselfilter] = useState(intialfilterval);
+  const onSearchFilterSelect = (name, value) => {
+    // const { name, value } = e.target;
     setselfilter({
       ...selfilter,
       [name]: value,
@@ -69,7 +66,7 @@ function Lobchapter({ ...props }) {
     }
   };
   const clearFilter = () => {
-    setselfilter({ lobchapter: "", lob: "" });
+    setselfilter(intialfilterval);
     setpaginationdata(data);
   };
   //set pagination data and functionality
@@ -128,7 +125,7 @@ function Lobchapter({ ...props }) {
     },
     {
       dataField: "lobChapterDescription",
-      text: "LoB Chapter Description",
+      text: "Description",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "350px" };
@@ -159,7 +156,7 @@ function Lobchapter({ ...props }) {
       if (item.isActive) {
         tempdata.push(item);
         templobchapterFilterOpts.push({
-          title: item.lobChapterName,
+          label: item.lobChapterName,
           value: item.lobChapterID,
         });
         let coutrylist = item.lobList;
@@ -170,7 +167,7 @@ function Lobchapter({ ...props }) {
             let tempItem = lobItem.trim();
             if (!tempLobObj[tempItem]) {
               templobFilterOpts.push({
-                title: tempItem,
+                label: tempItem,
                 value: tempItem,
               });
             }
@@ -179,35 +176,31 @@ function Lobchapter({ ...props }) {
         }
       }
     });
-    templobchapterFilterOpts.sort(dynamicSort("title"));
-    templobFilterOpts.sort(dynamicSort("title"));
+    templobchapterFilterOpts.sort(dynamicSort("label"));
+    templobFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-    setlobchapterFilterOpts([
-      { title: "Select", value: "" },
-      ...templobchapterFilterOpts,
-    ]);
-    setlobFilterOpts([{ title: "Select", value: "" }, ...templobFilterOpts]);
+    setlobchapterFilterOpts([...templobchapterFilterOpts]);
+    setlobFilterOpts([...templobFilterOpts]);
   }, [lobchapterState.items]);
 
   const [frmLobSelectOpts, setfrmLobSelectOpts] = useState([]);
 
   const [lobObj, setlobObj] = useState({});
-  console.log(lobObj);
+
   useEffect(() => {
-    debugger;
     let LobSelectOpts = [];
     let tempLobObj = {};
-    lobchapterState.lobsItems.forEach((item) => {
+    lobState.lobItems.forEach((item) => {
       LobSelectOpts.push({
-        title: item.lobName.trim(),
+        label: item.lobName.trim(),
         value: item.lobid,
       });
       tempLobObj[item.lobid] = item.lobName.trim();
     });
-    setfrmLobSelectOpts([{ title: "All", value: "*" }, ...LobSelectOpts]);
+    setfrmLobSelectOpts([{ label: "All", value: "*" }, ...LobSelectOpts]);
     setlobObj(tempLobObj);
-  }, [lobchapterState.lobsItems]);
+  }, [lobState.lobItems]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -234,11 +227,10 @@ function Lobchapter({ ...props }) {
 
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
-    console.log(frmLobSelectOpts);
     let itemid = e.target.getAttribute("rowid");
     const response = await getById({ lobChapterID: itemid });
     let selectedlobList = response.lobDataList.map((item) => {
-      return { title: item.lobName, value: item.lobid };
+      return { label: item.lobName, value: item.lobid };
     });
     if (selectedlobList.length == frmLobSelectOpts.length - 1) {
       selectedlobList = [...frmLobSelectOpts];
@@ -276,6 +268,7 @@ function Lobchapter({ ...props }) {
           : userProfile.userId,
       });
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.lobchapter.update);
@@ -289,7 +282,6 @@ function Lobchapter({ ...props }) {
     let response = await checkNameExist({
       lobChapterName: item.lobChapterName,
     });
-    debugger;
     let templobList = item.lobList.map((item) => item.value);
     templobList = templobList.filter((value) => value !== "*");
     templobList = templobList.join(",");
@@ -302,6 +294,7 @@ function Lobchapter({ ...props }) {
       });
 
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.lobchapter.add);
@@ -331,20 +324,24 @@ function Lobchapter({ ...props }) {
       <div className="page-title">Manage LoB Chapter</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"LoB Chapter"}
-            name={"lobchapter"}
-            selectopts={lobchapterFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.lobchapter}
-          />
-          <Dropdown
-            label={"LoB"}
-            name={"lob"}
-            selectopts={lobFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.lob}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"LoB Chapter"}
+              name={"lobchapter"}
+              selectopts={lobchapterFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.lobchapter}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"LoB"}
+              name={"lob"}
+              selectopts={lobFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.lob}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -374,7 +371,7 @@ function Lobchapter({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New LoB Chapter"}
+            buttonTitle={"New LoB Chapter"}
           />
         )}
       </div>
@@ -401,7 +398,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: lobchapterActions.getAll,
-  getAllLob: lobchapterActions.getAllLob,
+  getAllLob: lobActions.getAlllob,
   getById: lobchapterActions.getById,
   checkNameExist: lobchapterActions.checkNameExist,
   checkIsInUse: lobchapterActions.checkIsInUse,

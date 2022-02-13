@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import FrmInput from "../../common-components/FrmInput";
-import FrmSelect from "../../common-components/FrmSelect";
-import FrmTextArea from "../../common-components/FrmTextArea";
+import FrmInput from "../../common-components/frminput/FrmInput";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import Popup from "../../common-components/Popup";
 
 function AddEditForm(props) {
@@ -20,6 +20,9 @@ function AddEditForm(props) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setformfield({ ...formfield, [name]: value });
+  };
+  const handleSelectChange = (name, value) => {
     setformfield({ ...formfield, [name]: value });
   };
   const handleSubmit = (e) => {
@@ -58,7 +61,7 @@ function AddEditForm(props) {
               title={"Region"}
               name={"regionID"}
               value={formfield.regionID}
-              handleChange={handleChange}
+              handleChange={handleSelectChange}
               isRequired={true}
               validationmsg={"Mandatory field"}
               issubmitted={issubmitted}

@@ -2,7 +2,7 @@ import { countryConstants } from "../constants";
 const initialState = {
   loading: true,
   items: [],
-  regionItems: [],
+  countryItems: [],
   error: "",
 };
 export const countryReducer = (state = initialState, action) => {
@@ -25,15 +25,15 @@ export const countryReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload,
       };
-    case countryConstants.GETALLREGION_SUCCESS:
+    case countryConstants.GETALLCOUNTRY_SUCCESS:
       return {
         ...state,
-        regionItems: action.payload,
+        countryItems: action.payload,
       };
-    case countryConstants.GETALLREGION_FAILURE:
+    case countryConstants.GETALLCOUNTRY_FAILURE:
       return {
         ...state,
-        regionItems: [],
+        countryItems: [],
       };
     default:
       return state;

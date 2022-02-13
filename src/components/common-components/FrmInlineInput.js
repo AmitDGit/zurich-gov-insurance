@@ -1,24 +1,27 @@
 import React from "react";
 
-function FrmInput(props) {
+function FrmInlineInput(props) {
   const {
-    title,
+    placeholder,
     name,
     value,
     type,
+    itemid,
     handleChange,
     isRequired,
     validationmsg,
     issubmitted,
   } = props;
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>{title}</label>
+    <div className={`frm-field inlinefield ${isRequired ? "mandatory" : ""}`}>
       <input
+        placeholder={placeholder}
         type={type}
         name={name}
         value={value}
         onChange={handleChange}
+        maxLength="60"
+        itemid={itemid}
       ></input>
       {isRequired && issubmitted && !value ? (
         <div className="validationError">{validationmsg}</div>
@@ -29,4 +32,4 @@ function FrmInput(props) {
   );
 }
 
-export default FrmInput;
+export default FrmInlineInput;

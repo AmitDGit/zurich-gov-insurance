@@ -1,5 +1,6 @@
 import React from "react";
-
+import "./Style.css";
+import ToolTip from "../tooltip/ToolTip";
 function FrmRadio(props) {
   const {
     title,
@@ -11,23 +12,39 @@ function FrmRadio(props) {
     issubmitted,
     selectopts,
     isdisabled,
+    isToolTip,
+    tooltipmsg,
   } = props;
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>{title}</label>
+      <label htmlFor={name} className={`${isdisabled ? "disabled" : ""}`}>
+        <div className="label">{title}</div>
+        {isToolTip ? (
+          <>
+            <div className="icon info-icon" data-tip={tooltipmsg}></div>
+            <ToolTip />
+          </>
+        ) : (
+          ""
+        )}
+      </label>
       <div className="frm-radiobtns-container">
         {selectopts.map((option) => (
           <div className="radiobtn-container">
             <input
               type="radio"
-              id={option.title}
+              id={option.label}
+              className="regular-radio "
               name={name}
               value={option.value}
               checked={value === option.value ? true : false}
               onChange={handleChange}
               disabled={isdisabled}
             />
-            <div htmlFor={option.title}>{option.title}</div>
+            <label for={option.label}></label>
+            <div className={`labeltext ${isdisabled ? "disabled" : ""}`}>
+              {option.label}
+            </div>
           </div>
         ))}
       </div>

@@ -2,7 +2,6 @@ import { lobchapterConstants } from "../constants";
 const initialState = {
   loading: true,
   items: [],
-  lobsItems: [],
   error: "",
 };
 export const lobchapterReducer = (state = initialState, action) => {
@@ -24,16 +23,6 @@ export const lobchapterReducer = (state = initialState, action) => {
         items: [],
         loading: false,
         error: action.payload,
-      };
-    case lobchapterConstants.GETALLLOB_SUCCESS:
-      return {
-        ...state,
-        lobsItems: action.payload,
-      };
-    case lobchapterConstants.GETALLLOB_FAILURE:
-      return {
-        ...state,
-        lobsItems: [],
       };
     default:
       return state;

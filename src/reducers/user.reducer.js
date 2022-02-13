@@ -4,8 +4,6 @@ const initialState = {
   loading: true,
   items: [],
   userItems: [],
-  regionItems: [],
-  countryItems: [],
   userRoles: [],
   error: "",
 };
@@ -38,26 +36,6 @@ export const userReducer = (state = initialState, action) => {
       return {
         ...state,
         userItems: [],
-      };
-    case userConstants.GETALLREGION_SUCCESS:
-      return {
-        ...state,
-        regionItems: action.payload,
-      };
-    case userConstants.GETALLREGION_FAILURE:
-      return {
-        ...state,
-        regionItems: [],
-      };
-    case userConstants.GETALLCOUNTRY_SUCCESS:
-      return {
-        ...state,
-        countryItems: action.payload,
-      };
-    case userConstants.GETALLCOUNTRY_FAILURE:
-      return {
-        ...state,
-        countryItems: [],
       };
     case userConstants.GETALLUSERROLE_SUCCESS:
       return {

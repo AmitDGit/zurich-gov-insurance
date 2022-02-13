@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import FrmInput from "../../common-components/FrmInput";
-import FrmTextArea from "../../common-components/FrmTextArea";
+import FrmInput from "../../common-components/frminput/FrmInput";
+import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import Popup from "../../common-components/Popup";
 
 function AddEditForm(props) {

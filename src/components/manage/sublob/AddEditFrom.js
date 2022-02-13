@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import FrmInput from "../../common-components/FrmInput";
-import FrmSelect from "../../common-components/FrmSelect";
-import FrmTextArea from "../../common-components/FrmTextArea";
+import FrmInput from "../../common-components/frminput/FrmInput";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import Popup from "../../common-components/Popup";
 
 function AddEditForm(props) {
@@ -14,12 +14,14 @@ function AddEditForm(props) {
     formIntialState,
     frmLobSelectOpts,
   } = props;
-  console.log(formIntialState);
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setformfield({ ...formfield, [name]: value });
+  };
+  const handleSelectChange = (name, value) => {
     setformfield({ ...formfield, [name]: value });
   };
   const handleSubmit = (e) => {
@@ -58,7 +60,7 @@ function AddEditForm(props) {
               title={"LoB"}
               name={"lobid"}
               value={formfield.lobid}
-              handleChange={handleChange}
+              handleChange={handleSelectChange}
               isRequired={true}
               validationmsg={"Mandatory field"}
               issubmitted={issubmitted}

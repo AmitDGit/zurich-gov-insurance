@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { sublobActions } from "../../../actions/sublob.action";
+import { sublobActions, lobActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
 function Sublob({ ...props }) {
-  const { sublobState } = props.state;
+  const { sublobState, lobState } = props.state;
   const {
     getAll,
     getAlllob,
@@ -21,22 +21,17 @@ function Sublob({ ...props }) {
   } = props;
   useSetNavMenu({ currentMenu: "Sublob", isSubmenu: true }, props.menuClick);
   //initialize filter/search functionality
-  const [sublobFilterOpts, setsublobFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [sublobFilterAllOpts, setsublobFilterAllOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [lobFilterOpts, setlobFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [sublobFilterOpts, setsublobFilterOpts] = useState([]);
+  const [sublobFilterAllOpts, setsublobFilterAllOpts] = useState([]);
+  const [lobFilterOpts, setlobFilterOpts] = useState([]);
   const [lobmapping, setlobmapping] = useState([]);
-  const [selfilter, setselfilter] = useState({
+  const intialfilterval = {
     sublob: "",
     lob: "",
-  });
-  const onSearchFilterSelect = (e) => {
-    const { name, value } = e.target;
+  };
+  const [selfilter, setselfilter] = useState(intialfilterval);
+  const onSearchFilterSelect = (name, value) => {
+    //const { name, value } = e.target;
     setselfilter({
       ...selfilter,
       [name]: value,
@@ -63,7 +58,7 @@ function Sublob({ ...props }) {
     }
   };
   const clearFilter = () => {
-    setselfilter({ sublob: "", lob: "" });
+    setselfilter(intialfilterval);
     setpaginationdata(data);
   };
   useEffect(() => {
@@ -74,8 +69,7 @@ function Sublob({ ...props }) {
         }
       });
       setsublobFilterOpts([
-        { title: "Select", value: "" },
-        ...tempsublobFilterOpts[0].sublob.sort(dynamicSort("title")),
+        ...tempsublobFilterOpts[0].sublob.sort(dynamicSort("label")),
       ]);
     } else {
       setsublobFilterOpts([...sublobFilterAllOpts]);
@@ -169,7 +163,7 @@ function Sublob({ ...props }) {
       if (item.isActive) {
         tempdata.push(item);
         tempsublobFilterOpts.push({
-          title: item.subLOBName,
+          label: item.subLOBName,
           value: item.subLOBID,
         });
         if (!tempLobListObj[item.lobid]) {
@@ -177,20 +171,20 @@ function Sublob({ ...props }) {
             lob: item.lobid,
             sublob: [
               {
-                title: item.subLOBName,
+                label: item.subLOBName,
                 value: item.subLOBID,
               },
             ],
           });
           templobFilterOpts.push({
-            title: item.lobName,
+            label: item.lobName,
             value: item.lobid,
           });
         } else {
           tempLobMapping.forEach((lobitem) => {
             if (lobitem.lob === item.lobid) {
               lobitem.sublob.push({
-                title: item.subLOBName,
+                label: item.subLOBName,
                 value: item.subLOBID,
               });
             }
@@ -201,34 +195,26 @@ function Sublob({ ...props }) {
     });
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-    tempsublobFilterOpts.sort(dynamicSort("title"));
-    templobFilterOpts.sort(dynamicSort("title"));
-    setsublobFilterOpts([
-      { title: "Select", value: "" },
-      ...tempsublobFilterOpts,
-    ]);
-    setsublobFilterAllOpts([
-      { title: "Select", value: "" },
-      ...tempsublobFilterOpts,
-    ]);
-    setlobFilterOpts([{ title: "Select", value: "" }, ...templobFilterOpts]);
+    tempsublobFilterOpts.sort(dynamicSort("label"));
+    templobFilterOpts.sort(dynamicSort("label"));
+    setsublobFilterOpts([...tempsublobFilterOpts]);
+    setsublobFilterAllOpts([...tempsublobFilterOpts]);
+    setlobFilterOpts([...templobFilterOpts]);
     setlobmapping([...tempLobMapping]);
   }, [sublobState.items]);
 
-  const [frmLobSelectOpts, setfrmLobSelectOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [frmLobSelectOpts, setfrmLobSelectOpts] = useState([]);
   useEffect(() => {
     let lobselectOpts = [];
-    lobselectOpts = sublobState.lobItems.map((item) => {
+    lobselectOpts = lobState.lobItems.map((item) => {
       return {
-        title: item.lobName,
+        label: item.lobName,
         value: item.lobid,
       };
     });
-    lobselectOpts.sort(dynamicSort("title"));
-    setfrmLobSelectOpts([{ title: "Select", value: "" }, ...lobselectOpts]);
-  }, [sublobState.lobItems]);
+    lobselectOpts.sort(dynamicSort("label"));
+    setfrmLobSelectOpts([...lobselectOpts]);
+  }, [lobState.lobItems]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -286,6 +272,7 @@ function Sublob({ ...props }) {
           : userProfile.userId,
       });
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.sublob.update);
@@ -311,6 +298,7 @@ function Sublob({ ...props }) {
         isActive: true,
       });
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.sublob.add);
@@ -340,20 +328,24 @@ function Sublob({ ...props }) {
       <div className="page-title">Manage Sub-LoB</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"LoB"}
-            name={"lob"}
-            selectopts={lobFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.lob}
-          />
-          <Dropdown
-            label={"Sub-LoB"}
-            name={"sublob"}
-            selectopts={sublobFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.sublob}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"LoB"}
+              name={"lob"}
+              selectopts={lobFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.lob}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Sub-LoB"}
+              name={"sublob"}
+              selectopts={sublobFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.sublob}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -381,7 +373,7 @@ function Sublob({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New Sub-LoB"}
+            buttonTitle={"New Sub-LoB"}
           />
         )}
       </div>
@@ -408,7 +400,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: sublobActions.getAll,
-  getAlllob: sublobActions.getAlllob,
+  getAlllob: lobActions.getAlllob,
   getById: sublobActions.getById,
   checkNameExist: sublobActions.checkNameExist,
   checkIsInUse: sublobActions.checkIsInUse,

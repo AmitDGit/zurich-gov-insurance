@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import FrmInput from "../../common-components/FrmInput";
-import FrmSelect from "../../common-components/FrmSelect";
-import FrmTextArea from "../../common-components/FrmTextArea";
-import FrmMultiselect from "../../common-components/FrmMultiselect";
+import FrmInput from "../../common-components/frminput/FrmInput";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
+import FrmMultiselect from "../../common-components/frmmultiselect/FrmMultiselect";
 import Popup from "../../common-components/Popup";
 import { connect } from "react-redux";
-import FrmInputSearch from "../../common-components/FrmInputSearch";
+import FrmInputSearch from "../../common-components/frmpeoplepicker/FrmInputSearch";
 import { userActions } from "../../../actions";
-import FrmRadio from "../../common-components/FrmRadio";
-import FrmCheckbox from "../../common-components/FrmCheckbox";
+import FrmRadio from "../../common-components/frmradio/FrmRadio";
+import FrmCheckbox from "../../common-components/frmcheckbox/FrmCheckbox";
 function AddEditForm(props) {
   const {
     title,
@@ -33,13 +33,13 @@ function AddEditForm(props) {
   const [isdisabled, setisdisabled] = useState(false);
   const [accessBreachLogOpts, setaccessBreachLogOpts] = useState([
     {
-      title: "",
+      label: "",
       value: true,
     },
   ]);
   const [isSuperAdminOpts, setisSuperAdminOpts] = useState([
     {
-      title: "",
+      label: "",
       value: true,
     },
   ]);
@@ -60,7 +60,7 @@ function AddEditForm(props) {
         ...formfield,
         regionList: [],
         countryList: [],
-        userType: "SuperAdmin",
+        userType: "Super Admin",
         isAccessBreachLog: false,
       });
       setisdisabled(true);
@@ -96,7 +96,7 @@ function AddEditForm(props) {
     if (tempmapObj.length) {
       for (let i = 0; i < tempmapObj.length; i++) {
         tempmapObj[i].country.forEach((item) => {
-          countryopts.push({ title: item.title, value: item.value });
+          countryopts.push({ label: item.label, value: item.value });
         });
       }
     }
@@ -170,7 +170,7 @@ function AddEditForm(props) {
                 singleSelection={true}
                 isRequired={true}
                 isEditMode={isEditMode}
-                validationmsg={"required field"}
+                validationmsg={"Mandatory field"}
                 issubmitted={issubmitted}
                 handleInputSearchChange={handleInputSearchChange}
                 searchItems={userState.userItems ? userState.userItems : []}
@@ -182,7 +182,7 @@ function AddEditForm(props) {
                   value={formfield.isSuperAdmin}
                   handleChange={handleChange}
                   isRequired={false}
-                  validationmsg={"Required field"}
+                  validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
                   selectopts={accessBreachLogOpts}
                 />
@@ -192,7 +192,7 @@ function AddEditForm(props) {
                   value={formfield.isAccessBreachLog}
                   handleChange={handleChange}
                   isRequired={false}
-                  validationmsg={"Required field"}
+                  validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
                   selectopts={accessBreachLogOpts}
                   isdisabled={isdisabled}
@@ -204,7 +204,7 @@ function AddEditForm(props) {
                 value={formfield.userType}
                 handleChange={handleChange}
                 isRequired={true}
-                validationmsg={"Required field"}
+                validationmsg={"Mandatory field"}
                 issubmitted={issubmitted}
                 selectopts={frmuserType}
                 isdisabled={isdisabled}
@@ -217,7 +217,7 @@ function AddEditForm(props) {
                   value={formfield.regionList}
                   handleChange={handleMultiSelectChange}
                   isRequired={true}
-                  validationmsg={"Required field"}
+                  validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
                   selectopts={frmRegionSelectOpts}
                 />
@@ -231,7 +231,7 @@ function AddEditForm(props) {
                   value={formfield.countryList}
                   handleChange={handleMultiSelectChange}
                   isRequired={true}
-                  validationmsg={"Required field"}
+                  validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
                   selectopts={countryopts}
                 />

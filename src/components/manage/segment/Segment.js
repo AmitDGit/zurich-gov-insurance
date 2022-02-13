@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { segmentActions } from "../../../actions";
+import { segmentActions, countryActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
 function Segment({ ...props }) {
-  const { segmentState } = props.state;
+  const { segmentState, countryState } = props.state;
   const {
     getAll,
     getAllCountry,
@@ -21,18 +21,15 @@ function Segment({ ...props }) {
   } = props;
   useSetNavMenu({ currentMenu: "Segment", isSubmenu: true }, props.menuClick);
   //initialize filter/search functionality
-  const [countryFilterOpts, setcountryFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [segmentFilterOpts, setsegmentFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [selfilter, setselfilter] = useState({
+  const [countryFilterOpts, setcountryFilterOpts] = useState([]);
+  const [segmentFilterOpts, setsegmentFilterOpts] = useState([]);
+  const intialfilterval = {
     segment: "",
     country: "",
-  });
-  const onSearchFilterSelect = (e) => {
-    const { name, value } = e.target;
+  };
+  const [selfilter, setselfilter] = useState(intialfilterval);
+  const onSearchFilterSelect = (name, value) => {
+    //const { name, value } = e.target;
     setselfilter({
       ...selfilter,
       [name]: value,
@@ -65,7 +62,7 @@ function Segment({ ...props }) {
     }
   };
   const clearFilter = () => {
-    setselfilter({ segment: "", country: "" });
+    setselfilter(intialfilterval);
     setpaginationdata(data);
   };
   //set pagination data and functionality
@@ -124,7 +121,7 @@ function Segment({ ...props }) {
     },
     {
       dataField: "segmentDescription",
-      text: "Segment Description",
+      text: "Description",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "350px" };
@@ -155,7 +152,7 @@ function Segment({ ...props }) {
       if (item.isActive) {
         tempdata.push(item);
         tempsegmentFilterOpts.push({
-          title: item.segmentName,
+          label: item.segmentName,
           value: item.segmentID,
         });
         let coutrylist = item.countryList;
@@ -165,7 +162,7 @@ function Segment({ ...props }) {
             let tempItem = countryItem.trim();
             if (!tempCountryObj[tempItem]) {
               tempCountryFilterOpts.push({
-                title: tempItem,
+                label: tempItem,
                 value: tempItem,
               });
             }
@@ -174,18 +171,12 @@ function Segment({ ...props }) {
         }
       }
     });
-    tempsegmentFilterOpts.sort(dynamicSort("title"));
-    tempCountryFilterOpts.sort(dynamicSort("title"));
+    tempsegmentFilterOpts.sort(dynamicSort("label"));
+    tempCountryFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-    setsegmentFilterOpts([
-      { title: "Select", value: "" },
-      ...tempsegmentFilterOpts,
-    ]);
-    setcountryFilterOpts([
-      { title: "Select", value: "" },
-      ...tempCountryFilterOpts,
-    ]);
+    setsegmentFilterOpts([...tempsegmentFilterOpts]);
+    setcountryFilterOpts([...tempCountryFilterOpts]);
   }, [segmentState.items]);
 
   const [frmCountrySelectOpts, setfrmCountrySelectOpts] = useState([]);
@@ -194,20 +185,20 @@ function Segment({ ...props }) {
     let countryselectOpts = [];
     let tempCountryObj = {};
 
-    segmentState.countryItems.forEach((item) => {
+    countryState.countryItems.forEach((item) => {
       countryselectOpts.push({
-        title: item.countryName.trim(),
+        label: item.countryName.trim(),
         value: item.countryID,
       });
       tempCountryObj[item.countryID] = item.countryName.trim();
     });
     setfrmCountrySelectOpts([
-      { title: "All", value: "*" },
+      { label: "All", value: "*" },
       ...countryselectOpts,
     ]);
 
     setcountryObj(tempCountryObj);
-  }, [segmentState.countryItems]);
+  }, [countryState.countryItems]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -236,12 +227,22 @@ function Segment({ ...props }) {
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
     const response = await getById({ SegmentID: itemid });
-    let selectedCountryList = response.segmentCountryList.map((item) => {
-      return { title: item.countryName, value: item.countryID };
-    });
-    if (selectedCountryList.length == frmCountrySelectOpts.length - 1) {
+    debugger;
+    let selectedCountryList = [];
+    if (response.segmentCountryList) {
+      selectedCountryList = response.segmentCountryList.map((item) => {
+        return {
+          label: item.countryName,
+          value: item.countryID,
+        };
+      });
+    }
+    if (
+      selectedCountryList.length &&
+      selectedCountryList.length == frmCountrySelectOpts.length - 1
+    ) {
       selectedCountryList = [
-        { title: "All", value: "*" },
+        { label: "All", value: "*" },
         ...selectedCountryList,
       ];
     }
@@ -333,20 +334,24 @@ function Segment({ ...props }) {
       <div className="page-title">Manage Segment</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"Segment"}
-            name={"segment"}
-            selectopts={segmentFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.segment}
-          />
-          <Dropdown
-            label={"Country"}
-            name={"country"}
-            selectopts={countryFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.country}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Segment"}
+              name={"segment"}
+              selectopts={segmentFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.segment}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Country"}
+              name={"country"}
+              selectopts={countryFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.country}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -376,7 +381,7 @@ function Segment({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New Segment"}
+            buttonTitle={"New Segment"}
           />
         )}
       </div>
@@ -403,7 +408,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: segmentActions.getAll,
-  getAllCountry: segmentActions.getAllCountry,
+  getAllCountry: countryActions.getAllCountry,
   getById: segmentActions.getById,
   checkNameExist: segmentActions.checkNameExist,
   checkIsInUse: segmentActions.checkIsInUse,
