@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { countryActions } from "../../../actions";
+import { countryActions, regionActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
 function Country({ ...props }) {
-  const { countryState } = props.state;
+  const { countryState, regionState } = props.state;
   const {
     getAll,
     getAllRegions,
@@ -20,28 +20,22 @@ function Country({ ...props }) {
     userProfile,
   } = props;
   useSetNavMenu({ currentMenu: "Country", isSubmenu: true }, props.menuClick);
-  console.log(countryState);
   //initialize filter/search functionality
-  const [countryFilterOpts, setcountryFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [countryFilterOpts, setcountryFilterOpts] = useState([]);
   const [countryFilterAllOpts, setcountryFilterAllOpts] = useState([]);
-  const [regionFilterOpts, setregionFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [regionFilterOpts, setregionFilterOpts] = useState([]);
   const [countrymapping, setcountrymapping] = useState([]);
   const intialfilterval = {
     country: "",
     region: "",
   };
   const [selfilter, setselfilter] = useState(intialfilterval);
-  const onSearchFilterSelect = (e) => {
-    const { name, value } = e.target;
+  const onSearchFilterSelect = (name, value) => {
+    //const { name, value } = e.target;
     setselfilter({
       ...selfilter,
       [name]: value,
     });
-    console.log(selfilter);
   };
   const handleFilterSearch = () => {
     if (selfilter.country !== "" || selfilter.region !== "") {
@@ -79,12 +73,15 @@ function Country({ ...props }) {
         }
       });
       setcountryFilterOpts([
-        { title: "Select", value: "" },
-        ...tempFilterOpts[0].country.sort(dynamicSort("title")),
+        ...tempFilterOpts[0].country.sort(dynamicSort("label")),
       ]);
     } else {
       setcountryFilterOpts([...countryFilterAllOpts]);
     }
+    setselfilter({
+      ...selfilter,
+      country: "",
+    });
   }, [selfilter.region]);
   //set pagination data and functionality
   const [data, setdata] = useState([]);
@@ -174,19 +171,19 @@ function Country({ ...props }) {
       if (item.isActive) {
         tempdata.push(item);
         tempCountryFilterOpts.push({
-          title: item.countryName,
+          label: item.countryName,
           value: item.countryID,
         });
         if (!tempRegionListObj[item.regionID]) {
           tempRegionFilterOpts.push({
-            title: item.regionName,
+            label: item.regionName,
             value: item.regionID,
           });
           tempCountryMapping.push({
             region: item.regionID,
             country: [
               {
-                title: item.countryName,
+                label: item.countryName,
                 value: item.countryID,
               },
             ],
@@ -195,7 +192,7 @@ function Country({ ...props }) {
           tempCountryMapping.forEach((countryitem) => {
             if (countryitem.region === item.regionID) {
               countryitem.country.push({
-                title: item.countryName,
+                label: item.countryName,
                 value: item.countryID,
               });
             }
@@ -206,39 +203,25 @@ function Country({ ...props }) {
     });
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-    tempCountryFilterOpts.sort(dynamicSort("title"));
-    tempRegionFilterOpts.sort(dynamicSort("title"));
-    setcountryFilterOpts([
-      { title: "Select", value: "" },
-      ...tempCountryFilterOpts,
-    ]);
-    setcountryFilterAllOpts([
-      { title: "Select", value: "" },
-      ...tempCountryFilterOpts,
-    ]);
-    setregionFilterOpts([
-      { title: "Select", value: "" },
-      ...tempRegionFilterOpts,
-    ]);
+    tempCountryFilterOpts.sort(dynamicSort("label"));
+    tempRegionFilterOpts.sort(dynamicSort("label"));
+    setcountryFilterOpts([...tempCountryFilterOpts]);
+    setcountryFilterAllOpts([...tempCountryFilterOpts]);
+    setregionFilterOpts([...tempRegionFilterOpts]);
     setcountrymapping([...tempCountryMapping]);
   }, [countryState.items]);
 
-  const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([]);
   useEffect(() => {
     let regionselectOpts = [];
-    regionselectOpts = countryState.regionItems.map((item) => {
+    regionselectOpts = regionState.regionItems.map((item) => {
       return {
-        title: item.regionName,
+        label: item.regionName,
         value: item.regionID,
       };
     });
-    setfrmRegionSelectOpts([
-      { title: "Select", value: "" },
-      ...regionselectOpts,
-    ]);
-  }, [countryState.regionItems]);
+    setfrmRegionSelectOpts([...regionselectOpts]);
+  }, [regionState.regionItems]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -296,6 +279,7 @@ function Country({ ...props }) {
           : userProfile.userId,
       });
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.country.update);
@@ -321,6 +305,7 @@ function Country({ ...props }) {
         isActive: true,
       });
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.country.add);
@@ -350,20 +335,24 @@ function Country({ ...props }) {
       <div className="page-title">Manage Country</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"Region"}
-            name={"region"}
-            selectopts={regionFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.region}
-          />
-          <Dropdown
-            label={"Country"}
-            name={"country"}
-            selectopts={countryFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.country}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Region"}
+              name={"region"}
+              selectopts={regionFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.region}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Country"}
+              name={"country"}
+              selectopts={countryFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.country}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -393,7 +382,7 @@ function Country({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New Country"}
+            buttonTitle={"New Country"}
           />
         )}
       </div>
@@ -420,7 +409,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: countryActions.getAll,
-  getAllRegions: countryActions.getAllRegions,
+  getAllRegions: regionActions.getAllRegions,
   getById: countryActions.getById,
   checkNameExist: countryActions.checkNameExist,
   checkIsInUse: countryActions.checkIsInUse,

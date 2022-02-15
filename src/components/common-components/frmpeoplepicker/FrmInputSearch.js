@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { connect } from "react-redux";
 import { debounce } from "lodash";
-import { lobActions } from "../../actions";
-import UserProfile from "./UserProfile";
+import { lobActions } from "../../../actions";
+import UserProfile from "../UserProfile";
+import "./Style.css";
 function FrmInputSearch(props) {
   const {
     title,
@@ -89,9 +90,12 @@ function FrmInputSearch(props) {
   const inputRef = useRef(null);
   useOutsideAlerter(wrapperRef);
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>{title}</label>
+    <div className={`frm-field people-picker ${isRequired ? "mandatory" : ""}`}>
+      <label htmlFor={name}>
+        <div className="label">{title}</div>
+      </label>
       <input
+        className={`${showsearchResultBox ? "open" : ""}`}
         autocomplete="off"
         type={type}
         name={name}
@@ -99,7 +103,7 @@ function FrmInputSearch(props) {
         disabled={isEditMode}
         ref={inputRef}
       ></input>
-      {isRequired && issubmitted && !value ? (
+      {isRequired && issubmitted && !value.length ? (
         <div className="validationError">{validationmsg}</div>
       ) : (
         ""
@@ -120,6 +124,12 @@ function FrmInputSearch(props) {
               </div>
             </div>
           ))}
+        </div>
+      ) : showsearchResultBox ? (
+        <div className="searched-container" ref={wrapperRef}>
+          <div className="user-view">
+            <i>No result found</i>
+          </div>
         </div>
       ) : (
         ""
@@ -166,7 +176,7 @@ function FrmInputSearch(props) {
   }
 }
 
-export default FrmInputSearch;
+export default React.memo(FrmInputSearch);
 /*const mapStateToProp = (state) => {
   return {
     lobState: state.lobState,

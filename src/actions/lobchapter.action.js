@@ -21,22 +21,7 @@ const getAll = (requestParam) => {
     }
   };
 };
-const getAllLob = (requestParam) => {
-  const success = (data) => {
-    return { type: lobchapterConstants.GETALLLOB_SUCCESS, payload: data };
-  };
-  const failure = (error) => {
-    return { type: lobchapterConstants.GETALLLOB_FAILURE, payload: error };
-  };
-  return async (dispatch) => {
-    try {
-      const response = await lobchapterService.getAllLobService(requestParam);
-      dispatch(success(response.data));
-    } catch (err) {
-      dispatch(failure(err));
-    }
-  };
-};
+
 const getById = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -91,7 +76,6 @@ const deleteItem = (requestParam) => {
 };
 export const lobchapterActions = {
   getAll,
-  getAllLob,
   getById,
   checkNameExist,
   checkIsInUse,
@@ -101,11 +85,6 @@ export const lobchapterActions = {
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`lobchapter/getalllobchapterlist`, param);
-  return response;
-};
-const getAllLobService = async (requestParam) => {
-  const param = { params: requestParam };
-  const response = await Axios.get(`lob/getalllob`, param);
   return response;
 };
 const getByIdService = async (requestParam) => {
@@ -137,7 +116,6 @@ const deleteItemService = async (requestParam) => {
 };
 const lobchapterService = {
   getAllService,
-  getAllLobService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,

@@ -2,7 +2,7 @@ import { sublobConstants } from "../constants";
 const initialState = {
   loading: true,
   items: [],
-  lobItems: [],
+  sublobitems: [],
   error: "",
 };
 export const sublobReducer = (state = initialState, action) => {
@@ -10,6 +10,7 @@ export const sublobReducer = (state = initialState, action) => {
     case sublobConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case sublobConstants.GETALL_SUCCESS:
@@ -25,15 +26,16 @@ export const sublobReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload,
       };
-    case sublobConstants.GETALLLOB_SUCCESS:
+    case sublobConstants.GETALLSUBLOB_SUCCESS:
       return {
         ...state,
-        lobItems: action.payload,
+        sublobitems: action.payload,
       };
-    case sublobConstants.GETALLLOB_FAILURE:
+    case sublobConstants.GETALLSUBLOB_FAILURE:
       return {
         ...state,
-        lobItems: [],
+        sublobitems: [],
+        error: action.payload,
       };
     default:
       return state;

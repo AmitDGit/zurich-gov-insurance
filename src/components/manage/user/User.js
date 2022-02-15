@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { userActions } from "../../../actions";
+import { userActions, countryActions, regionActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditForm";
 import UserProfile from "../../common-components/UserProfile";
+import FrmInput from "../../common-components/frminput/FrmInput";
 import InputFilter from "../../common-components/InputFilter";
 
 function User({ ...props }) {
-  const { userState } = props.state;
+  const { userState, countryState, regionState } = props.state;
   const {
     getAll,
     getAllUsers,
@@ -27,19 +28,12 @@ function User({ ...props }) {
     userProfile,
   } = props;
 
-  console.log(userState);
   useSetNavMenu({ currentMenu: "User", isSubmenu: true }, props.menuClick);
   //initialize filter/search functionality
-  const [countryFilterOpts, setcountryFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [countryFilterOpts, setcountryFilterOpts] = useState([]);
   const [countryAllOpts, setcountryAllOpts] = useState([]);
-  const [regionFilterOpts, setregionFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [userTypeFilterOpts, setuserTypeFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
+  const [regionFilterOpts, setregionFilterOpts] = useState([]);
+  const [userTypeFilterOpts, setuserTypeFilterOpts] = useState([]);
   const intialFilterState = {
     username: "",
     email: "",
@@ -48,28 +42,35 @@ function User({ ...props }) {
     usertype: "",
   };
   const [selfilter, setselfilter] = useState(intialFilterState);
-  const onSearchFilterSelect = (e) => {
+  const onSearchFilterInput = (e) => {
     const { name, value } = e.target;
+    setselfilter({
+      ...selfilter,
+      [name]: value,
+    });
+  };
+  const onSearchFilterSelect = (name, value) => {
+    //const { name, value } = e.target;
     setselfilter({
       ...selfilter,
       [name]: value,
     });
 
     if (name === "region" && value !== "") {
-      let region = frmRegionSelectOpts.filter((item) => item.title === value);
+      let region = frmRegionSelectOpts.filter((item) => item.label === value);
       let tempmapObj = countrymapping.filter(
         (item) => item.region === region[0].value
       );
       let countryopts = tempmapObj[0].country.map((item) => {
-        return { title: item.title, value: item.title };
+        return { label: item.label, value: item.label };
       });
 
-      setcountryFilterOpts([{ title: "Select", value: "" }, ...countryopts]);
+      setcountryFilterOpts([...countryopts]);
     } else if (name === "region" && value === "") {
       let countryopts = countryAllOpts.map((item) => {
-        return { title: item.title, value: item.title };
+        return { label: item.label, value: item.label };
       });
-      setcountryFilterOpts([{ title: "Select", value: "" }, ...countryopts]);
+      setcountryFilterOpts([...countryopts]);
     }
   };
   const handleFilterSearch = () => {
@@ -265,7 +266,7 @@ function User({ ...props }) {
         let tempItem = regionitem.trim();
         if (!tempRegionObj[tempItem]) {
           tempregionFilterOpts.push({
-            title: tempItem,
+            label: tempItem,
             value: tempItem,
           });
         }
@@ -278,7 +279,7 @@ function User({ ...props }) {
           let tempItem = countryItem.trim();
           if (!tempCountryObj[tempItem]) {
             tempCountryFilterOpts.push({
-              title: tempItem,
+              label: tempItem,
               value: tempItem,
             });
           }
@@ -290,14 +291,14 @@ function User({ ...props }) {
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
 
-    /*tempregionFilterOpts.sort(dynamicSort("title"));
-    tempCountryFilterOpts.sort(dynamicSort("title"));
+    /*tempregionFilterOpts.sort(dynamicSort("label"));
+    tempCountryFilterOpts.sort(dynamicSort("label"));
     setregionFilterOpts([
-      { title: "Select", value: "" },
+      { label: "Select", value: "" },
       ...tempregionFilterOpts,
     ]);
     setcountryFilterOpts([
-      { title: "Select", value: "" },
+      { label: "Select", value: "" },
       ...tempCountryFilterOpts,
     ]);*/
   }, [userState.items]);
@@ -312,13 +313,13 @@ function User({ ...props }) {
     let tempCountryMapping = [];
     let tempRegionListObj = {};
 
-    userState.countryItems.forEach((item) => {
+    countryState.countryItems.forEach((item) => {
       selectOpts.push({
-        title: item.countryName.trim(),
+        label: item.countryName.trim(),
         value: item.countryID,
       });
       selectFilterOpts.push({
-        title: item.countryName.trim(),
+        label: item.countryName.trim(),
         value: item.countryName.trim(),
       });
       if (!tempRegionListObj[item.regionID]) {
@@ -326,7 +327,7 @@ function User({ ...props }) {
           region: item.regionID,
           country: [
             {
-              title: item.countryName,
+              label: item.countryName,
               value: item.countryID,
             },
           ],
@@ -335,7 +336,7 @@ function User({ ...props }) {
         tempCountryMapping.forEach((countryitem) => {
           if (countryitem.region === item.regionID) {
             countryitem.country.push({
-              title: item.countryName,
+              label: item.countryName,
               value: item.countryID,
             });
           }
@@ -343,51 +344,55 @@ function User({ ...props }) {
       }
       tempRegionListObj[item.regionID] = item.countryName;
     });
-    selectOpts.sort(dynamicSort("title"));
+    selectOpts.sort(dynamicSort("label"));
     setfrmCountrySelectOpts([...selectOpts]);
     setcountryAllOpts([...selectOpts]);
-    setcountryFilterOpts([{ title: "Select", value: "" }, ...selectFilterOpts]);
+    setcountryFilterOpts([...selectFilterOpts]);
 
     setcountrymapping([...tempCountryMapping]);
-  }, [userState.countryItems]);
+  }, [countryState.countryItems]);
 
   const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([]);
   useEffect(() => {
     let selectOpts = [];
     let selectFilterOpts = [];
-    userState.regionItems.forEach((item) => {
+    regionState.regionItems.forEach((item) => {
       selectOpts.push({
-        title: item.regionName.trim(),
+        label: item.regionName.trim(),
         value: item.regionID,
       });
       selectFilterOpts.push({
-        title: item.regionName.trim(),
+        label: item.regionName.trim(),
         value: item.regionName.trim(),
       });
     });
-    selectOpts.sort(dynamicSort("title"));
-    selectFilterOpts.sort(dynamicSort("title"));
+    selectOpts.sort(dynamicSort("label"));
+    selectFilterOpts.sort(dynamicSort("label"));
     setfrmRegionSelectOpts([...selectOpts]);
-    setregionFilterOpts([{ title: "Select", value: "" }, ...selectFilterOpts]);
-  }, [userState.regionItems]);
+    setregionFilterOpts([...selectFilterOpts]);
+  }, [regionState.regionItems]);
 
   useEffect(() => {
     let tempuserroles = [];
     let tempfilterroles = [];
     let tempObj = {};
     userState.userRoles.forEach((item) => {
-      if (item.roleName !== "SuperAdmin") {
-        tempuserroles.push({
-          title: item.roleName,
-          value: item.roleId,
-        });
-      }
-      tempObj[item.roleId] = item.roleName;
-      tempfilterroles.push({ title: item.roleName, value: item.roleName });
+      //if (item.roleName !== "SuperAdmin") {
+      tempuserroles.push({
+        label: item.displayRole,
+        value: item.roleId,
+      });
+      // }
+      tempObj[item.roleId] = item.displayRole;
+      tempfilterroles.push({
+        label: item.displayRole,
+        value: item.displayRole,
+      });
     });
+
     setfrmuserType([...tempuserroles]);
     setfrmuserTypeObj(tempObj);
-    setuserTypeFilterOpts([{ title: "Select", value: "" }, ...tempfilterroles]);
+    setuserTypeFilterOpts([...tempfilterroles]);
   }, [userState.userRoles]);
   /* Add Edit Delete functionality & show popup*/
 
@@ -417,7 +422,7 @@ function User({ ...props }) {
 
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-
+    debugger;
     const response = await getById({ UserId: itemid });
     const user = [
       {
@@ -429,13 +434,13 @@ function User({ ...props }) {
     ];
     const regionList = response.regionDataList.map((item) => {
       return {
-        title: item.regionName.trim(),
+        label: item.regionName.trim(),
         value: item.regionID.trim(),
       };
     });
     const countryList = response.countryDataList.map((item) => {
       return {
-        title: item.countryName.trim(),
+        label: item.countryName.trim(),
         value: item.countryID.trim(),
       };
     });
@@ -459,6 +464,13 @@ function User({ ...props }) {
     tempcountryList = tempcountryList.join(",");
     let tempregionList = item.regionList.map((item) => item.value);
     tempregionList = tempregionList.join(",");
+    if (item.isSuperAdmin) {
+      for (let i = 0; i < frmuserType.length; i++) {
+        if (frmuserType[i]["label"] === "Super Admin") {
+          item.userType = frmuserType[i]["value"];
+        }
+      }
+    }
     let response = await postItem({
       userId: userId,
       firstName: firstName,
@@ -472,6 +484,7 @@ function User({ ...props }) {
       PreviousRoleID: item.PreviousRoleID,
     });
     if (response) {
+      setselfilter(intialFilterState);
       getAll({ RequesterUserId: userProfile.userId });
       hideAddPopup();
       alert(alertMessage.user.update);
@@ -489,7 +502,7 @@ function User({ ...props }) {
     tempregionList = tempregionList.join(",");
     if (item.isSuperAdmin) {
       for (let i = 0; i < frmuserType.length; i++) {
-        if (frmuserType[i]["title"] === "SuperAdmin") {
+        if (frmuserType[i]["label"] === "Super Admin") {
           item.userType = frmuserType[i]["value"];
         }
       }
@@ -508,6 +521,7 @@ function User({ ...props }) {
       });
 
       if (response) {
+        setselfilter(intialFilterState);
         getAll({ RequesterUserId: userProfile.userId });
         hideAddPopup();
         alert(alertMessage.user.add);
@@ -544,41 +558,51 @@ function User({ ...props }) {
       <div className="page-title">Manage User</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"Region"}
-            name={"region"}
-            selectopts={regionFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.region}
-          />
-          <Dropdown
-            label={"Country"}
-            name={"country"}
-            selectopts={countryFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.country}
-          />
-          <Dropdown
-            label={"User Access"}
-            name={"usertype"}
-            selectopts={userTypeFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.usertype}
-          />
-          <InputFilter
-            label={"User"}
-            name={"username"}
-            type={"input"}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.username}
-          />
-          <InputFilter
-            label={"Email"}
-            name={"email"}
-            type={"input"}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.email}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Region"}
+              name={"region"}
+              selectopts={regionFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.region}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Country"}
+              name={"country"}
+              selectopts={countryFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.country}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Type of User"}
+              name={"usertype"}
+              selectopts={userTypeFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.usertype}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmInput
+              title={"User"}
+              name={"username"}
+              type={"input"}
+              handleChange={onSearchFilterInput}
+              value={selfilter.username}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmInput
+              title={"Email"}
+              name={"email"}
+              type={"input"}
+              handleChange={onSearchFilterInput}
+              value={selfilter.email}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -612,7 +636,7 @@ function User({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New User"}
+            buttonTitle={"New User"}
             hidesearch={true}
           />
         )}
@@ -622,7 +646,9 @@ function User({ ...props }) {
           title={"Add/Edit User"}
           frmCountrySelectOpts={frmCountrySelectOpts}
           frmRegionSelectOpts={frmRegionSelectOpts}
-          frmuserType={frmuserType}
+          frmuserType={frmuserType.filter(
+            (item) => item.label !== "Super Admin"
+          )}
           frmuserTypeObj={frmuserTypeObj}
           countrymapping={countrymapping}
           countryAllOpts={countryAllOpts}
@@ -646,8 +672,8 @@ const mapStateToProp = (state) => {
 const mapActions = {
   getAll: userActions.getAll,
   getAllUsers: userActions.getAllUsers,
-  getAllCountry: userActions.getAllCountry,
-  getAllRegion: userActions.getAllRegion,
+  getAllCountry: countryActions.getAllCountry,
+  getAllRegion: regionActions.getAllRegions,
   getAllSpecialUsers: userActions.getAllSpecialUsers,
   getAllUsersRoles: userActions.getAllUsersRoles,
   getById: userActions.getById,

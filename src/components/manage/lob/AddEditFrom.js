@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import FrmInput from "../../common-components/FrmInput";
-import FrmSelect from "../../common-components/FrmSelect";
-import FrmTextArea from "../../common-components/FrmTextArea";
-import FrmMultiselect from "../../common-components/FrmMultiselect";
+import FrmInput from "../../common-components/frminput/FrmInput";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
+import FrmMultiselect from "../../common-components/frmmultiselect/FrmMultiselect";
 import Popup from "../../common-components/Popup";
 import { connect } from "react-redux";
 import { lobActions } from "../../../actions";
-import FrmInputSearch from "../../common-components/FrmInputSearch";
+import FrmInputSearch from "../../common-components/frmpeoplepicker/FrmInputSearch";
 function AddEditForm(props) {
   const {
     title,
@@ -19,7 +19,7 @@ function AddEditForm(props) {
     getAllApprover,
     lobState,
   } = props;
-  console.log(formIntialState);
+  console.log(lobState.approverUsers);
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [selectedTab, setselectedTab] = useState("tab1");
@@ -37,7 +37,6 @@ function AddEditForm(props) {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    debugger;
     setissubmitted(true);
     if (formfield.lobName && formfield.countryList.length) {
       if (isEditMode) {
@@ -62,7 +61,7 @@ function AddEditForm(props) {
             X
           </div>
         </div>
-        <div className="frm-tabs-container">
+        <div className="tabs-container">
           <div
             className={`tab-btn ${
               selectedTab === "tab1" ? "selected" : "normal"

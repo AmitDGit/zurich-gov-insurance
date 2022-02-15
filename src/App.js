@@ -18,6 +18,7 @@ import User from "./components/manage/user/User";
 import Lookup from "./components/manage/lookup/Lookup";
 import Lobchapter from "./components/manage/lobchapter/Lobchapter";
 import Testcomponent from "./components/manage/testcomponent/Testcomponent";
+import Breachlog from "./components/breachlog/Breachlog";
 import { PrivateRoute } from "./components/privateroute/PrivateRoute";
 import { connect } from "react-redux";
 import { appmenuActions } from "./actions/appmenu.action";
@@ -90,6 +91,11 @@ function App({ state, menuClick }) {
                 <PrivateRoute
                   path="/user"
                   component={User}
+                  menuClick={menuClick}
+                />
+                <PrivateRoute
+                  path="/breachlogs"
+                  component={Breachlog}
                   menuClick={menuClick}
                 />
                 <Route

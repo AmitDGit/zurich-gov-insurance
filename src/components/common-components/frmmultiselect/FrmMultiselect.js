@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Multiselect from "multiselect-react-dropdown";
+import "./Style.css";
 function FrmMultiselect(props) {
   const {
     title,
@@ -45,17 +46,21 @@ function FrmMultiselect(props) {
     setselectedItems([...tempItems]);
     handleChange(name, [...tempItems]);
   };
+  const onClickHandle = () => {};
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>{title}</label>
+      <label htmlFor={name}>
+        <div className="label">{title}</div>
+      </label>
       <Multiselect
         className="custom-multiselect"
         options={selectopts}
-        displayValue="title"
+        displayValue="label"
         hidePlaceholder={false}
         showCheckbox={true}
         placeholder="Select"
         selectedValues={selectedItems}
+        onClick={onClickHandle}
         onSelect={onSelect}
         onRemove={onRemove}
       ></Multiselect>
@@ -67,7 +72,7 @@ function FrmMultiselect(props) {
       <div className="multi-selected-opts-container">
         {selectopts.length && selectedItems.length === selectopts.length ? (
           <div className="multi-selected-opts" key={selectopts[0].value}>
-            <div>{selectopts[0].title}</div>
+            <div>{selectopts[0].label}</div>
             <div
               className="delete-icon"
               onClick={() => removeSelectedItem(selectopts[0].value)}
@@ -76,7 +81,7 @@ function FrmMultiselect(props) {
         ) : (
           selectedItems.map((item) => (
             <div className="multi-selected-opts" key={item.value}>
-              <div>{item.title}</div>
+              <div>{item.label}</div>
               <div
                 className="delete-icon"
                 onClick={() => removeSelectedItem(item.value)}

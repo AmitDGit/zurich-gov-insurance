@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { lobActions } from "../../../actions";
+import { lobActions, countryActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
 import UserProfile from "../../common-components/UserProfile";
 
 function Lob({ ...props }) {
-  const { lobState } = props.state;
+  const { lobState, countryState } = props.state;
   const {
     getAll,
     getAllCountry,
@@ -22,20 +22,18 @@ function Lob({ ...props }) {
     deleteItem,
     userProfile,
   } = props;
+
   useSetNavMenu({ currentMenu: "Lob", isSubmenu: true }, props.menuClick);
   //initialize filter/search functionality
-  const [countryFilterOpts, setcountryFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [lobFilterOpts, setlobFilterOpts] = useState([
-    { title: "Select", value: "" },
-  ]);
-  const [selfilter, setselfilter] = useState({
+  const [countryFilterOpts, setcountryFilterOpts] = useState([]);
+  const [lobFilterOpts, setlobFilterOpts] = useState([]);
+  const intialfilterval = {
     lob: "",
     country: "",
-  });
-  const onSearchFilterSelect = (e) => {
-    const { name, value } = e.target;
+  };
+  const [selfilter, setselfilter] = useState(intialfilterval);
+  const onSearchFilterSelect = (name, value) => {
+    //const { name, value } = e.target;
     setselfilter({
       ...selfilter,
       [name]: value,
@@ -64,7 +62,7 @@ function Lob({ ...props }) {
     }
   };
   const clearFilter = () => {
-    setselfilter({ lob: "", country: "" });
+    setselfilter(intialfilterval);
     setpaginationdata(data);
   };
   //set pagination data and functionality
@@ -163,9 +161,12 @@ function Lob({ ...props }) {
       const username = approverUser.firstName + " " + approverUser.lastName;
       const userEmail = approverUser.emailAddress;
       const imagePath = approverUser.profileImagePath;
-      let otherapprovers;
+      let otherapprovers = [];
       if (approverList.length > 1) {
-        otherapprovers = approverList.map((item) => item.emailAddress);
+        for (let i = 1; i < approverList.length; i++) {
+          let item = approverList[i];
+          otherapprovers.push(item.emailAddress);
+        }
       }
       return (
         <>
@@ -211,7 +212,7 @@ function Lob({ ...props }) {
       if (item.isActive) {
         tempdata.push(item);
         templobFilterOpts.push({
-          title: item.lobName,
+          label: item.lobName,
           value: item.lobid,
         });
         let coutrylist = item.countryList;
@@ -221,7 +222,7 @@ function Lob({ ...props }) {
             let tempItem = countryItem.trim();
             if (!tempCountryObj[tempItem]) {
               tempCountryFilterOpts.push({
-                title: tempItem,
+                label: tempItem,
                 value: tempItem,
               });
             }
@@ -230,15 +231,12 @@ function Lob({ ...props }) {
         }
       }
     });
-    tempCountryFilterOpts.sort(dynamicSort("title"));
-    templobFilterOpts.sort(dynamicSort("title"));
+    tempCountryFilterOpts.sort(dynamicSort("label"));
+    templobFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-    setlobFilterOpts([{ title: "Select", value: "" }, ...templobFilterOpts]);
-    setcountryFilterOpts([
-      { title: "Select", value: "" },
-      ...tempCountryFilterOpts,
-    ]);
+    setlobFilterOpts([...templobFilterOpts]);
+    setcountryFilterOpts([...tempCountryFilterOpts]);
   }, [lobState.items]);
 
   const [frmCountrySelectOpts, setfrmCountrySelectOpts] = useState([]);
@@ -247,20 +245,20 @@ function Lob({ ...props }) {
     let countryselectOpts = [];
     let tempCountryObj = {};
 
-    lobState.countryItems.forEach((item) => {
+    countryState.countryItems.forEach((item) => {
       countryselectOpts.push({
-        title: item.countryName.trim(),
+        label: item.countryName.trim(),
         value: item.countryID,
       });
       tempCountryObj[item.countryID] = item.countryName.trim();
     });
     setfrmCountrySelectOpts([
-      { title: "All", value: "*" },
+      { label: "All", value: "*" },
       ...countryselectOpts,
     ]);
 
     setcountryObj(tempCountryObj);
-  }, [lobState.countryItems]);
+  }, [countryState.countryItems]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -294,11 +292,11 @@ function Lob({ ...props }) {
     const response = await getById({ lobid: itemid });
     console.log(response);
     let selectedCountryList = response.lobCountryList.map((item) => {
-      return { title: item.countryName, value: item.countryID };
+      return { label: item.countryName, value: item.countryID };
     });
     if (selectedCountryList.length == frmCountrySelectOpts.length - 1) {
       selectedCountryList = [
-        { title: "All", value: "*" },
+        { label: "All", value: "*" },
         ...selectedCountryList,
       ];
     }
@@ -341,6 +339,7 @@ function Lob({ ...props }) {
           : userProfile.userId,
       });
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.lob.update);
@@ -373,6 +372,7 @@ function Lob({ ...props }) {
       });
 
       if (response) {
+        setselfilter(intialfilterval);
         getAll();
         hideAddPopup();
         alert(alertMessage.lob.add);
@@ -403,20 +403,24 @@ function Lob({ ...props }) {
       <div className="page-title">Manage LoB</div>
       <div className="page-filter">
         <div className="filter-container">
-          <Dropdown
-            label={"LoB"}
-            name={"lob"}
-            selectopts={lobFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.lob}
-          />
-          <Dropdown
-            label={"Country"}
-            name={"country"}
-            selectopts={countryFilterOpts}
-            onSelectHandler={onSearchFilterSelect}
-            initvalue={selfilter.country}
-          />
+          <div className="frm-filter">
+            <FrmSelect
+              title={"LoB"}
+              name={"lob"}
+              selectopts={lobFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.lob}
+            />
+          </div>
+          <div className="frm-filter">
+            <FrmSelect
+              title={"Country"}
+              name={"country"}
+              selectopts={countryFilterOpts}
+              handleChange={onSearchFilterSelect}
+              value={selfilter.country}
+            />
+          </div>
         </div>
         <div className="btn-container">
           <div
@@ -444,7 +448,7 @@ function Lob({ ...props }) {
             data={paginationdata}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
-            buttonTitle={"+ New LoB"}
+            buttonTitle={"New LoB"}
           />
         )}
       </div>
@@ -471,7 +475,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: lobActions.getAll,
-  getAllCountry: lobActions.getAllCountry,
+  getAllCountry: countryActions.getAllCountry,
   getAllApprover: lobActions.getAllApprover,
   getById: lobActions.getById,
   checkNameExist: lobActions.checkNameExist,

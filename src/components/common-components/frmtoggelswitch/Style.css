@@ -1,0 +1,77 @@
+.toggle-switch-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.option-title {
+  margin-right: 10px;
+  margin-top: 8px;
+}
+.toggle-switch {
+  position: relative;
+  width: 50px;
+  display: inline-block;
+  text-align: left;
+  top: 8px;
+  margin-right: 10px;
+}
+.toggle-switch .checkbox {
+  display: none;
+}
+.switch-box {
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #2167ad;
+  border-radius: 20px;
+}
+.inner {
+  display: block;
+  width: 200%;
+  margin-left: -100%;
+  transition: margin 0.3s ease-in 0s;
+}
+.inner:before,
+.inner:after {
+  float: left;
+  width: 50%;
+  height: 20px;
+  padding: 0;
+  line-height: 20px;
+  color: #fff;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+.inner:before {
+  content: "";
+  padding-left: 5px;
+  background-color: #fff;
+  color: #fff;
+}
+.inner:after {
+  content: "";
+  padding-right: 5px;
+  background-color: #fff;
+  color: #fff;
+  text-align: right;
+}
+.switch {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 3px;
+  background: #2167ad;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 29px;
+  border: 0 solid #bbb;
+  border-radius: 15px;
+  transition: all 0.3s ease-in 0s;
+}
+.checkbox:checked + .switch-box .inner {
+  margin-left: 0;
+}
+.checkbox:checked + .switch-box .switch {
+  right: 0px;
+}

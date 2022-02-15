@@ -2,8 +2,8 @@ import { lobConstants } from "../constants";
 const initialState = {
   loading: true,
   items: [],
-  countryItems: [],
   approverUsers: [],
+  lobItems: [],
   apporverLoading: false,
   error: "",
 };
@@ -12,6 +12,7 @@ export const lobReducer = (state = initialState, action) => {
     case lobConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case lobConstants.GETALL_SUCCESS:
@@ -26,16 +27,6 @@ export const lobReducer = (state = initialState, action) => {
         items: [],
         loading: false,
         error: action.payload,
-      };
-    case lobConstants.GETALLCOUNTRY_SUCCESS:
-      return {
-        ...state,
-        countryItems: action.payload,
-      };
-    case lobConstants.GETALLCOUNTRY_FAILURE:
-      return {
-        ...state,
-        countryItems: [],
       };
     case lobConstants.GETALLAPPROVER_REQUEST:
       return {
@@ -52,6 +43,16 @@ export const lobReducer = (state = initialState, action) => {
       return {
         ...state,
         approverUsers: [],
+      };
+    case lobConstants.GETALLLOB_SUCCESS:
+      return {
+        ...state,
+        lobItems: action.payload,
+      };
+    case lobConstants.GETALLLOB_FAILURE:
+      return {
+        ...state,
+        lobItems: [],
       };
     default:
       return state;

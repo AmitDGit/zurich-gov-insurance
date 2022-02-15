@@ -1,0 +1,89 @@
+.inputfile {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+.inputfile + label {
+  color: #2167ad;
+  display: inline-block;
+  width: 100%;
+
+  min-width: 255px;
+  max-width: 400px;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover {
+  /* background-color: red;*/
+  cursor: pointer;
+}
+.inputfile + label {
+  cursor: pointer; /* "hand" cursor */
+}
+.select-file-container {
+  display: flex;
+  align-items: center;
+}
+.fileupload .select-filebox {
+  position: relative;
+  margin-right: 10px;
+}
+.fileupload .selected-files {
+  display: inline-block;
+  font-weight: normal;
+  padding: 7px 10px;
+  width: 100%;
+  height: 34px;
+  border-radius: 17px;
+  border: 1px solid #add8ef;
+  background-color: #fff;
+}
+.browse-btn {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 34px;
+  line-height: 33px;
+  border-radius: 17px;
+}
+.upload-btn {
+  width: 90px;
+}
+
+.IconButton__icon___3YgOS {
+  background-size: auto !important;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.IconButton__icon-bold___2zl9t {
+  background-image: url("../../../assets/Bold.png") !important;
+}
+.IconButton__icon-italic___2hHzc {
+  background-image: url("../../../assets/Italics.png") !important;
+}
+.IconButton__icon-underline___2EmZJ {
+  background-image: url("../../../assets/Underline.png") !important;
+}
+.IconButton__icon-unordered-list-item___Pvkrr {
+  background-image: url("../../../assets/bullet-list.png") !important;
+}
+.IconButton__icon-ordered-list-item___2rzD0 {
+  background-image: url("../../../assets/number.png") !important;
+}
+
+.attached-files-container {
+  width: 100%;
+}
+.file-name-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.file-name {
+  margin-right: 5px;
+}

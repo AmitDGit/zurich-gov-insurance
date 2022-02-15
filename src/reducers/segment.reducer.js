@@ -2,7 +2,7 @@ import { segmentConstants } from "../constants";
 const initialState = {
   loading: true,
   items: [],
-  countryItems: [],
+  segmentItems: [],
   error: "",
 };
 export const segmentReducer = (state = initialState, action) => {
@@ -10,6 +10,7 @@ export const segmentReducer = (state = initialState, action) => {
     case segmentConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case segmentConstants.GETALL_SUCCESS:
@@ -25,15 +26,16 @@ export const segmentReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload,
       };
-    case segmentConstants.GETALLCOUNTRY_SUCCESS:
+    case segmentConstants.GETALLSEGMENT_SUCCESS:
       return {
         ...state,
-        countryItems: action.payload,
+        segmentItems: action.payload,
       };
-    case segmentConstants.GETALLCOUNTRY_FAILURE:
+    case segmentConstants.GETALLSEGMENT_FAILURE:
       return {
         ...state,
-        countryItems: [],
+        segmentItems: [],
+        error: action.payload,
       };
     default:
       return state;

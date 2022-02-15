@@ -5,3 +5,5 @@ export * from "./lob.action";
 export * from "./sublob.action";
 export * from "./lobchapter.action";
 export * from "./user.action";
+export * from "./lookup.action";
+export * from "./breachlog.action";

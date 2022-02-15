@@ -1,0 +1,6 @@
+.frm-field textarea {
+  max-width: 100%;
+}
+.frm-field-bggray textarea {
+  background-color: #edeef0;
+}

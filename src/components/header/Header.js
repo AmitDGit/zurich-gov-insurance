@@ -5,7 +5,7 @@ function Header({ ...props }) {
   return (
     <div className="header-container">
       <div className="site-logo"></div>
-      <div className="header-title">Governance and Assurance</div>
+      <div className="header-title">Underwriting Governance</div>
       <LoggedInUser />
     </div>
   );

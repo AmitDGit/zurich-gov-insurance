@@ -4,6 +4,7 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.css";
 import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
 import paginationFactory from "react-bootstrap-table2-paginator";
 import ToolkitProvider, { Search } from "react-bootstrap-table2-toolkit";
+import ExportToExcel from "./exporttoexcel/ExportToExcel";
 function PaginationData(props) {
   const {
     column,
@@ -13,7 +14,11 @@ function PaginationData(props) {
     buttonTitle,
     id,
     hidesearch,
+    isExportReport,
+    exportReportTitle,
+    exportFileName,
   } = props;
+  console.log(data);
   const { SearchBar, ClearSearchButton } = Search;
   const pagination = paginationFactory({
     page: 1,
@@ -28,9 +33,13 @@ function PaginationData(props) {
         value: 10,
       },
       {
+        text: "25",
+        value: 25,
+      },
+      /* {
         text: "All",
         value: data.length,
-      },
+      },*/
     ],
     lastPageText: ">>",
     firstPageText: "<<",
@@ -69,13 +78,24 @@ function PaginationData(props) {
                   )}
                 </div>
                 <div className="btn-container">
-                  <div className="btn-blue" onClick={() => showAddPopup()}>
+                  {isExportReport ? (
+                    <ExportToExcel
+                      exportReportTitle={exportReportTitle}
+                      exportFileName={exportFileName}
+                      exportData={data}
+                    />
+                  ) : (
+                    ""
+                  )}
+                  <div
+                    className="btn-blue plus-icon"
+                    onClick={() => showAddPopup()}
+                  >
                     {buttonTitle}
                   </div>
                 </div>
               </div>
               <BootstrapTable
-                striped
                 defaultSorted={defaultSorted}
                 pagination={pagination}
                 {...props.baseProps}

@@ -25,12 +25,12 @@ const getAll = () => {
     }
   };
 };
-const getAllRegions = () => {
+const getAllCountry = () => {
   const success = (data) => {
-    return { type: countryConstants.GETALLREGION_SUCCESS, payload: data };
+    return { type: countryConstants.GETALLCOUNTRY_SUCCESS, payload: data };
   };
   const failure = (error) => {
-    return { type: countryConstants.GETALLREGION_FAILURE, payload: error };
+    return { type: countryConstants.GETALLCOUNTRY_FAILURE, payload: error };
   };
   const requestParams = {
     PageIndex: 1,
@@ -39,7 +39,7 @@ const getAllRegions = () => {
 
   return async (dispatch) => {
     try {
-      const response = await countryService.getAllRegionsService(requestParams);
+      const response = await countryService.getAllCountryService(requestParams);
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
@@ -96,7 +96,7 @@ const deleteItem = (requestParam) => {
 };
 export const countryActions = {
   getAll,
-  getAllRegions,
+  getAllCountry,
   getById,
   checkNameExist,
   checkIsInUse,
@@ -108,9 +108,9 @@ const getAllService = async (requestParam) => {
   const response = await Axios.get(`country/getallcountrylist`, param);
   return response;
 };
-const getAllRegionsService = async (requestParam) => {
+const getAllCountryService = async (requestParam) => {
   const param = { params: requestParam };
-  const response = await Axios.get(`region/getallregion`, param);
+  const response = await Axios.get(`country/getallcountry`, param);
   return response;
 };
 const getByIdService = async (requestParam) => {
@@ -139,7 +139,7 @@ const deleteItemService = async (requestParam) => {
 };
 const countryService = {
   getAllService,
-  getAllRegionsService,
+  getAllCountryService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,

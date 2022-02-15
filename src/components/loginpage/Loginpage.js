@@ -4,6 +4,7 @@ import { loginuserAction } from "../../actions/loginuser.action";
 import { regionActions } from "../../actions/region.action";
 import { Redirect } from "react-router-dom";
 import TokenService from "../../services/Tokenservice";
+import "./Style.css";
 function Loginpage({ ...props }) {
   const { loginState, login } = props;
   const [state, setState] = useState({

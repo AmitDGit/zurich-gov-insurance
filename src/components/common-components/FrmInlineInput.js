@@ -1,25 +1,28 @@
 import React from "react";
 
-function FrmTextArea(props) {
+function FrmInlineInput(props) {
   const {
-    title,
+    placeholder,
     name,
     value,
+    type,
+    itemid,
     handleChange,
     isRequired,
     validationmsg,
     issubmitted,
   } = props;
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>{title}</label>
-      <textarea
-        placeholder="Character limit 250..."
+    <div className={`frm-field inlinefield ${isRequired ? "mandatory" : ""}`}>
+      <input
+        placeholder={placeholder}
+        type={type}
         name={name}
         value={value}
         onChange={handleChange}
-        maxlength="250"
-      ></textarea>
+        maxLength="60"
+        itemid={itemid}
+      ></input>
       {isRequired && issubmitted && !value ? (
         <div className="validationError">{validationmsg}</div>
       ) : (
@@ -29,4 +32,4 @@ function FrmTextArea(props) {
   );
 }
 
-export default FrmTextArea;
+export default React.memo(FrmInlineInput);
