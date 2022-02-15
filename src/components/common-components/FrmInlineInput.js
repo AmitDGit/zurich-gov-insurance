@@ -32,4 +32,4 @@ function FrmInlineInput(props) {
   );
 }
 
-export default FrmInlineInput;
+export default React.memo(FrmInlineInput);

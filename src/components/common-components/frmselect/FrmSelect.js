@@ -9,6 +9,7 @@ function FrmSelect(props) {
     value,
     handleChange,
     isRequired,
+    isReadMode,
     validationmsg,
     issubmitted,
     selectopts,
@@ -16,30 +17,34 @@ function FrmSelect(props) {
   const onSelect = (selectedopt) => {
     handleChange(name, selectedopt.value);
   };
+  const getSelectedOpt = () => {
+    let selectedopt = [];
+    selectedopt = selectopts.filter((item) => item.value === value);
+    return selectedopt[0].label;
+  };
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
-      <div className="dropdowncls">
-        <Dropdown
-          options={selectopts}
-          onChange={onSelect}
-          value={value}
-          placeholder="Select"
-        />
-      </div>
-      {/*<select onChange={handleChange} name={name} value={value}>
-        {selectopts.map((option) => (
-          <option value={option.value} key={option.title}>
-            {option.title}
-          </option>
-        ))}
-        </select>*/}
-      {isRequired && issubmitted && !value ? (
-        <div className="validationError">{validationmsg}</div>
+      {isReadMode ? (
+        <div>{value ? getSelectedOpt() : ""}</div>
       ) : (
-        ""
+        <>
+          <div className="dropdowncls">
+            <Dropdown
+              options={selectopts}
+              onChange={onSelect}
+              value={value}
+              placeholder="Select"
+            />
+          </div>
+          {isRequired && issubmitted && !value ? (
+            <div className="validationError">{validationmsg}</div>
+          ) : (
+            ""
+          )}
+        </>
       )}
     </div>
   );

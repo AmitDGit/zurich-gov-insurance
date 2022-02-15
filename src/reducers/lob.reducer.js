@@ -12,6 +12,7 @@ export const lobReducer = (state = initialState, action) => {
     case lobConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case lobConstants.GETALL_SUCCESS:

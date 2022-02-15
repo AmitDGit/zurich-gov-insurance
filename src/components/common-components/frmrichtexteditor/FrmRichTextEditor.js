@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import RichTextEditor from "react-rte";
+import parse from "html-react-parser";
 import "./Style.css";
 function FrmRichTextEditor(props) {
   const {
@@ -9,6 +10,7 @@ function FrmRichTextEditor(props) {
     name,
     value,
     type,
+    isReadMode,
     handleChange,
     isRequired,
     validationmsg,
@@ -82,27 +84,24 @@ function FrmRichTextEditor(props) {
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
-      {
-        /*<CKEditor
-          editor={ClassicEditor}
-          name={name}
-          data={value}
-          onChange={setRichTextValue}
-        />*/
-        <RichTextEditor
-          toolbarConfig={toolbarConfig}
-          value={editorValue}
-          onChange={setRichTextValue}
-        />
-      }
-
-      {isRequired && issubmitted && !value ? (
-        <div className="validationError">{validationmsg}</div>
+      {isReadMode ? (
+        <div>{value ? parse(value) : ""}</div>
       ) : (
-        ""
+        <>
+          <RichTextEditor
+            toolbarConfig={toolbarConfig}
+            value={editorValue}
+            onChange={setRichTextValue}
+          />
+          {isRequired && issubmitted && !value ? (
+            <div className="validationError">{validationmsg}</div>
+          ) : (
+            ""
+          )}
+        </>
       )}
     </div>
   );
 }
 
-export default FrmRichTextEditor;
+export default React.memo(FrmRichTextEditor);

@@ -1,0 +1,19 @@
+.btn-container button.exportxlsbtn {
+  min-width: 95px;
+  height: 26px;
+  background-color: rgba(33, 103, 173, 1);
+  text-align: center;
+  line-height: 25px;
+  color: #fff;
+  border-radius: 13px;
+  padding: 0 15px;
+  padding-left: 25px;
+  cursor: pointer;
+  border: none;
+  background-image: url("../../../assets/Export_to_Excel.png");
+  background-position: 10px center;
+  background-repeat: no-repeat;
+}
+.btn-container button.exportxlsbtn:hover {
+  background-color: rgba(33, 103, 173, 0.7);
+}

@@ -9,6 +9,7 @@ export const lobchapterReducer = (state = initialState, action) => {
     case lobchapterConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case lobchapterConstants.GETALL_SUCCESS:

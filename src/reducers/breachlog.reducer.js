@@ -11,6 +11,7 @@ export const breachlogReducer = (state = initialState, action) => {
     case breachlogConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case breachlogConstants.GETALL_SUCCESS:

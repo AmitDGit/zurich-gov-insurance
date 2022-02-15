@@ -1,3 +1,4 @@
+import moment from "moment";
 export const dynamicSort = (property, dir) => {
   return function(obj1, obj2) {
     if (typeof obj1[property] == "string") {
@@ -23,4 +24,8 @@ export const dynamicSort = (property, dir) => {
       return c1 > c2 ? 1 : c1 < c2 ? -1 : 0;
     }
   };
+};
+
+export const formatDate = (date) => {
+  return moment(date).format("MM/DD/YYYY");
 };

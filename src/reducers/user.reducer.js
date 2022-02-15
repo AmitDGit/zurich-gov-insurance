@@ -12,6 +12,7 @@ export const userReducer = (state = initialState, action) => {
     case userConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case userConstants.GETALL_SUCCESS:

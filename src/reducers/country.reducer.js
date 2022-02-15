@@ -10,6 +10,7 @@ export const countryReducer = (state = initialState, action) => {
     case countryConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case countryConstants.GETALL_SUCCESS:

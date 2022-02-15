@@ -11,6 +11,7 @@ import FrmInputSearch from "../common-components/frmpeoplepicker/FrmInputSearch"
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
 import Loading from "../common-components/Loading";
 import moment from "moment";
+import "./Style.css";
 import {
   userActions,
   lookupActions,
@@ -21,7 +22,7 @@ import {
 } from "../../actions";
 import FrmRadio from "../common-components/frmradio/FrmRadio";
 import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTextEditor";
-import { alertMessage, dynamicSort } from "../../helpers";
+import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import PeoplePickerPopup from "./PeoplePickerPopup";
 
 function AddEditForm(props) {
@@ -50,6 +51,7 @@ function AddEditForm(props) {
     getAllSublob,
     uploadFile,
     deleteFile,
+    isReadMode,
   } = props;
   //console.log(sublobState);
   const [formfield, setformfield] = useState(formIntialState);
@@ -68,6 +70,7 @@ function AddEditForm(props) {
     },
   ]);
   const [frmSegmentOpts, setfrmSegmentOpts] = useState([]);
+  const [frmSegmentOptsAll, setfrmSegmentOptsAll] = useState([]);
   const [frmLoB, setfrmLoB] = useState([]);
   const [frmSublob, setfrmSublob] = useState([]);
   const [frmSublobAll, setfrmSublobAll] = useState([]);
@@ -93,15 +96,27 @@ function AddEditForm(props) {
   ]);
   useEffect(() => {
     setcountryopts([...frmCountrySelectOpts]);
-  }, [frmCountrySelectOpts]);
-  useEffect(() => {
     setregionopts([...frmRegionSelectOpts]);
-  }, [frmRegionSelectOpts]);
+    /*if (formIntialState.countryId) {
+      let region = frmCountrySelectOpts.filter(
+        (item) => item.value === formIntialState.countryId
+      );
+      let regionOpts = frmRegionSelectOpts.filter(
+        (item) => item.value === region[0].regionId
+      );
+      setregionopts([...regionOpts]);
+    } else {
+      setregionopts([...frmRegionSelectOpts]);
+    }*/
+  }, []);
+  /*useEffect(() => {
+    
+  }, [frmRegionSelectOpts]);*/
 
   const [loading, setloading] = useState(true);
   useEffect(async () => {
     let tempSeverity = await getLookupByType({
-      LookupType: "BreachSeverity",
+      LookupType: "BreachClassification",
     });
     let tempTypeOfBreach = await getLookupByType({
       LookupType: "BreachType",
@@ -146,17 +161,29 @@ function AddEditForm(props) {
       label: item.lookUpValue,
       value: item.lookupID,
     }));
-    tempBreachStatus = tempBreachStatus.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
+    let frmbreachstatus = [];
+    tempBreachStatus.forEach((item) => {
+      if (!isEditMode && item.lookUpValue === "Open") {
+        frmbreachstatus.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+        setformfield({ ...formfield, breachStatus: item.lookupID });
+      } else if (isEditMode) {
+        frmbreachstatus.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+
     setfrmSeverity([...tempSeverity]);
     setfrmTypeOfBreach([...tempTypeOfBreach]);
     setfrmRootCauseBreach([...tempRootCauseBreach]);
     setfrmNatureOfBreach([...tempNatureOfBreach]);
     setfrmRangeFinImpact([...tempRangeFinImpact]);
     setfrmHowDetected([...tempHowDetected]);
-    setfrmBreachStatus([...tempBreachStatus]);
+    setfrmBreachStatus([...frmbreachstatus]);
     setloading(false);
   }, []);
 
@@ -170,10 +197,11 @@ function AddEditForm(props) {
     let tempItems = segmentState.segmentItems.map((item) => ({
       label: item.segmentName,
       value: item.segmentID,
-      country: item.segmentCountryList,
+      country: item.countryList,
     }));
     tempItems.sort(dynamicSort("label"));
     setfrmSegmentOpts(tempItems);
+    setfrmSegmentOptsAll(tempItems);
   }, [segmentState.segmentItems]);
 
   useEffect(() => {
@@ -220,20 +248,41 @@ function AddEditForm(props) {
         (item) => item.regionId === value
       );
       setcountryopts([...countryopts]);
+      setformfield({
+        ...formfield,
+        [name]: value,
+        countryId: "",
+      });
     } else if (name === "regionId" && value === "") {
       setcountryopts([...frmCountrySelectOpts]);
     }
     if (name === "countryId" && value !== "") {
-      let region = frmCountrySelectOpts.filter((item) => item.value === value);
+      let country = frmCountrySelectOpts.filter((item) => item.value === value);
       let regionOpts = frmRegionSelectOpts.filter(
-        (item) => item.value === region[0].regionId
+        (item) => item.value === country[0].regionId
       );
+      let segmentOpts = frmSegmentOptsAll.filter((item) => {
+        if (!item.country) {
+          return true;
+        } else if (item.country.indexOf(country[0].label) !== -1) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+      setfrmSegmentOpts(segmentOpts);
       setregionopts([...regionOpts]);
+      setformfield({
+        ...formfield,
+        [name]: value,
+        regionId: regionOpts[0].value,
+        customerSegment: "",
+      });
     } else if (name === "countryId" && value === "") {
       setregionopts([...frmRegionSelectOpts]);
+      setfrmSegmentOpts(frmSegmentOptsAll);
     }
-
-    //map country and region fields
+    //map lob and sublob fields
     if (name === "lobid" && value !== "") {
       let sublobopts = frmSublobAll.filter((item) => item.lob === value);
       setfrmSublob([...sublobopts]);
@@ -287,7 +336,7 @@ function AddEditForm(props) {
     }
   };
   const handleFileDelete = async (id, url) => {
-    if (!window.confirm(alertMessage.user.deleteConfirm)) {
+    if (!window.confirm(alertMessage.breachlog.deleteAttachmentConfirm)) {
       return;
     }
     const requestParam = {
@@ -296,7 +345,7 @@ function AddEditForm(props) {
     };
     const response = await deleteFile(requestParam);
     if (response) {
-      alert(alertMessage.user.delete);
+      alert(alertMessage.breachlog.deleteAttachment);
       let tempattachementfiles = [...formfield.breachAttachmentList];
       tempattachementfiles = tempattachementfiles.filter(
         (item) => item.filePath !== url
@@ -372,6 +421,7 @@ function AddEditForm(props) {
                     value={formfield.title}
                     type={"text"}
                     handleChange={handleChange}
+                    isReadMode={isReadMode}
                     isRequired={true}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
@@ -384,6 +434,7 @@ function AddEditForm(props) {
                     value={formfield.countryId}
                     handleChange={handleSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={countryopts}
@@ -394,6 +445,7 @@ function AddEditForm(props) {
                     title={"Region"}
                     name={"regionId"}
                     value={formfield.regionId}
+                    isReadMode={isReadMode}
                     handleChange={handleSelectChange}
                     isRequired={true}
                     validationmsg={"Mandatory field"}
@@ -408,6 +460,7 @@ function AddEditForm(props) {
                     value={formfield.customerSegment}
                     handleChange={handleSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmSegmentOpts}
@@ -422,6 +475,7 @@ function AddEditForm(props) {
                     value={formfield.lobid}
                     handleChange={handleSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmLoB}
@@ -434,6 +488,7 @@ function AddEditForm(props) {
                     value={formfield.sublobid}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmSublob}
@@ -442,11 +497,12 @@ function AddEditForm(props) {
                 <div className="col-md-3">
                   {
                     <FrmRadio
-                      title={"Severity"}
-                      name={"severity"}
-                      value={formfield.severity}
+                      title={"Classification"}
+                      name={"classification"}
+                      value={formfield.classification}
                       handleChange={handleChange}
                       isRequired={true}
+                      isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       isToolTip={true}
                       tooltipmsg={"Tooltip text"}
@@ -463,6 +519,7 @@ function AddEditForm(props) {
                     value={formfield.typeOfBreach}
                     handleChange={handleSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmTypeOfBreach}
@@ -477,6 +534,7 @@ function AddEditForm(props) {
                     value={formfield.rootCauseOfTheBreach}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmRootCauseBreach}
@@ -489,6 +547,7 @@ function AddEditForm(props) {
                     value={formfield.natureOfBreach}
                     handleChange={handleSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmNatureOfBreach}
@@ -501,6 +560,7 @@ function AddEditForm(props) {
                     value={formfield.materialBreach}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={yesnoopts}
@@ -515,6 +575,7 @@ function AddEditForm(props) {
                     type={"date"}
                     handleChange={handleDateSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
@@ -528,6 +589,7 @@ function AddEditForm(props) {
                     value={formfield.breachDetails}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
@@ -541,6 +603,7 @@ function AddEditForm(props) {
                     value={formfield.rangeOfFinancialImpact}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmRangeFinImpact}
@@ -555,6 +618,7 @@ function AddEditForm(props) {
                     value={formfield.financialImpactDescription}
                     handleChange={handleChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={""}
                     issubmitted={issubmitted}
                   />
@@ -568,6 +632,7 @@ function AddEditForm(props) {
                     value={formfield.howDetected}
                     handleChange={handleSelectChange}
                     isRequired={true}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmHowDetected}
@@ -580,6 +645,7 @@ function AddEditForm(props) {
                     value={formfield.nearMisses}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     isToolTip={true}
                     tooltipmsg={
                       "Has a loss naterialised as a result of the breach? If the answer is No, this is a near miss. If the answer is Yes, this is an operational event."
@@ -601,6 +667,7 @@ function AddEditForm(props) {
                     handleChange={handleChange}
                     handleClick={() => setshowpeoplepicker(true)}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
@@ -613,13 +680,19 @@ function AddEditForm(props) {
                     type={"date"}
                     handleChange={handleDateSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
+                    minDate={moment().toDate()}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
                 </div>
                 <div className="col-md-3">
                   <label>Original Due Date</label>
-                  {formfield.orgDueDate}
+                  <div className="cls-orgduedate">
+                    {formfield.originalDueDate
+                      ? formatDate(formfield.originalDueDate)
+                      : ""}
+                  </div>
                 </div>
               </div>
               <div className="row border-bottom">
@@ -630,6 +703,7 @@ function AddEditForm(props) {
                     value={formfield.actionPlan}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
@@ -645,6 +719,7 @@ function AddEditForm(props) {
                     value={formfield.breachStatus}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmBreachStatus}
@@ -658,8 +733,10 @@ function AddEditForm(props) {
                     type={"date"}
                     handleChange={handleDateSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
+                    isdisabled={true}
                   />
                 </div>
                 <div className="col-md-3">
@@ -672,12 +749,17 @@ function AddEditForm(props) {
                     handleFileUpload={handleFileUpload}
                     handleFileDelete={handleFileDelete}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
                 </div>
               </div>
-              <div className="row border-bottom">
+              <div
+                className={`row ${
+                  isEditMode || isReadMode ? "border-bottom" : ""
+                }`}
+              >
                 <div className="col-md-12">
                   <FrmRichTextEditor
                     title={"Action Update"}
@@ -685,14 +767,15 @@ function AddEditForm(props) {
                     value={formfield.actionUpdate}
                     handleChange={handleSelectChange}
                     isRequired={false}
+                    isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
                 </div>
               </div>
             </div>
-            {isEditMode ? (
-              <div className="row">
+            {isEditMode || isReadMode ? (
+              <div className="row mb20">
                 <div className="col-md-3">
                   <label>Created by</label>
                   <br></br>
@@ -702,7 +785,7 @@ function AddEditForm(props) {
                   <label>Created Dated</label>
                   <br></br>
                   {formfield.createdDate
-                    ? moment(formfield.createdDate).format("DD/MM/YYYY")
+                    ? formatDate(formfield.createdDate)
                     : ""}
                 </div>
                 <div className="col-md-3">
@@ -714,7 +797,7 @@ function AddEditForm(props) {
                   <label>Modified Date</label>
                   <br></br>
                   {formfield.modifiedDate
-                    ? moment(formfield.modifiedDate).format("DD/MM/YYYY")
+                    ? formatDate(formfield.modifiedDate)
                     : ""}
                 </div>
               </div>
@@ -724,16 +807,21 @@ function AddEditForm(props) {
           </>
         </form>
       </div>
-      <div className="popup-footer-container">
-        <div className="btn-container">
-          <button className="btn-blue" type="submit" form="myForm">
-            Submit
-          </button>
-          <div className="btn-blue" onClick={() => hideAddPopup()}>
-            Cancel
+      {!isReadMode ? (
+        <div className="popup-footer-container">
+          <div className="btn-container">
+            <button className="btn-blue" type="submit" form="myForm">
+              Submit
+            </button>
+            <div className="btn-blue" onClick={() => hideAddPopup()}>
+              Cancel
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        ""
+      )}
+
       {showpeoplepicker ? (
         <PeoplePickerPopup
           title={"Action Responsible"}

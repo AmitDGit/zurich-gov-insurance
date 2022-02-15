@@ -10,6 +10,7 @@ export const segmentReducer = (state = initialState, action) => {
     case segmentConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case segmentConstants.GETALL_SUCCESS:

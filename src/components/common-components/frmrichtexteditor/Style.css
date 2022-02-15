@@ -56,10 +56,10 @@ a.ck.ck-button:not(.ck-disabled):hover {
   border: 1px solid #add8ef;
 }
 */
-.frm-field-bggray .RichTextEditor__root___2QXK- {
+.frm-field .frm-field-bggray .RichTextEditor__root___2QXK- {
   background-color: #edeef0;
 }
-.RichTextEditor__root___2QXK- {
+.frm-field .RichTextEditor__root___2QXK- {
   border: 1px solid #add8ef;
   border-radius: 15px;
   background-color: #fff;
@@ -67,34 +67,34 @@ a.ck.ck-button:not(.ck-disabled):hover {
   font-family: "ZurichSans", sans-serif, "Segoe UI";
   font-size: 14px;
 }
-.RichTextEditor__editor___1QqIU {
+.frm-field .RichTextEditor__editor___1QqIU {
   font-family: "ZurichSans", sans-serif, "Segoe UI";
   font-size: 14px;
 }
-.EditorToolbar__root___3_Aqz {
+.frm-field .EditorToolbar__root___3_Aqz {
   font-family: "ZurichSans", sans-serif, "Segoe UI";
   color: #2167ad;
   border-bottom: 1px solid #add8ef;
   margin: 0;
   padding: 0;
 }
-.RichTextEditor__editor___1QqIU .public-DraftEditor-content {
+.frm-field .RichTextEditor__editor___1QqIU .public-DraftEditor-content {
   min-height: 100px;
 }
-.Button__root___1gz0c {
+.frm-field .Button__root___1gz0c {
   border: 0;
 }
-.ButtonGroup__root___3lEAn:first-child {
+.frm-field .ButtonGroup__root___3lEAn:first-child {
   margin-left: 10px;
 }
-.ButtonGroup__root___3lEAn {
+.frm-field .ButtonGroup__root___3lEAn {
   margin: 0;
   border-right: 1px solid #add8ef;
 }
-.Dropdown__root___3ALmx .Dropdown__value___34Py9 {
+.frm-field .Dropdown__root___3ALmx .Dropdown__value___34Py9 {
   border: none !important;
 }
-.Dropdown__root___3ALmx .Dropdown__value___34Py9:after {
+.frm-field .Dropdown__root___3ALmx .Dropdown__value___34Py9:after {
   padding: 2px;
   top: 10px;
   border: solid #1f66ab;
@@ -102,7 +102,7 @@ a.ck.ck-button:not(.ck-disabled):hover {
   transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
 }
-.Dropdown__root___3ALmx .Dropdown__value___34Py9:before {
+.frm-field .Dropdown__root___3ALmx .Dropdown__value___34Py9:before {
   display: none;
   padding: 2px;
   top: 18px;
@@ -111,6 +111,6 @@ a.ck.ck-button:not(.ck-disabled):hover {
   transform: rotate(225deg);
   -webkit-transform: rotate(225deg);
 }
-.ButtonGroup__root___3lEAn > div > button {
+.frm-field .ButtonGroup__root___3lEAn > div > button {
   background: transparent;
 }

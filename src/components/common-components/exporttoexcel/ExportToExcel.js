@@ -1,8 +1,10 @@
 import React from "react";
 import ReactExport from "react-data-export";
+import "./Style.css";
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
 const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+
 function ExportToExcel(props) {
   const { exportReportTitle, exportData, exportFileName } = props;
   let column = [];
@@ -28,7 +30,7 @@ function ExportToExcel(props) {
   return (
     <div>
       <ExcelFile
-        element={<button>{exportReportTitle}</button>}
+        element={<button className="exportxlsbtn">{exportReportTitle}</button>}
         filename={exportFileName}
       >
         <ExcelSheet dataSet={multiDataSet} name="Organization" />
@@ -37,4 +39,4 @@ function ExportToExcel(props) {
   );
 }
 
-export default ExportToExcel;
+export default React.memo(ExportToExcel);

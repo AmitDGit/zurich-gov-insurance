@@ -63,4 +63,14 @@ export const alertMessage = {
     isInUse: "You can not delete this lookup value as it is in use.",
     nameExist: "Lookup value name is already exist!",
   },
+  breachlog: {
+    add: "The new breachlog is successfully added.",
+    update: "The breachlog is successfully updated.",
+    delete: "The breachlog is deleted.",
+    deleteConfirm: "Are you sure you want to delete breachlog?",
+    deleteAttachmentConfirm: "Are you sure you want to delete Attachment?",
+    deleteAttachment: "The attachment is deleted.",
+    isInUse: "You can not delete this breachlog as it is in use.",
+    nameExist: "breachlog name is already exist!",
+  },
 };

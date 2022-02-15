@@ -7,6 +7,7 @@ function FrmTextArea(props) {
     value,
     handleChange,
     isRequired,
+    isReadMode,
     validationmsg,
     issubmitted,
   } = props;
@@ -15,20 +16,26 @@ function FrmTextArea(props) {
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
-      <textarea
-        placeholder="Character limit 250..."
-        name={name}
-        value={value}
-        onChange={handleChange}
-        maxLength="250"
-      ></textarea>
-      {isRequired && issubmitted && !value ? (
-        <div className="validationError">{validationmsg}</div>
+      {isReadMode ? (
+        <div>{value}</div>
       ) : (
-        ""
+        <>
+          <textarea
+            placeholder="Character limit 250..."
+            name={name}
+            value={value}
+            onChange={handleChange}
+            maxLength="250"
+          ></textarea>
+          {isRequired && issubmitted && !value ? (
+            <div className="validationError">{validationmsg}</div>
+          ) : (
+            ""
+          )}
+        </>
       )}
     </div>
   );
 }
 
-export default FrmTextArea;
+export default React.memo(FrmTextArea);

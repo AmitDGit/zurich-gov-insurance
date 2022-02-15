@@ -7,6 +7,7 @@ function FrmFileUpload(props) {
     value,
     uploadedfiles,
     type,
+    isReadMode,
     handleFileUpload,
     handleFileDelete,
     isRequired,
@@ -65,36 +66,45 @@ function FrmFileUpload(props) {
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
-      <div className="select-file-container">
-        <input
-          type="file"
-          name="file"
-          id="file"
-          class="inputfile"
-          multiple
-          data-multiple-caption="{count} files selected"
-          onChange={onfileselect}
-        />
-        <label for="file">
-          <div className="select-filebox">
-            <div className="selected-files">
-              {filename ? filename : "Choose a file…"}
+      {!isReadMode ? (
+        <>
+          <div className="select-file-container">
+            <input
+              type="file"
+              name="file"
+              id="file"
+              class="inputfile"
+              multiple
+              data-multiple-caption="{count} files selected"
+              onChange={onfileselect}
+            />
+            <label for="file">
+              <div className="select-filebox">
+                <div className="selected-files">
+                  {filename ? filename : "Choose a file…"}
+                </div>
+                <div className="btn-blue browse-btn">Browse</div>
+              </div>
+            </label>
+            <div
+              className={`upload-btn btn-blue ${
+                filename ? "normal" : "disable"
+              }`}
+              onClick={onfileuploadhandler}
+            >
+              Upload
             </div>
-            <div className="btn-blue browse-btn">Browse</div>
           </div>
-        </label>
-        <div
-          className={`upload-btn btn-blue ${filename ? "normal" : "disable"}`}
-          onClick={onfileuploadhandler}
-        >
-          Upload
-        </div>
-      </div>
-      {isRequired && issubmitted && !value ? (
-        <div className="validationError">{validationmsg}</div>
+          {isRequired && issubmitted && !value ? (
+            <div className="validationError">{validationmsg}</div>
+          ) : (
+            ""
+          )}
+        </>
       ) : (
         ""
       )}
+
       {files.length ? (
         <div className="attached-files-container">
           {files.map((item) => (
@@ -104,10 +114,14 @@ function FrmFileUpload(props) {
                   {item.filename}
                 </a>
               </div>
-              <div
-                className="delete-icon"
-                onClick={() => deleteAttachment(item.id, item.fileurl)}
-              ></div>
+              {!isReadMode ? (
+                <div
+                  className="delete-icon"
+                  onClick={() => deleteAttachment(item.id, item.fileurl)}
+                ></div>
+              ) : (
+                ""
+              )}
             </div>
           ))}
         </div>
@@ -118,4 +132,4 @@ function FrmFileUpload(props) {
   );
 }
 
-export default FrmFileUpload;
+export default React.memo(FrmFileUpload);

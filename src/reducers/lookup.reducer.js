@@ -12,6 +12,7 @@ export const lookupReducer = (state = initialState, action) => {
     case lookupConstants.GETLOGTYPE_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case lookupConstants.GETLOGTYPE_SUCCESS:

@@ -170,7 +170,7 @@ function FrmInputSearch(props) {
   }
 }
 
-export default FrmInputSearch;
+export default React.memo(FrmInputSearch);
 /*const mapStateToProp = (state) => {
   return {
     lobState: state.lobState,

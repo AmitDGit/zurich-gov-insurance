@@ -9,7 +9,6 @@ function ToolTip() {
       multiline
       backgroundColor="#EBF4FB"
       textColor="#2167AD"
-      border="#ADD8EF"
     ></ReactTooltip>
   );
 }

@@ -10,6 +10,7 @@ export const sublobReducer = (state = initialState, action) => {
     case sublobConstants.GETALL_REQUEST:
       return {
         ...state,
+        items: [],
         loading: true,
       };
     case sublobConstants.GETALL_SUCCESS:

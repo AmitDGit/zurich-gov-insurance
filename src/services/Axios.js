@@ -1,13 +1,13 @@
 import axios from "axios";
 import TokenService from "./Tokenservice";
 //export const apiURL = "http://talentcentral.delphianlogic.com/TnaApi/api/";
-const BASE_URL = "http://192.168.0.7/ZurichAPI";
+const BASE_URL = "http://192.168.0.7/ZurichAPI/";
 if (window.App_Config) {
   console.log("loading from config file");
 }
 export const apiURL = window.App_Config
-  ? window.App_Config.API_Base_URL + "/api/"
-  : BASE_URL + "/api/";
+  ? window.App_Config.API_Base_URL + "api/"
+  : BASE_URL + "api/";
 
 export const authHeader = () => {
   return {

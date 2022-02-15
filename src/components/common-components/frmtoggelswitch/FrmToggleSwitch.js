@@ -9,10 +9,9 @@ function FrmToggleSwitch(props) {
     handleChange,
     selectopts,
     isRequired,
+    isReadMode,
     validationmsg,
     issubmitted,
-    hasInformation,
-    informationmsg,
     isToolTip,
     tooltipmsg,
   } = props;
@@ -22,6 +21,11 @@ function FrmToggleSwitch(props) {
       value = e.target.checked;
     }
     handleChange(name, value);
+  };
+  const getSelectedOpt = () => {
+    let selectedopt = [];
+    selectedopt = selectopts.filter((item) => item.value === value);
+    return selectedopt[0].label;
   };
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
@@ -36,31 +40,37 @@ function FrmToggleSwitch(props) {
           ""
         )}
       </label>
-      <div className="toggle-switch-container">
-        <div className="option-title">{selectopts[0]["label"]}</div>
-        <div className="toggle-switch">
-          <input
-            type="checkbox"
-            className="checkbox"
-            name={name}
-            id={name}
-            checked={value}
-            onChange={swithChange}
-          />
-          <label className="switch-box" htmlFor={name}>
-            <span className="inner" />
-            <span className="switch" />
-          </label>
-        </div>
-        <div className="option-title">{selectopts[1]["label"]}</div>
-      </div>
-      {isRequired && issubmitted && !value ? (
-        <div className="validationError">{validationmsg}</div>
+      {isReadMode ? (
+        <div>{getSelectedOpt()}</div>
       ) : (
-        ""
+        <>
+          <div className="toggle-switch-container">
+            <div className="option-title">{selectopts[0]["label"]}</div>
+            <div className="toggle-switch">
+              <input
+                type="checkbox"
+                className="checkbox"
+                name={name}
+                id={name}
+                checked={value}
+                onChange={swithChange}
+              />
+              <label className="switch-box" htmlFor={name}>
+                <span className="inner" />
+                <span className="switch" />
+              </label>
+            </div>
+            <div className="option-title">{selectopts[1]["label"]}</div>
+          </div>
+          {isRequired && issubmitted && !value ? (
+            <div className="validationError">{validationmsg}</div>
+          ) : (
+            ""
+          )}
+        </>
       )}
     </div>
   );
 }
 
-export default FrmToggleSwitch;
+export default React.memo(FrmToggleSwitch);

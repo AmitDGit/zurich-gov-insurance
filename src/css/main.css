@@ -114,7 +114,7 @@ body {
 .popup-box {
   position: absolute;
   right: 0px;
-  width: 366px;
+  width: 370px;
   background: #edeef0 0% 0% no-repeat padding-box;
   box-shadow: -5px 3px 11px #00000029;
   border: 1px solid #dce3e3;
@@ -154,10 +154,15 @@ body {
 }
 .popup-formitems {
   padding: 20px;
+  padding-bottom: 0px;
   min-height: 530px;
   /* max-height: 550px;*/
   overflow-y: auto;
+  overflow-x: hidden;
   font-size: 14px;
+}
+.mb20 {
+  margin-bottom: 20px;
 }
 /* form styles */
 .frm-container-bggray {
@@ -549,6 +554,15 @@ button:not(:last-child) {
   cursor: pointer;
   background: url("../assets/Save_hover.png") center no-repeat;
 }
+.view-icon {
+  width: 100%;
+  height: 22px;
+  background: url("../assets/view.png") center no-repeat;
+}
+.view-icon:hover {
+  cursor: pointer;
+  background: url("../assets/view_over.png") center no-repeat;
+}
 .edit-icon {
   width: 100%;
   height: 22px;
@@ -593,25 +607,6 @@ button:not(:last-child) {
   background-color: #fa5748;
 }
 
-.btn-container button {
-  min-width: 95px;
-  height: 26px;
-  background-color: rgba(33, 103, 173, 1);
-  text-align: center;
-  line-height: 25px;
-  color: #fff;
-  border-radius: 13px;
-  padding: 0 15px;
-  padding-left: 25px;
-  cursor: pointer;
-  border: none;
-  background-image: url("../assets/Export_to_Excel.png");
-  background-position: 10px center;
-  background-repeat: no-repeat;
-}
-.btn-container button:hover {
-  background-color: rgba(33, 103, 173, 0.7);
-}
 /*overiding bootstrap styles */
 .react-bootstrap-table table {
   table-layout: auto !important;

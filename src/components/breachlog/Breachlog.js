@@ -11,7 +11,7 @@ import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
 import FrmSelect from "../common-components/frmselect/FrmSelect";
 import PaginationData from "../common-components/PaginationData";
-import { alertMessage, dynamicSort } from "../../helpers";
+import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import AddEditForm from "./AddEditForm";
 import UserProfile from "../common-components/UserProfile";
 import FrmInput from "../common-components/frminput/FrmInput";
@@ -43,7 +43,10 @@ function Breachlog({ ...props }) {
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     classificationFilterOpts: [],
     groupFilterOpts: [],
-    entriesFilterOpts: [],
+    entriesFilterOpts: [
+      { label: "My Entries", value: "My Entries" },
+      { label: "All Entries", value: "All Entries" },
+    ],
     customerSegmentFilterOpts: [],
     natureOfBreachFilterOpts: [],
     lobFilterOpts: [],
@@ -54,14 +57,14 @@ function Breachlog({ ...props }) {
   const [countryAllFilterOpts, setcountryAllFilterOpts] = useState([]);
   const [regionFilterOpts, setregionFilterOpts] = useState([]);
   const intialFilterState = {
-    entrynumber: "",
+    entityNumber: "",
     title: "",
     classification: "",
     group: "",
     customersegment: "",
     natureofbreach: "",
     lobid: "",
-    actionresponsible: "",
+    actionResponsibleName: "",
     entries: "",
     regionId: "",
     countryId: "",
@@ -83,25 +86,31 @@ function Breachlog({ ...props }) {
     });
 
     if (name === "regionId" && value !== "") {
-      let countryopts = countryFilterOpts.filter(
+      let countryopts = countryAllFilterOpts.filter(
         (item) => item.regionId === value
       );
       setcountryFilterOpts([...countryopts]);
+      setselfilter({
+        ...selfilter,
+        [name]: value,
+        countryId: "",
+      });
     } else if (name === "regionId" && value === "") {
       setcountryFilterOpts([...countryAllFilterOpts]);
     }
   };
   const handleFilterSearch = () => {
+    debugger;
     let tempdata = [...data];
     if (
-      selfilter.entrynumber !== "" ||
+      selfilter.entityNumber !== "" ||
       selfilter.title !== "" ||
       selfilter.classification !== "" ||
       selfilter.group !== "" ||
       selfilter.customersegment !== "" ||
       selfilter.natureofbreach !== "" ||
       selfilter.lobid !== "" ||
-      selfilter.actionresponsible !== "" ||
+      selfilter.actionResponsibleName !== "" ||
       selfilter.entries !== "" ||
       selfilter.regionId !== "" ||
       selfilter.countryId !== ""
@@ -110,9 +119,9 @@ function Breachlog({ ...props }) {
         let isShow = true;
         if (
           isShow &&
-          selfilter.entrynumber !== "" &&
-          item.entrynumber &&
-          !item.entrynumber.includes(selfilter.entrynumber)
+          selfilter.entityNumber !== "" &&
+          item.entityNumber &&
+          !item.entityNumber.includes(selfilter.entityNumber)
         ) {
           isShow = false;
         }
@@ -130,7 +139,7 @@ function Breachlog({ ...props }) {
         if (
           isShow &&
           selfilter.classification !== "" &&
-          selfilter.classification !== item.classification
+          selfilter.classification !== item.classificationValue
         ) {
           isShow = false;
         }
@@ -164,15 +173,16 @@ function Breachlog({ ...props }) {
         }
         if (
           isShow &&
-          selfilter.actionresponsible !== "" &&
-          selfilter.actionresponsible !== item.actionresponsible
+          selfilter.actionResponsibleName !== "" &&
+          selfilter.actionResponsibleName !== item.actionResponsibleName
         ) {
           isShow = false;
         }
         if (
           isShow &&
           selfilter.entries !== "" &&
-          selfilter.entries !== item.entries
+          selfilter.entries === "My Entries" &&
+          item.createdByID !== userProfile.userId
         ) {
           isShow = false;
         }
@@ -196,6 +206,7 @@ function Breachlog({ ...props }) {
     }
   };
   const clearFilter = () => {
+    debugger;
     setselfilter(intialFilterState);
     setpaginationdata(data);
   };
@@ -224,7 +235,27 @@ function Breachlog({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "35px",
+          width: "25px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "viewaction",
+      text: "View",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="view-icon"
+            onClick={handleView}
+            rowid={row.breachLogID}
+          ></div>
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "50px",
           textAlign: "center",
         };
       },
@@ -244,7 +275,7 @@ function Breachlog({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "65px",
+          width: "50px",
           textAlign: "center",
         };
       },
@@ -258,9 +289,9 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "regionName",
-      text: "Region",
-      sort: true,
+      dataField: "creatorName",
+      text: "Created By",
+      sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
       },
@@ -281,17 +312,10 @@ function Breachlog({ ...props }) {
         return { width: "200px" };
       },
     },
+
     {
-      dataField: "creatorName",
-      text: "Created By",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "200px" };
-      },
-    },
-    {
-      dataField: "severityValue",
-      text: "Severity",
+      dataField: "classificationValue",
+      text: "Classification",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -321,7 +345,7 @@ function Breachlog({ ...props }) {
         return { width: "200px" };
       },
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{cell ? moment(cell).format("MM/DD/YYYY") : ""}</span>;
+        return <span>{cell ? formatDate(cell) : ""}</span>;
       },
     },
     {
@@ -332,12 +356,12 @@ function Breachlog({ ...props }) {
         return { width: "200px" };
       },
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{cell ? moment(cell).format("MM/DD/YYYY") : ""}</span>;
+        return <span>{cell ? formatDate(cell) : ""}</span>;
       },
     },
     {
-      dataField: "rangeOfFinancialImpactValue",
-      text: "Range Of Financial Impact Value",
+      dataField: "actionResponsibleName",
+      text: "Action Responsible",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -365,14 +389,19 @@ function Breachlog({ ...props }) {
     if (filters) {
       requestParam = filters;
     }
-    getAll(requestParam);
+    if (sellogType) {
+      getAll(requestParam);
+    }
   };
   useEffect(() => {
     let tempdata = [];
     let tempcmmonfilterOpts = {
       classificationFilterOpts: [],
       groupFilterOpts: [],
-      entriesFilterOpts: [],
+      entriesFilterOpts: [
+        { label: "My Entries", value: "My Entries" },
+        { label: "All Entries", value: "All Entries" },
+      ],
       customerSegmentFilterOpts: [],
       natureOfBreachFilterOpts: [],
       lobFilterOpts: [],
@@ -419,19 +448,19 @@ function Breachlog({ ...props }) {
         item.actionResponsible
       ) {
         tempcmmonfilterOpts["actionResponsibleFilterOpts"].push({
-          label: item.actionResponsible,
-          value: item.actionResponsible,
+          label: item.actionResponsibleName,
+          value: item.actionResponsibleName,
         });
         actionResponsibleOptsObj[item.actionResponsible] =
           item.actionResponsible;
       }
-      /*if (!statusOptsObj[item.breachStatus]) {
-        tempcmmonfilterOpts["statusFilterOpts"].push({
-          label: item.breachStatusValue,
-          value: item.breachStatus,
+      if (!statusOptsObj[item.breachStatus]) {
+        tempcmmonfilterOpts["classificationFilterOpts"].push({
+          label: item.classificationValue,
+          value: item.classificationValue,
         });
         statusOptsObj[item.breachStatus] = item.breachStatusValue;
-      }*/
+      }
       if (!countryOptsObj[item.countryId]) {
         tempcountryOpts.push({
           label: item.countryName,
@@ -455,6 +484,7 @@ function Breachlog({ ...props }) {
     tempcmmonfilterOpts["actionResponsibleFilterOpts"].sort(
       dynamicSort("label")
     );
+    tempcmmonfilterOpts["classificationFilterOpts"].sort(dynamicSort("label"));
     tempcountryOpts.sort(dynamicSort("label"));
     tempregionOpts.sort(dynamicSort("label"));
     setcommonfilterOpts(tempcmmonfilterOpts);
@@ -531,10 +561,12 @@ function Breachlog({ ...props }) {
     setshowAddPopup(false);
     setformIntialState(formInitialValue);
     setisEditMode(false);
+    setisReadMode(false);
     // getAllApprover({ UserName: "#$%" });
   };
 
   const [isEditMode, setisEditMode] = useState(false);
+  const [isReadMode, setisReadMode] = useState(false);
   const formInitialValue = {
     breachLogID: "",
     title: "",
@@ -543,23 +575,23 @@ function Breachlog({ ...props }) {
     customerSegment: "",
     lobid: "",
     sublobid: "",
-    severity: "",
+    classification: "",
     typeOfBreach: "",
     rootCauseOfTheBreach: "",
     natureOfBreach: "",
     materialBreach: false,
-    dateBreachOccurred: "",
+    dateBreachOccurred: null,
     details: "",
     rangeOfFinancialImpact: "",
     financialImpactDescription: "",
     howDetected: "",
     nearMisses: false,
     actionResponsible: "",
-    orgDueDate: "",
-    dueDate: "",
+    originalDueDate: null,
+    dueDate: null,
     actionPlan: "",
     breachStatus: "",
-    dateActionClosed: "",
+    dateActionClosed: null,
     actionUpdate: "",
     createdByID: "",
     createdDate: "",
@@ -576,6 +608,15 @@ function Breachlog({ ...props }) {
     });
     showAddPopup();
   };
+  const handleView = async (e) => {
+    let itemid = e.target.getAttribute("rowid");
+    const response = await getById({ breachLogID: itemid });
+    setisReadMode(true);
+    setformIntialState({
+      ...response,
+    });
+    showAddPopup();
+  };
   const putItemHandler = async (item) => {
     let response = await postItem({
       ...item,
@@ -585,7 +626,7 @@ function Breachlog({ ...props }) {
       setselfilter(intialFilterState);
       getAllBreachItems();
       hideAddPopup();
-      alert(alertMessage.user.update);
+      alert(alertMessage.breachlog.update);
     }
     setisEditMode(false);
   };
@@ -604,12 +645,12 @@ function Breachlog({ ...props }) {
       setselfilter(intialFilterState);
       getAllBreachItems();
       hideAddPopup();
-      alert(alertMessage.user.add);
+      alert(alertMessage.breachlog.add);
     }
   };
   const handleDelete = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    if (!window.confirm(alertMessage.user.deleteConfirm)) {
+    if (!window.confirm(alertMessage.breachlog.deleteConfirm)) {
       return;
     }
     let resonse = await checkIsInUse({ UserId: itemid });
@@ -617,10 +658,10 @@ function Breachlog({ ...props }) {
       resonse = await deleteItem({ UserId: itemid });
       if (resonse) {
         getAll({ RequesterUserId: userProfile.userId });
-        alert(alertMessage.user.delete);
+        alert(alertMessage.breachlog.delete);
       }
     } else {
-      alert(alertMessage.user.isInUse);
+      alert(alertMessage.breachlog.isInUse);
     }
   };
 
@@ -660,11 +701,12 @@ function Breachlog({ ...props }) {
     <>
       {isshowAddPopup ? (
         <AddEditForm
-          title={"Add/Edit Breach Log"}
+          title={isReadMode ? "View Breach Log" : "Add/Edit Breach Log"}
           hideAddPopup={hideAddPopup}
           postItem={postItemHandler}
           putItem={putItemHandler}
           isEditMode={isEditMode}
+          isReadMode={isReadMode}
           formIntialState={formIntialState}
           frmRegionSelectOpts={frmRegionSelectOpts}
           frmCountrySelectOpts={frmCountrySelectOpts}
@@ -679,10 +721,10 @@ function Breachlog({ ...props }) {
                 <div className="frm-filter">
                   <FrmInput
                     title={"Entry Number"}
-                    name={"entrynumber"}
+                    name={"entityNumber"}
                     type={"input"}
                     handleChange={onSearchFilterInput}
-                    value={selfilter.entrynumber}
+                    value={selfilter.entityNumber}
                   />
                 </div>
                 <div className="frm-filter">
@@ -703,7 +745,7 @@ function Breachlog({ ...props }) {
                     value={selfilter.classification}
                   />
                 </div>
-                <div className="frm-filter no-margin">
+                {/*<div className="frm-filter no-margin">
                   <FrmSelect
                     title={"Group"}
                     name={"group"}
@@ -711,7 +753,7 @@ function Breachlog({ ...props }) {
                     handleChange={onSearchFilterSelect}
                     value={selfilter.group}
                   />
-                </div>
+          </div>*/}
                 <div className="frm-filter">
                   <FrmSelect
                     title={"Customer Segment"}
@@ -742,10 +784,10 @@ function Breachlog({ ...props }) {
                 <div className="frm-filter no-margin">
                   <FrmSelect
                     title={"Action Responsible"}
-                    name={"actionresponsible"}
+                    name={"actionResponsibleName"}
                     selectopts={commonfilterOpts.actionResponsibleFilterOpts}
                     handleChange={onSearchFilterSelect}
-                    value={selfilter.actionresponsible}
+                    value={selfilter.actionResponsibleName}
                   />
                 </div>
                 <div className="frm-filter">
@@ -779,13 +821,19 @@ function Breachlog({ ...props }) {
               <div className="btn-container">
                 <div
                   className={`btn-blue ${
-                    selfilter.username === "" &&
-                    selfilter.email === "" &&
-                    selfilter.region === "" &&
-                    selfilter.country === "" &&
-                    selfilter.usertype === ""
-                      ? "disable"
-                      : ""
+                    selfilter.entityNumber !== "" ||
+                    selfilter.title !== "" ||
+                    selfilter.classification !== "" ||
+                    selfilter.group !== "" ||
+                    selfilter.customersegment !== "" ||
+                    selfilter.natureofbreach !== "" ||
+                    selfilter.lobid !== "" ||
+                    selfilter.actionResponsibleName !== "" ||
+                    selfilter.entries !== "" ||
+                    selfilter.regionId !== "" ||
+                    selfilter.countryId !== ""
+                      ? ""
+                      : "disable"
                   }`}
                   onClick={handleFilterSearch}
                 >

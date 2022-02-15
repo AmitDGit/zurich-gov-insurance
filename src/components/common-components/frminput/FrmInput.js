@@ -8,6 +8,7 @@ function FrmInput(props) {
     type,
     handleChange,
     isRequired,
+    isReadMode,
     validationmsg,
     issubmitted,
     handleClick,
@@ -17,21 +18,28 @@ function FrmInput(props) {
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={handleChange}
-        onClick={handleClick}
-        maxLength="60"
-      ></input>
-      {isRequired && issubmitted && !value ? (
-        <div className="validationError">{validationmsg}</div>
+      {isReadMode ? (
+        <div>{value}</div>
       ) : (
-        ""
+        <>
+          {" "}
+          <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={handleChange}
+            onClick={handleClick}
+            maxLength="60"
+          ></input>
+          {isRequired && issubmitted && !value ? (
+            <div className="validationError">{validationmsg}</div>
+          ) : (
+            ""
+          )}
+        </>
       )}
     </div>
   );
 }
 
-export default FrmInput;
+export default React.memo(FrmInput);
