@@ -44,6 +44,9 @@ function FrmDatePicker(props) {
           disabled={isdisabled}
           minDate={minDate ? minDate : ""}
           placeholderText="mm/dd/yyyy"
+          yearDropdownItemNumber={""}
+          showYearDropdown
+          showMonthDropdown
         />
       )}
     </div>

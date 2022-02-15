@@ -40,6 +40,7 @@ function Breachlog({ ...props }) {
   );
   //initialize filter/search functionality
   //console.log(breachlogState);
+  const selectInitiVal = { label: "Select", value: "" };
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     classificationFilterOpts: [],
     groupFilterOpts: [],
@@ -89,18 +90,17 @@ function Breachlog({ ...props }) {
       let countryopts = countryAllFilterOpts.filter(
         (item) => item.regionId === value
       );
-      setcountryFilterOpts([...countryopts]);
+      setcountryFilterOpts([selectInitiVal, ...countryopts]);
       setselfilter({
         ...selfilter,
         [name]: value,
         countryId: "",
       });
     } else if (name === "regionId" && value === "") {
-      setcountryFilterOpts([...countryAllFilterOpts]);
+      setcountryFilterOpts([selectInitiVal, ...countryAllFilterOpts]);
     }
   };
   const handleFilterSearch = () => {
-    debugger;
     let tempdata = [...data];
     if (
       selfilter.entityNumber !== "" ||
@@ -399,6 +399,7 @@ function Breachlog({ ...props }) {
       classificationFilterOpts: [],
       groupFilterOpts: [],
       entriesFilterOpts: [
+        selectInitiVal,
         { label: "My Entries", value: "My Entries" },
         { label: "All Entries", value: "All Entries" },
       ],
@@ -479,18 +480,23 @@ function Breachlog({ ...props }) {
     });
 
     tempcmmonfilterOpts["customerSegmentFilterOpts"].sort(dynamicSort("label"));
+    tempcmmonfilterOpts["customerSegmentFilterOpts"].unshift(selectInitiVal);
     tempcmmonfilterOpts["natureOfBreachFilterOpts"].sort(dynamicSort("label"));
+    tempcmmonfilterOpts["natureOfBreachFilterOpts"].unshift(selectInitiVal);
     tempcmmonfilterOpts["lobFilterOpts"].sort(dynamicSort("label"));
+    tempcmmonfilterOpts["lobFilterOpts"].unshift(selectInitiVal);
     tempcmmonfilterOpts["actionResponsibleFilterOpts"].sort(
       dynamicSort("label")
     );
+    tempcmmonfilterOpts["actionResponsibleFilterOpts"].unshift(selectInitiVal);
     tempcmmonfilterOpts["classificationFilterOpts"].sort(dynamicSort("label"));
+    tempcmmonfilterOpts["classificationFilterOpts"].unshift(selectInitiVal);
     tempcountryOpts.sort(dynamicSort("label"));
     tempregionOpts.sort(dynamicSort("label"));
     setcommonfilterOpts(tempcmmonfilterOpts);
-    setcountryFilterOpts([...tempcountryOpts]);
+    setcountryFilterOpts([selectInitiVal, ...tempcountryOpts]);
     setcountryAllFilterOpts([...tempcountryOpts]);
-    setregionFilterOpts([...tempregionOpts]);
+    setregionFilterOpts([selectInitiVal, ...tempregionOpts]);
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
   }, [breachlogState.items]);

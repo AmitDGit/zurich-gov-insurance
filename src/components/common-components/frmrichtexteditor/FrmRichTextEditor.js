@@ -93,7 +93,9 @@ function FrmRichTextEditor(props) {
             value={editorValue}
             onChange={setRichTextValue}
           />
-          {isRequired && issubmitted && !value ? (
+          {isRequired &&
+          issubmitted &&
+          !value.replace(/<\/?[^>]+(>|$)/g, "") ? (
             <div className="validationError">{validationmsg}</div>
           ) : (
             ""

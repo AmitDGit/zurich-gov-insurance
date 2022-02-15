@@ -11,6 +11,7 @@ import FrmInputSearch from "../common-components/frmpeoplepicker/FrmInputSearch"
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
 import Loading from "../common-components/Loading";
 import moment from "moment";
+import parse from "html-react-parser";
 import "./Style.css";
 import {
   userActions,
@@ -54,6 +55,7 @@ function AddEditForm(props) {
     isReadMode,
   } = props;
   //console.log(sublobState);
+  const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
@@ -93,10 +95,11 @@ function AddEditForm(props) {
     "natureOfBreach",
     "dateBreachOccurred",
     "howDetected",
+    "actionPlan",
   ]);
   useEffect(() => {
-    setcountryopts([...frmCountrySelectOpts]);
-    setregionopts([...frmRegionSelectOpts]);
+    setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
+    setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
     /*if (formIntialState.countryId) {
       let region = frmCountrySelectOpts.filter(
         (item) => item.value === formIntialState.countryId
@@ -109,9 +112,6 @@ function AddEditForm(props) {
       setregionopts([...frmRegionSelectOpts]);
     }*/
   }, []);
-  /*useEffect(() => {
-    
-  }, [frmRegionSelectOpts]);*/
 
   const [loading, setloading] = useState(true);
   useEffect(async () => {
@@ -178,12 +178,12 @@ function AddEditForm(props) {
     });
 
     setfrmSeverity([...tempSeverity]);
-    setfrmTypeOfBreach([...tempTypeOfBreach]);
-    setfrmRootCauseBreach([...tempRootCauseBreach]);
-    setfrmNatureOfBreach([...tempNatureOfBreach]);
-    setfrmRangeFinImpact([...tempRangeFinImpact]);
-    setfrmHowDetected([...tempHowDetected]);
-    setfrmBreachStatus([...frmbreachstatus]);
+    setfrmTypeOfBreach([selectInitiVal, ...tempTypeOfBreach]);
+    setfrmRootCauseBreach([selectInitiVal, ...tempRootCauseBreach]);
+    setfrmNatureOfBreach([selectInitiVal, ...tempNatureOfBreach]);
+    setfrmRangeFinImpact([selectInitiVal, ...tempRangeFinImpact]);
+    setfrmHowDetected([selectInitiVal, ...tempHowDetected]);
+    setfrmBreachStatus([selectInitiVal, ...frmbreachstatus]);
     setloading(false);
   }, []);
 
@@ -200,7 +200,7 @@ function AddEditForm(props) {
       country: item.countryList,
     }));
     tempItems.sort(dynamicSort("label"));
-    setfrmSegmentOpts(tempItems);
+    setfrmSegmentOpts([selectInitiVal, ...tempItems]);
     setfrmSegmentOptsAll(tempItems);
   }, [segmentState.segmentItems]);
 
@@ -210,7 +210,7 @@ function AddEditForm(props) {
       value: item.lobid,
     }));
     tempItems.sort(dynamicSort("label"));
-    setfrmLoB(tempItems);
+    setfrmLoB([selectInitiVal, ...tempItems]);
   }, [lobState.lobItems]);
 
   useEffect(() => {
@@ -247,14 +247,20 @@ function AddEditForm(props) {
       let countryopts = frmCountrySelectOpts.filter(
         (item) => item.regionId === value
       );
-      setcountryopts([...countryopts]);
+      setcountryopts([selectInitiVal, ...countryopts]);
       setformfield({
         ...formfield,
         [name]: value,
         countryId: "",
       });
     } else if (name === "regionId" && value === "") {
-      setcountryopts([...frmCountrySelectOpts]);
+      setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
+      setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
+      setformfield({
+        ...formfield,
+        [name]: value,
+        countryId: "",
+      });
     }
     if (name === "countryId" && value !== "") {
       let country = frmCountrySelectOpts.filter((item) => item.value === value);
@@ -270,8 +276,8 @@ function AddEditForm(props) {
           return false;
         }
       });
-      setfrmSegmentOpts(segmentOpts);
-      setregionopts([...regionOpts]);
+      setfrmSegmentOpts([selectInitiVal, ...segmentOpts]);
+      setregionopts([selectInitiVal, ...regionOpts]);
       setformfield({
         ...formfield,
         [name]: value,
@@ -279,15 +285,25 @@ function AddEditForm(props) {
         customerSegment: "",
       });
     } else if (name === "countryId" && value === "") {
-      setregionopts([...frmRegionSelectOpts]);
-      setfrmSegmentOpts(frmSegmentOptsAll);
+      setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
+      setfrmSegmentOpts([selectInitiVal, ...frmSegmentOptsAll]);
+      setformfield({
+        ...formfield,
+        [name]: value,
+        regionId: "",
+      });
     }
     //map lob and sublob fields
     if (name === "lobid" && value !== "") {
       let sublobopts = frmSublobAll.filter((item) => item.lob === value);
-      setfrmSublob([...sublobopts]);
+      setfrmSublob([selectInitiVal, ...sublobopts]);
     } else if (name === "lobid" && value === "") {
-      //setfrmSublob([...frmSublobAll]);
+      setfrmSublob([]);
+      setformfield({
+        ...formfield,
+        [name]: value,
+        sublobid: "",
+      });
     }
   };
 
@@ -384,7 +400,11 @@ function AddEditForm(props) {
     let isvalidated = true;
     for (let key in formfield) {
       if (mandatoryFields.includes(key) && isvalidated) {
-        if (formfield[key] === "" || formfield[key] === null) {
+        let value = formfield[key];
+        if (key === "actionPlan") {
+          value = formfield[key].replace(/<\/?[^>]+(>|$)/g, "");
+        }
+        if (!value) {
           isvalidated = false;
         }
       }
@@ -702,7 +722,7 @@ function AddEditForm(props) {
                     name={"actionPlan"}
                     value={formfield.actionPlan}
                     handleChange={handleSelectChange}
-                    isRequired={false}
+                    isRequired={true}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}

@@ -125,6 +125,12 @@ function FrmInputSearch(props) {
             </div>
           ))}
         </div>
+      ) : showsearchResultBox ? (
+        <div className="searched-container" ref={wrapperRef}>
+          <div className="user-view">
+            <i>No result found</i>
+          </div>
+        </div>
       ) : (
         ""
       )}
