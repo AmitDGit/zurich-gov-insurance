@@ -176,6 +176,7 @@ body {
 #myForm label {
   font-weight: 600;
 }
+
 .frm-field {
   position: relative;
   margin-bottom: 20px;
@@ -187,6 +188,9 @@ body {
   font-weight: 600;
   margin-bottom: 5px;
   display: block;
+}
+.frm-field label i {
+  font-weight: normal;
 }
 .frm-field label.disabled,
 .frm-field div.disabled {
@@ -574,6 +578,7 @@ button:not(:last-child) {
 }
 .delete-icon {
   width: 22px;
+  min-width: 22px;
   height: 22px;
   background: url("../assets/trash.png") center no-repeat;
 }
@@ -603,7 +608,13 @@ button:not(:last-child) {
   border-radius: 50%;
   background-color: #c2c2c2;
 }
-.duedate-priority-icon.high {
+.duedate-priority-icon.green {
+  background-color: #33a532;
+}
+.duedate-priority-icon.amber {
+  background-color: #ffbf00;
+}
+.duedate-priority-icon.red {
   background-color: #fa5748;
 }
 
@@ -692,6 +703,10 @@ button:not(:last-child) {
 }
 .pagination .page-item.active .page-link {
   cursor: default;
+}
+.react-bootstrap-table {
+  width: 100%;
+  overflow-x: auto;
 }
 .pagination-top-container {
   width: 100%;

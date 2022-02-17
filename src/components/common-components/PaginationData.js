@@ -17,8 +17,9 @@ function PaginationData(props) {
     isExportReport,
     exportReportTitle,
     exportFileName,
+    exportExcludeFields,
   } = props;
-  console.log(data);
+  //console.log(data);
   const { SearchBar, ClearSearchButton } = Search;
   const pagination = paginationFactory({
     page: 1,
@@ -83,6 +84,7 @@ function PaginationData(props) {
                       exportReportTitle={exportReportTitle}
                       exportFileName={exportFileName}
                       exportData={data}
+                      exportExcludeFields={exportExcludeFields}
                     />
                   ) : (
                     ""

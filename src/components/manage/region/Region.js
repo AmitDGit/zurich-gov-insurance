@@ -20,7 +20,7 @@ function Region({ ...props }) {
     userProfile,
   } = props;
   useSetNavMenu({ currentMenu: "Region", isSubmenu: true }, props.menuClick);
-  //console.log(props.state);
+  //console.log(regionState);
   //initialize filter/search functionality
   const [regionFilterOpts, setregionFilterOpts] = useState([]);
   const intialFilterState = {

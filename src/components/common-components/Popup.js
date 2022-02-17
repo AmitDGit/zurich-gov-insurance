@@ -1,7 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+
 function ScrollToTop() {
-  window.scrollTo(0, 0);
+  //window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: "smooth" });
   return null;
 }
 function Popup(props) {

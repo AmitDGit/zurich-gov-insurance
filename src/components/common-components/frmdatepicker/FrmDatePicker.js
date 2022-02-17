@@ -49,6 +49,11 @@ function FrmDatePicker(props) {
           showMonthDropdown
         />
       )}
+      {isRequired && issubmitted && !value ? (
+        <div className="validationError">{validationmsg}</div>
+      ) : (
+        ""
+      )}
     </div>
   );
 }
