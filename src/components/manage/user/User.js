@@ -57,14 +57,17 @@ function User({ ...props }) {
     });
 
     if (name === "region" && value !== "") {
+      debugger;
       let region = frmRegionSelectOpts.filter((item) => item.label === value);
       let tempmapObj = countrymapping.filter(
         (item) => item.region === region[0].value
       );
-      let countryopts = tempmapObj[0].country.map((item) => {
-        return { label: item.label, value: item.label };
-      });
-
+      let countryopts = [];
+      if (tempmapObj.length) {
+        countryopts = tempmapObj[0].country.map((item) => {
+          return { label: item.label, value: item.label };
+        });
+      }
       setcountryFilterOpts([...countryopts]);
     } else if (name === "region" && value === "") {
       let countryopts = countryAllOpts.map((item) => {

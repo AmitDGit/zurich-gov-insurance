@@ -14,6 +14,11 @@ import moment from "moment";
 import parse from "html-react-parser";
 import "./Style.css";
 import {
+  BREACH_LOG_OPEN_STATUS,
+  BREACH_LOG_CLOSE_STATUS,
+  REGION_EMEA,
+} from "../../constants";
+import {
   userActions,
   lookupActions,
   lobActions,
@@ -56,6 +61,8 @@ function AddEditForm(props) {
   } = props;
   //console.log(sublobState);
   const selectInitiVal = { label: "Select", value: "" };
+  const closeStatusValue = BREACH_LOG_CLOSE_STATUS;
+  const emeaRegionValue = REGION_EMEA;
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
@@ -96,6 +103,8 @@ function AddEditForm(props) {
     "dateBreachOccurred",
     "howDetected",
     "actionPlan",
+    "dueDate",
+    "actionResponsibleName",
   ]);
   useEffect(() => {
     setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
@@ -183,6 +192,7 @@ function AddEditForm(props) {
     setfrmNatureOfBreach([selectInitiVal, ...tempNatureOfBreach]);
     setfrmRangeFinImpact([selectInitiVal, ...tempRangeFinImpact]);
     setfrmHowDetected([selectInitiVal, ...tempHowDetected]);
+
     setfrmBreachStatus([selectInitiVal, ...frmbreachstatus]);
     setloading(false);
   }, []);
@@ -380,9 +390,16 @@ function AddEditForm(props) {
     setformfield({ ...formfield, fullFilePath: fullFilePath });
   }, [formfield.breachAttachmentList]);
 
+  const [scrollPosition, setScrollPosition] = useState(0);
   const [showpeoplepicker, setshowpeoplepicker] = useState(false);
+  const handleshowpeoplepicker = () => {
+    const position = window.pageYOffset;
+    setScrollPosition(position);
+    setshowpeoplepicker(true);
+  };
   const hidePeoplePickerPopup = () => {
     setshowpeoplepicker(false);
+    window.scrollTo({ top: scrollPosition, behavior: "smooth" });
   };
   const assignPeoplepikerUser = (name, value) => {
     let displayname = value[0].firstName + " " + value[0].lastName;
@@ -394,9 +411,7 @@ function AddEditForm(props) {
       actionResponsibleAD: value[0],
     });
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setissubmitted(true);
+  const validateform = () => {
     let isvalidated = true;
     for (let key in formfield) {
       if (mandatoryFields.includes(key) && isvalidated) {
@@ -409,15 +424,35 @@ function AddEditForm(props) {
         }
       }
     }
-    if (isvalidated) {
-      if (isEditMode) {
-        putItem(formfield);
-      } else {
-        postItem(formfield);
+    return isvalidated;
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setissubmitted(true);
+    if (validateform()) {
+      //added below code to set date action closed value
+      if (
+        formfield.breachStatus === closeStatusValue &&
+        !formfield.dateActionClosed
+      ) {
+        formfield.dateActionClosed = moment().format("YYYY-MM-DD");
       }
+      //end of code
+      if (formfield.breachStatus)
+        if (isEditMode) {
+          putItem(formfield);
+        } else {
+          postItem({ ...formfield, isSubmit: true });
+        }
     }
   };
-
+  const handleSaveLog = () => {
+    setissubmitted(true);
+    if (validateform()) {
+      postItem({ ...formfield, isSubmit: false });
+    }
+    // hideAddPopup();
+  };
   return loading ? (
     <Loading />
   ) : (
@@ -562,7 +597,11 @@ function AddEditForm(props) {
                 </div>
                 <div className="col-md-3">
                   <FrmSelect
-                    title={"Nature of Breach (Keywords)"}
+                    title={
+                      <>
+                        Nature of Breach <i>(Keywords)</i>
+                      </>
+                    }
                     name={"natureOfBreach"}
                     value={formfield.natureOfBreach}
                     handleChange={handleSelectChange}
@@ -575,7 +614,11 @@ function AddEditForm(props) {
                 </div>
                 <div className="col-md-3">
                   <FrmToggleSwitch
-                    title={"Material breach (as per URPM)"}
+                    title={
+                      <>
+                        Material breach <i>(as per ZUG)</i>
+                      </>
+                    }
                     name={"materialBreach"}
                     value={formfield.materialBreach}
                     handleChange={handleSelectChange}
@@ -618,7 +661,12 @@ function AddEditForm(props) {
               <div className="row">
                 <div className="col-md-3">
                   <FrmSelect
-                    title={"Range of financial impact (In US Dollars $)"}
+                    title={
+                      <>
+                        Range of financial impact <br></br>
+                        <i>(In US Dollars $)</i>
+                      </>
+                    }
                     name={"rangeOfFinancialImpact"}
                     value={formfield.rangeOfFinancialImpact}
                     handleChange={handleSelectChange}
@@ -659,22 +707,30 @@ function AddEditForm(props) {
                   />
                 </div>
                 <div className="col-md-9">
-                  <FrmToggleSwitch
-                    title={"Near misses/ OE (Only EMEA)"}
-                    name={"nearMisses"}
-                    value={formfield.nearMisses}
-                    handleChange={handleSelectChange}
-                    isRequired={false}
-                    isReadMode={isReadMode}
-                    isToolTip={true}
-                    tooltipmsg={
-                      "Has a loss naterialised as a result of the breach? If the answer is No, this is a near miss. If the answer is Yes, this is an operational event."
-                    }
-                    validationmsg={"Mandatory field"}
-                    issubmitted={issubmitted}
-                    selectopts={yesnoopts}
-                    isdisabled={isdisabled}
-                  />
+                  {formfield.regionId === emeaRegionValue ? (
+                    <FrmToggleSwitch
+                      title={
+                        <>
+                          Near misses / OE <i>(Only EMEA)</i>
+                        </>
+                      }
+                      name={"nearMisses"}
+                      value={formfield.nearMisses}
+                      handleChange={handleSelectChange}
+                      isRequired={false}
+                      isReadMode={isReadMode}
+                      isToolTip={true}
+                      tooltipmsg={
+                        "Has a loss naterialised as a result of the breach? If the answer is No, this is a near miss.<br>If the answer is Yes, this is an operational event."
+                      }
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
+                      selectopts={yesnoopts}
+                      isdisabled={isdisabled}
+                    />
+                  ) : (
+                    ""
+                  )}
                 </div>
               </div>
               <div className="row">
@@ -685,8 +741,8 @@ function AddEditForm(props) {
                     value={formfield.actionResponsibleName}
                     type={"text"}
                     handleChange={handleChange}
-                    handleClick={() => setshowpeoplepicker(true)}
-                    isRequired={false}
+                    handleClick={handleshowpeoplepicker}
+                    isRequired={true}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
@@ -699,7 +755,7 @@ function AddEditForm(props) {
                     value={formfield.dueDate}
                     type={"date"}
                     handleChange={handleDateSelectChange}
-                    isRequired={false}
+                    isRequired={true}
                     isReadMode={isReadMode}
                     minDate={moment().toDate()}
                     validationmsg={"Mandatory field"}
@@ -830,6 +886,15 @@ function AddEditForm(props) {
       {!isReadMode ? (
         <div className="popup-footer-container">
           <div className="btn-container">
+            {!isEditMode ? (
+              <>
+                <button className="btn-blue" onClick={handleSaveLog}>
+                  Save
+                </button>
+              </>
+            ) : (
+              ""
+            )}
             <button className="btn-blue" type="submit" form="myForm">
               Submit
             </button>

@@ -30,6 +30,7 @@ function FrmInput(props) {
             onChange={handleChange}
             onClick={handleClick}
             maxLength="60"
+            autocomplete="off"
           ></input>
           {isRequired && issubmitted && !value ? (
             <div className="validationError">{validationmsg}</div>

@@ -131,9 +131,7 @@ const checkIsInUseService = async (requestParam) => {
   return response;
 };
 const postItemService = async (requestParam) => {
-  debugger;
   const response = await Axios.post(`breachlog/addeditbreachlog`, requestParam);
-  console.log(response);
   return response;
 };
 const deleteItemService = async (requestParam) => {

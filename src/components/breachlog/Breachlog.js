@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOMServer from "react-dom/server";
 import { connect } from "react-redux";
 import {
   breachlogActions,
@@ -15,8 +16,12 @@ import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import AddEditForm from "./AddEditForm";
 import UserProfile from "../common-components/UserProfile";
 import FrmInput from "../common-components/frminput/FrmInput";
-
+import {
+  BREACH_LOG_OPEN_STATUS,
+  BREACH_LOG_CLOSE_STATUS,
+} from "../../constants";
 import moment from "moment";
+import ToolTip from "../common-components/tooltip/ToolTip";
 
 function Breachlog({ ...props }) {
   const { breachlogState, countryState, regionState, userState } = props.state;
@@ -41,6 +46,29 @@ function Breachlog({ ...props }) {
   //initialize filter/search functionality
   //console.log(breachlogState);
   const selectInitiVal = { label: "Select", value: "" };
+  const draftTabVal = { label: "Draft", value: "", isSubmit: false };
+  const openStatusValue = BREACH_LOG_OPEN_STATUS;
+
+  const exportExcludeFields = [
+    "breachLogID",
+    "regionId",
+    "countryId",
+    "customerSegment",
+    "lobid",
+    "classification",
+    "typeOfBreach",
+    "rootCauseOfTheBreach",
+    "natureOfBreach",
+    "rangeOfFinancialImpact",
+    "financialImpactDescription",
+    "howDetected",
+    "breachStatus",
+    "createdByID",
+    "totalCount",
+    "sublobid",
+    "isSubmit",
+  ];
+
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     classificationFilterOpts: [],
     groupFilterOpts: [],
@@ -139,7 +167,7 @@ function Breachlog({ ...props }) {
         if (
           isShow &&
           selfilter.classification !== "" &&
-          selfilter.classification !== item.classificationValue
+          selfilter.classification !== item.classification
         ) {
           isShow = false;
         }
@@ -206,12 +234,25 @@ function Breachlog({ ...props }) {
     }
   };
   const clearFilter = () => {
-    debugger;
     setselfilter(intialFilterState);
     setpaginationdata(data);
   };
+  const checkDueDatePriority = (value) => {
+    let priorityCls = "";
+    let dueDate = moment(value);
+    let currentDate = moment();
+    let duedatediff = dueDate.diff(currentDate, "days");
+    if (duedatediff > 30) {
+      priorityCls = "green";
+    } else if (duedatediff <= 30 && duedatediff > 1) {
+      priorityCls = "amber";
+    } else {
+      priorityCls = "red";
+    }
+    return priorityCls;
+  };
   //set pagination data and functionality
-  const [duedatepriority, setduedatepriority] = useState(15);
+
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
   const [exportData, setexportData] = useState([{ columns: [], data: [] }]);
@@ -220,14 +261,11 @@ function Breachlog({ ...props }) {
       dataField: "duedate-priority",
       text: "",
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        let dueDate = moment(row.dueDate);
-        let currentDate = moment();
-        let duedatediff = dueDate.diff(currentDate, "days");
+        let priorityCls = checkDueDatePriority(row.dueDate);
 
-        let ishighpriority = duedatepriority > duedatediff ? true : false;
         return (
           <div
-            className={`duedate-priority-icon ${ishighpriority ? "high" : ""}`}
+            className={`duedate-priority-icon ${priorityCls}`}
             rowid={row.breachLogID}
           ></div>
         );
@@ -281,13 +319,36 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "title",
+      dataField: "entityNumber",
+      text: "Entry Number",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "120px" };
+      },
+    },
+    {
+      dataField: "",
       text: "Title",
-      sort: true,
+      sort: false,
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <>
+            <div
+              className="breach-title"
+              onMouseOver={showToolTip}
+              rowid={row.breachLogID}
+            >
+              {row.title}
+            </div>
+            <ToolTip place="bottom" effect="solid" />
+          </>
+        );
+      },
       headerStyle: (colum, colIndex) => {
         return { width: "250px" };
       },
     },
+
     {
       dataField: "creatorName",
       text: "Created By",
@@ -376,23 +437,27 @@ function Breachlog({ ...props }) {
     },
   ];
 
-  useEffect(() => {
-    getAllCountry();
-    getAllRegion();
-  }, []);
-
   const getAllBreachItems = (filters) => {
     let requestParam = {
       RequesterUserId: userProfile.userId,
-      breachStatus: sellogType,
+      breachStatus: "",
     };
     if (filters) {
       requestParam = filters;
     }
     if (sellogType) {
+      let tempseltype = logTypes.filter((item) => item.label === sellogType);
+      requestParam["breachStatus"] = tempseltype[0]["value"];
+      requestParam["isSubmit"] = tempseltype[0]["isSubmit"];
+      console.log("getting infor");
       getAll(requestParam);
     }
   };
+  useEffect(() => {
+    getAllCountry();
+    getAllRegion();
+  }, []);
+
   useEffect(() => {
     let tempdata = [];
     let tempcmmonfilterOpts = {
@@ -409,7 +474,7 @@ function Breachlog({ ...props }) {
       actionResponsibleFilterOpts: [],
       statusFilterOpts: [],
     };
-    // let classificationOptsObj= {};
+    let classificationOptsObj = {};
     // let groupOptsObj= {};
     // let entriesOptsObj= {};
     let customerSegmentOptsObj = {};
@@ -455,12 +520,12 @@ function Breachlog({ ...props }) {
         actionResponsibleOptsObj[item.actionResponsible] =
           item.actionResponsible;
       }
-      if (!statusOptsObj[item.breachStatus]) {
+      if (!classificationOptsObj[item.classification]) {
         tempcmmonfilterOpts["classificationFilterOpts"].push({
           label: item.classificationValue,
-          value: item.classificationValue,
+          value: item.classification,
         });
-        statusOptsObj[item.breachStatus] = item.breachStatusValue;
+        classificationOptsObj[item.classification] = item.classificationValue;
       }
       if (!countryOptsObj[item.countryId]) {
         tempcountryOpts.push({
@@ -602,13 +667,16 @@ function Breachlog({ ...props }) {
     createdByID: "",
     createdDate: "",
     breachAttachmentList: [],
+    isSubmit: false,
   };
   const [formIntialState, setformIntialState] = useState(formInitialValue);
 
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
     const response = await getById({ breachLogID: itemid });
-    setisEditMode(true);
+    if (response.isSubmit) {
+      setisEditMode(true);
+    }
     setformIntialState({
       ...response,
     });
@@ -623,6 +691,7 @@ function Breachlog({ ...props }) {
     });
     showAddPopup();
   };
+  const showToolTip = (e) => {};
   const putItemHandler = async (item) => {
     let response = await postItem({
       ...item,
@@ -651,7 +720,11 @@ function Breachlog({ ...props }) {
       setselfilter(intialFilterState);
       getAllBreachItems();
       hideAddPopup();
-      alert(alertMessage.breachlog.add);
+      if (item.isSubmit) {
+        alert(alertMessage.breachlog.add);
+      } else {
+        alert(alertMessage.breachlog.draft);
+      }
     }
   };
   const handleDelete = async (e) => {
@@ -688,12 +761,26 @@ function Breachlog({ ...props }) {
     let tempBreachStatus = await getLookupByType({
       LookupType: "BreachStatus",
     });
-    tempBreachStatus = tempBreachStatus.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    setlogTypes([...tempBreachStatus]);
-    setsellogType(tempBreachStatus[0]["value"]);
+    let openstatus = {};
+    tempBreachStatus = tempBreachStatus.map((item) => {
+      if (openStatusValue === item.lookupID) {
+        openstatus = {
+          label: item.lookUpValue,
+          value: item.lookupID,
+          isSubmit: true,
+        };
+      }
+      return {
+        label: item.lookUpValue,
+        value: item.lookupID,
+        isSubmit: true,
+      };
+    });
+    setlogTypes([
+      { label: "Draft", value: openstatus["value"], isSubmit: false },
+      ...tempBreachStatus,
+    ]);
+    setsellogType(openstatus.label);
   }, []);
 
   const openBreachlogTab = (type) => {
@@ -866,18 +953,18 @@ function Breachlog({ ...props }) {
           <div className="tabs-container">
             {logTypes.map((item) => (
               <div
-                key={item.value}
+                key={item.label}
                 className={`tab-btn ${
-                  sellogType === item.value ? "selected" : "normal"
+                  sellogType === item.label ? "selected" : "normal"
                 }`}
-                onClick={() => openBreachlogTab(item.value)}
+                onClick={() => openBreachlogTab(item.label)}
               >
                 {item.label}
               </div>
             ))}
           </div>
           <div>
-            {userState.loading ? (
+            {breachlogState.loading ? (
               <Loading />
             ) : userState.error ? (
               <div>{userState.error}</div>
@@ -893,6 +980,7 @@ function Breachlog({ ...props }) {
                 exportFileName={"BreachLogReport"}
                 buttonTitle={"New Breach"}
                 hidesearch={true}
+                exportExcludeFields={exportExcludeFields}
               />
             )}
           </div>

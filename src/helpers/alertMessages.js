@@ -64,6 +64,7 @@ export const alertMessage = {
     nameExist: "Lookup value name is already exist!",
   },
   breachlog: {
+    draft: "The draft of the breachlog is added.",
     add: "The new breachlog is successfully added.",
     update: "The breachlog is successfully updated.",
     delete: "The breachlog is deleted.",

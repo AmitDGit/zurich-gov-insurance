@@ -6,17 +6,24 @@ const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
 const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
 
 function ExportToExcel(props) {
-  const { exportReportTitle, exportData, exportFileName } = props;
+  const {
+    exportReportTitle,
+    exportData,
+    exportFileName,
+    exportExcludeFields,
+  } = props;
   let column = [];
   let data = [];
   for (let i = 0; i < exportData.length; i++) {
     let item = exportData[i];
     let dataitem = [];
     for (let key in item) {
-      if (i == 0) {
-        column.push(key);
+      if (!exportExcludeFields.includes(key)) {
+        if (i == 0) {
+          column.push(key);
+        }
+        dataitem.push(item[key]);
       }
-      dataitem.push(item[key]);
     }
     data.push(dataitem);
   }
