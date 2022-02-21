@@ -21,8 +21,8 @@ import {
   BREACH_LOG_CLOSE_STATUS,
 } from "../../constants";
 import moment from "moment";
-import ToolTip from "../common-components/tooltip/ToolTip";
-
+import CustomToolTip from "../common-components/tooltip/CustomToolTip";
+import parse from "html-react-parser";
 function Breachlog({ ...props }) {
   const { breachlogState, countryState, regionState, userState } = props.state;
   const {
@@ -331,16 +331,34 @@ function Breachlog({ ...props }) {
       text: "Title",
       sort: false,
       formatter: (cell, row, rowIndex, formatExtraData) => {
+        let tooltiptxt = `<table><row.breachLogID`;
         return (
           <>
-            <div
-              className="breach-title"
-              onMouseOver={showToolTip}
-              rowid={row.breachLogID}
+            <CustomToolTip
+              content={
+                <>
+                  <table>
+                    <tr>
+                      <td>
+                        <b>Breach Details</b>
+                        <br></br>
+                        {row.breachDetails ? parse(row.breachDetails) : ""}
+                      </td>
+                      <td>
+                        <b>Action Plan</b>
+                        <br></br>
+                        {row.actionPlan ? parse(row.actionPlan) : ""}
+                      </td>
+                    </tr>
+                  </table>
+                </>
+              }
+              direction="right"
             >
-              {row.title}
-            </div>
-            <ToolTip place="bottom" effect="solid" />
+              <div className="breach-title" rowid={row.breachLogID}>
+                {row.title}
+              </div>
+            </CustomToolTip>
           </>
         );
       },
@@ -432,8 +450,8 @@ function Breachlog({ ...props }) {
 
   const defaultSorted = [
     {
-      dataField: "title",
-      order: "asc",
+      dataField: "createdDate",
+      order: "desc",
     },
   ];
 

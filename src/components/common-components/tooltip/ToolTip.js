@@ -6,7 +6,6 @@ function ToolTip(props) {
     <ReactTooltip
       effect={effect ? effect : "float"}
       place={place ? place : "top"}
-      offset={{ top: 10, left: 10 }}
       type="dark"
       multiline
       backgroundColor="#EBF4FB"
