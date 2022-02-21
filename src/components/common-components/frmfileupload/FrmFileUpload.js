@@ -13,6 +13,7 @@ function FrmFileUpload(props) {
     isRequired,
     validationmsg,
     issubmitted,
+    isshowloading,
   } = props;
   const [selectedfile, setselectedfile] = useState();
   const [filename, setfilename] = useState("");
@@ -94,6 +95,7 @@ function FrmFileUpload(props) {
             >
               Upload
             </div>
+            {isshowloading ? <span>Loading...</span> : ""}
           </div>
           {isRequired && issubmitted && !value ? (
             <div className="validationError">{validationmsg}</div>

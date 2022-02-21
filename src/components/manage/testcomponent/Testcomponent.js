@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { lobchapterActions } from "../../../actions";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import { alertMessage, dynamicSort } from "../../../helpers";
-import Dropdown from "../../common-components/Dropdown";
+
 import PaginationData from "../../common-components/PaginationData";
 import Loading from "../../common-components/Loading";
 function Testcomponent({ ...props }) {
@@ -351,7 +351,7 @@ function Testcomponent({ ...props }) {
         <div className="page-title">Manage LoB Chapter</div>
         <div className="page-filter">
           <div className="dropdown-filter-container">
-            <Dropdown
+            {/* <Dropdown
               label={"LoB Chapter Name"}
               name={"lobchapter"}
               selectopts={lobchapterFilterOpts}
@@ -364,7 +364,7 @@ function Testcomponent({ ...props }) {
               selectopts={lobFilterOpts}
               onSelectHandler={onSearchFilterSelect}
               initvalue={selfilter.lob}
-            />
+           />*/}
           </div>
           <div className="btn-container">
             <div

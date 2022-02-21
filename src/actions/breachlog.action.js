@@ -80,26 +80,7 @@ const deleteItem = (requestParam) => {
     }
   };
 };
-const uploadFile = (requestParam) => {
-  return async (dispatch) => {
-    try {
-      const response = await breachlogService.uploadFileService(requestParam);
-      return response.data;
-    } catch (err) {
-      return false;
-    }
-  };
-};
-const deleteFile = (requestParam) => {
-  return async (dispatch) => {
-    try {
-      const response = await breachlogService.deleteFileService(requestParam);
-      return response.data;
-    } catch (err) {
-      return false;
-    }
-  };
-};
+
 export const breachlogActions = {
   getAll,
   getAllStatus,
@@ -107,8 +88,6 @@ export const breachlogActions = {
   checkIsInUse,
   postItem,
   deleteItem,
-  uploadFile,
-  deleteFile,
 };
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
@@ -139,19 +118,7 @@ const deleteItemService = async (requestParam) => {
   const response = await Axios.delete(`breachlog/deletebreachlog`, param);
   return response;
 };
-const uploadFileService = async (requestParam) => {
-  const response = await Axios.post(`common/uploadfile`, requestParam, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response;
-};
-const deleteFileService = async (requestParam) => {
-  const param = { params: requestParam };
-  const response = await Axios.delete(`common/deletefile`, param);
-  return response;
-};
+
 const breachlogService = {
   getAllService,
   getAllStatusService,
@@ -159,6 +126,4 @@ const breachlogService = {
   checkIsInUseService,
   postItemService,
   deleteItemService,
-  uploadFileService,
-  deleteFileService,
 };

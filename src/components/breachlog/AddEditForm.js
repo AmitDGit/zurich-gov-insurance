@@ -25,6 +25,7 @@ import {
   segmentActions,
   sublobActions,
   breachlogActions,
+  commonActions,
 } from "../../actions";
 import FrmRadio from "../common-components/frmradio/FrmRadio";
 import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTextEditor";
@@ -106,6 +107,7 @@ function AddEditForm(props) {
     "dueDate",
     "actionResponsibleName",
   ]);
+  const [fileuploadloader, setfileuploadloader] = useState(false);
   useEffect(() => {
     setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
     setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
@@ -353,8 +355,10 @@ function AddEditForm(props) {
       formData.append("TempId", folderID);
       formData.append("LogType", "BreachLogs");
     }
+    setfileuploadloader(true);
     let response = await uploadFile(formData);
     if (response) {
+      setfileuploadloader(false);
       if (!formfield.breachLogID) {
         formfield.folderID = response.tempId;
       }
@@ -370,6 +374,11 @@ function AddEditForm(props) {
         ...formfield,
         breachAttachmentList: [...tempattachementfiles],
       });
+    } else {
+      setfileuploadloader(false);
+      alert(
+        "Error in file upload! Please check internet connectivity and try reuploading."
+      );
     }
   };
   const handleFileDelete = async (id, url) => {
@@ -636,6 +645,8 @@ function AddEditForm(props) {
                     isRequired={false}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
+                    isToolTip={true}
+                    tooltipmsg={"Tooltip text"}
                     issubmitted={issubmitted}
                     selectopts={yesnoopts}
                     isdisabled={isdisabled}
@@ -839,6 +850,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
+                    isshowloading={fileuploadloader ? fileuploadloader : false}
                   />
                 </div>
               </div>
@@ -945,8 +957,8 @@ const mapActions = {
   getAlllob: lobActions.getAlllob,
   getAllSegment: segmentActions.getAllSegment,
   getAllSublob: sublobActions.getAllSublob,
-  uploadFile: breachlogActions.uploadFile,
-  deleteFile: breachlogActions.deleteFile,
+  uploadFile: commonActions.uploadFile,
+  deleteFile: commonActions.deleteFile,
   getAllUsers: userActions.getAllUsers,
 };
 export default connect(mapStateToProp, mapActions)(AddEditForm);

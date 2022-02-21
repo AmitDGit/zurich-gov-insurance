@@ -129,7 +129,43 @@ function Breachlog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
-    let tempdata = [...data];
+    let filter = {};
+    if (selfilter.entityNumber !== "") {
+      filter["entityNumber"] = selfilter.entityNumber;
+    }
+    if (selfilter.title.trim() !== "") {
+      filter["title"] = selfilter.title;
+    }
+    if (selfilter.classification !== "") {
+      filter["classification"] = selfilter.classification;
+    }
+    if (selfilter.customersegment !== "") {
+      filter["customerSegment"] = selfilter.customersegment;
+    }
+    if (selfilter.natureofbreach !== "") {
+      filter["natureOfBreach"] = selfilter.natureofbreach;
+    }
+    if (selfilter.lobid !== "") {
+      filter["lobid"] = selfilter.lobid;
+    }
+    if (selfilter.actionResponsibleName !== "") {
+      filter["actionResponsibleName"] = selfilter.actionResponsibleName;
+    }
+    if (selfilter.regionId !== "") {
+      filter["regionId"] = selfilter.regionId;
+    }
+    if (selfilter.countryId !== "") {
+      filter["countryId"] = selfilter.countryId;
+    }
+    if (selfilter.entries !== "") {
+      if (selfilter.entries === "My Entries") {
+        filter["createdByID"] = userProfile.userId;
+      } else {
+        filter["createdByID"] = "";
+      }
+    }
+    getAllBreachItems(filter);
+    /*let tempdata = [...data];
     if (
       selfilter.entityNumber !== "" ||
       selfilter.title !== "" ||
@@ -231,11 +267,12 @@ function Breachlog({ ...props }) {
         return isShow;
       });
       setpaginationdata(tempdata);
-    }
+    }*/
   };
   const clearFilter = () => {
     setselfilter(intialFilterState);
-    setpaginationdata(data);
+    //setpaginationdata(data);
+    getAllBreachItems();
   };
   const checkDueDatePriority = (value) => {
     let priorityCls = "";
@@ -461,13 +498,14 @@ function Breachlog({ ...props }) {
       breachStatus: "",
     };
     if (filters) {
-      requestParam = filters;
+      for (let key in filters) {
+        requestParam[key] = filters[key];
+      }
     }
-    if (sellogType) {
-      let tempseltype = logTypes.filter((item) => item.label === sellogType);
+    let tempseltype = logTypes.filter((item) => item.value === sellogType);
+    if (tempseltype.length) {
       requestParam["breachStatus"] = tempseltype[0]["value"];
       requestParam["isSubmit"] = tempseltype[0]["isSubmit"];
-      console.log("getting infor");
       getAll(requestParam);
     }
   };
@@ -781,13 +819,13 @@ function Breachlog({ ...props }) {
     });
     let openstatus = {};
     tempBreachStatus = tempBreachStatus.map((item) => {
-      if (openStatusValue === item.lookupID) {
+      /* if (openStatusValue === item.lookupID) {
         openstatus = {
           label: item.lookUpValue,
           value: item.lookupID,
           isSubmit: true,
         };
-      }
+      }*/
       return {
         label: item.lookUpValue,
         value: item.lookupID,
@@ -795,10 +833,10 @@ function Breachlog({ ...props }) {
       };
     });
     setlogTypes([
-      { label: "Draft", value: openstatus["value"], isSubmit: false },
+      { label: "Draft", value: "", isSubmit: false },
       ...tempBreachStatus,
     ]);
-    setsellogType(openstatus.label);
+    setsellogType(tempBreachStatus[0].value);
   }, []);
 
   const openBreachlogTab = (type) => {
@@ -973,9 +1011,9 @@ function Breachlog({ ...props }) {
               <div
                 key={item.label}
                 className={`tab-btn ${
-                  sellogType === item.label ? "selected" : "normal"
+                  sellogType === item.value ? "selected" : "normal"
                 }`}
-                onClick={() => openBreachlogTab(item.label)}
+                onClick={() => openBreachlogTab(item.value)}
               >
                 {item.label}
               </div>
