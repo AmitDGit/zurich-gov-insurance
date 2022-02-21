@@ -24,7 +24,7 @@ function FrmDatePicker(props) {
     if (value) {
       setStartDate(new Date(formatDate(value)));
     }
-  }, []);
+  }, [value]);
 
   const setChangedDate = (date) => {
     handleChange(name, date);

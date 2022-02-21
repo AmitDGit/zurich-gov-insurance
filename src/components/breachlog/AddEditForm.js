@@ -315,6 +315,17 @@ function AddEditForm(props) {
         sublobid: "",
       });
     }
+    if (
+      name === "breachStatus" &&
+      value === closeStatusValue &&
+      !formfield.dateActionClosed
+    ) {
+      setformfield({
+        ...formfield,
+        [name]: value,
+        dateActionClosed: moment().format("YYYY-MM-DD"),
+      });
+    }
   };
 
   const handleMultiSelectChange = (name, value) => {
@@ -431,12 +442,12 @@ function AddEditForm(props) {
     setissubmitted(true);
     if (validateform()) {
       //added below code to set date action closed value
-      if (
+      /*if (
         formfield.breachStatus === closeStatusValue &&
         !formfield.dateActionClosed
       ) {
         formfield.dateActionClosed = moment().format("YYYY-MM-DD");
-      }
+      }*/
       //end of code
       if (formfield.breachStatus)
         if (isEditMode) {
