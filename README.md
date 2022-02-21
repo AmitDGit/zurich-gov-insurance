@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Available Scripts
 
-This is test comit
+This is test comit for checking the pipeline
 
 In the project directory, you can run:
 
