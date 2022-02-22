@@ -21,5 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-*.yml
-/public/config.js
+public/config.js
+azure-pipelines-1.yml
+azure-pipelines.yml
