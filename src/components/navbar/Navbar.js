@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 function Navbar({ ...props }) {
   const { appmenu } = props.state;
-  const { location } = props;
+  const { location, userProfile } = props;
+  // console.log(userProfile);
   return (
     <nav className="menu-nav">
       <div className="nav-links">
@@ -84,15 +85,17 @@ function Navbar({ ...props }) {
         ) : (
           ""
         )}
+        {userProfile && userProfile.isAccessBreachLog && (
+          <Link to="/breachlogs">
+            <div
+              className={`menu-item ${location.pathname === "/breachlogs" &&
+                "active"}`}
+            >
+              Breach Logs
+            </div>
+          </Link>
+        )}
 
-        <Link to="/breachlogs">
-          <div
-            className={`menu-item ${location.pathname === "/breachlogs" &&
-              "active"}`}
-          >
-            Breach Logs
-          </div>
-        </Link>
         <Link to="/rfelogs">
           <div
             className={`menu-item ${location.pathname === "/rfelogs" &&

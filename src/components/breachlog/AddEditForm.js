@@ -17,6 +17,7 @@ import {
   BREACH_LOG_OPEN_STATUS,
   BREACH_LOG_CLOSE_STATUS,
   REGION_EMEA,
+  COUNTRY_ADMIN_ROLE_ID,
 } from "../../constants";
 import {
   userActions,
@@ -53,16 +54,20 @@ function AddEditForm(props) {
     countryAllOpts,
     getAllUsers,
     getLookupByType,
+    getToolTip,
     getAlllob,
     getAllSegment,
     getAllSublob,
     uploadFile,
     deleteFile,
     isReadMode,
+    userProfile,
   } = props;
+
   //console.log(sublobState);
   const selectInitiVal = { label: "Select", value: "" };
   const closeStatusValue = BREACH_LOG_CLOSE_STATUS;
+  const countryadminrole = COUNTRY_ADMIN_ROLE_ID;
   const emeaRegionValue = REGION_EMEA;
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
@@ -91,6 +96,7 @@ function AddEditForm(props) {
   const [frmRangeFinImpact, setfrmRangeFinImpact] = useState([]);
   const [frmHowDetected, setfrmHowDetected] = useState([]);
   const [frmBreachStatus, setfrmBreachStatus] = useState([]);
+  const [tooltip, settooltip] = useState([]);
 
   const [mandatoryFields, setmandatoryFields] = useState([
     "title",
@@ -148,6 +154,7 @@ function AddEditForm(props) {
       LookupType: "BreachStatus",
     });
 
+    let tempToolTips = await getToolTip({ type: "BreachLogs" });
     tempSeverity = tempSeverity.map((item) => ({
       label: item.lookUpValue,
       value: item.lookupID,
@@ -365,10 +372,22 @@ function AddEditForm(props) {
       let tempattachementfiles = [...formfield.breachAttachmentList];
 
       response.attachmentFiles.forEach((item) => {
-        tempattachementfiles.push({
-          filePath: item,
-          logAttachmentId: "",
-        });
+        let isExits = false;
+        for (let j = 0; j < tempattachementfiles.length; j++) {
+          let existfile = tempattachementfiles[j]["filePath"];
+          existfile = existfile.split("\\")[existfile.split("\\").length - 1];
+          let currentfile = item.split("\\")[item.split("\\").length - 1];
+          if (existfile === currentfile) {
+            isExits = true;
+            break;
+          }
+        }
+        if (!isExits) {
+          tempattachementfiles.push({
+            filePath: item,
+            logAttachmentId: "",
+          });
+        }
       });
       setformfield({
         ...formfield,
@@ -473,6 +492,7 @@ function AddEditForm(props) {
     }
     // hideAddPopup();
   };
+
   return loading ? (
     <Loading />
   ) : (
@@ -663,6 +683,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
+                    maxDate={moment().toDate()}
                   />
                 </div>
               </div>
@@ -808,6 +829,7 @@ function AddEditForm(props) {
                 </div>
               </div>
             </div>
+
             <div class="frm-container-bggray">
               <div className="row">
                 <div className="col-md-3">
@@ -820,6 +842,12 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
+                    isdisable={
+                      formfield.breachStatus === closeStatusValue &&
+                      userProfile.userRoles[0].roleId === countryadminrole
+                        ? true
+                        : false
+                    }
                     selectopts={frmBreachStatus}
                   />
                 </div>
@@ -954,6 +982,7 @@ const mapStateToProp = (state) => {
 const mapActions = {
   getAllUsers: userActions.getAllUsers,
   getLookupByType: lookupActions.getLookupByType,
+  getToolTip: commonActions.getToolTip,
   getAlllob: lobActions.getAlllob,
   getAllSegment: segmentActions.getAllSegment,
   getAllSublob: sublobActions.getAllSublob,

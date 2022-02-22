@@ -376,11 +376,14 @@ button:focus {
   color: #243e6f;
 }
 .loggeduser-container {
-  display: flex;
+  position: relative;
   width: 200px;
+  margin-right: 20px;
+}
+.loggeduser {
   align-items: center;
   justify-content: space-around;
-  margin-right: 20px;
+  display: flex;
 }
 .loggeduser-container .userregion-container {
   width: 120px;
@@ -392,6 +395,7 @@ button:focus {
 }
 .loggeduser-container .user-image {
   text-align: center;
+  cursor: pointer;
 }
 .profile-picture {
   width: 35px;
@@ -404,6 +408,22 @@ button:focus {
   text-align: center;
   color: #009ee0;
   overflow: hidden;
+}
+.logout-container {
+  position: absolute;
+  margin-top: 5px;
+  right: 5px;
+  padding: 5px 10px;
+  text-align: center;
+  width: 80px;
+  background-color: #fff;
+  border: 1px solid #add8ef;
+  border-radius: 10px;
+}
+
+.logout-btn {
+  font-weight: 600;
+  cursor: pointer;
 }
 .site-container {
   display: flex;

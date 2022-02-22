@@ -58,6 +58,7 @@ function FrmFileUpload(props) {
     handleFileUpload(name, selectedfile);
     setfilename("");
     setselectedfile("");
+    document.getElementById("file").value = null;
   };
   const deleteAttachment = (id, fileurl) => {
     handleFileDelete(id, fileurl);

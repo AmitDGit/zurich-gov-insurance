@@ -13,6 +13,7 @@ function FrmSelect(props) {
     validationmsg,
     issubmitted,
     selectopts,
+    isdisable,
   } = props;
   const onSelect = (selectedopt) => {
     handleChange(name, selectedopt.value);
@@ -37,6 +38,7 @@ function FrmSelect(props) {
               onChange={onSelect}
               value={value}
               placeholder="Select"
+              disabled={isdisable ? isdisable : false}
             />
           </div>
           {isRequired && issubmitted && !value ? (

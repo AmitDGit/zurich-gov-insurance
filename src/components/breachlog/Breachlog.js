@@ -14,7 +14,6 @@ import FrmSelect from "../common-components/frmselect/FrmSelect";
 import PaginationData from "../common-components/PaginationData";
 import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import AddEditForm from "./AddEditForm";
-import UserProfile from "../common-components/UserProfile";
 import FrmInput from "../common-components/frminput/FrmInput";
 import {
   BREACH_LOG_OPEN_STATUS,
@@ -27,6 +26,7 @@ function Breachlog({ ...props }) {
   const { breachlogState, countryState, regionState, userState } = props.state;
   const {
     getAll,
+    getActionResponsible,
     getAllUsers,
     getAllCountry,
     getAllRegion,
@@ -39,6 +39,7 @@ function Breachlog({ ...props }) {
     deleteItem,
     userProfile,
   } = props;
+
   useSetNavMenu(
     { currentMenu: "Breachlog", isSubmenu: false },
     props.menuClick
@@ -68,7 +69,7 @@ function Breachlog({ ...props }) {
     "sublobid",
     "isSubmit",
   ];
-
+  const exportHtmlFields = ["breachDetails", "actionPlan", "actionUpdate"];
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     classificationFilterOpts: [],
     groupFilterOpts: [],
@@ -510,8 +511,8 @@ function Breachlog({ ...props }) {
     }
   };
   useEffect(() => {
-    getAllCountry();
-    getAllRegion();
+    getAllCountry({ IsLog: true });
+    getAllRegion({ IsLog: true });
   }, []);
 
   useEffect(() => {
@@ -539,10 +540,10 @@ function Breachlog({ ...props }) {
     let actionResponsibleOptsObj = {};
     let statusOptsObj = {};
     let countryOptsObj = {};
-    let tempcountryOpts = [];
+    //let tempcountryOpts = [];
     let regionOptsObj = {};
     let tempregionOpts = [];
-    userState.items.forEach((item) => {
+    breachlogState.items.forEach((item) => {
       tempdata.push(item);
       if (!customerSegmentOptsObj[item.customerSegment]) {
         tempcmmonfilterOpts["customerSegmentFilterOpts"].push({
@@ -583,7 +584,7 @@ function Breachlog({ ...props }) {
         });
         classificationOptsObj[item.classification] = item.classificationValue;
       }
-      if (!countryOptsObj[item.countryId]) {
+      /* if (!countryOptsObj[item.countryId]) {
         tempcountryOpts.push({
           label: item.countryName,
           value: item.countryId,
@@ -597,7 +598,7 @@ function Breachlog({ ...props }) {
           value: item.regionId,
         });
         regionOptsObj[item.regionId] = item.regionName;
-      }
+      }*/
     });
 
     tempcmmonfilterOpts["customerSegmentFilterOpts"].sort(dynamicSort("label"));
@@ -612,15 +613,20 @@ function Breachlog({ ...props }) {
     tempcmmonfilterOpts["actionResponsibleFilterOpts"].unshift(selectInitiVal);
     tempcmmonfilterOpts["classificationFilterOpts"].sort(dynamicSort("label"));
     tempcmmonfilterOpts["classificationFilterOpts"].unshift(selectInitiVal);
-    tempcountryOpts.sort(dynamicSort("label"));
-    tempregionOpts.sort(dynamicSort("label"));
+    // tempcountryOpts.sort(dynamicSort("label"));
+    //tempregionOpts.sort(dynamicSort("label"));
     setcommonfilterOpts(tempcmmonfilterOpts);
-    setcountryFilterOpts([selectInitiVal, ...tempcountryOpts]);
-    setcountryAllFilterOpts([...tempcountryOpts]);
-    setregionFilterOpts([selectInitiVal, ...tempregionOpts]);
+    //setcountryFilterOpts([selectInitiVal, ...tempcountryOpts]);
+    //setcountryAllFilterOpts([...tempcountryOpts]);
+    //setregionFilterOpts([selectInitiVal, ...tempregionOpts]);
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
   }, [breachlogState.items]);
+
+  useEffect(async () => {
+    let tempActionResponsible = await getActionResponsible();
+    console.log(tempActionResponsible);
+  }, []);
 
   const [countrymapping, setcountrymapping] = useState([]);
   const [frmCountrySelectOpts, setfrmCountrySelectOpts] = useState([]);
@@ -662,6 +668,8 @@ function Breachlog({ ...props }) {
     selectOpts.sort(dynamicSort("label"));
     setfrmCountrySelectOpts([...selectOpts]);
     setcountrymapping([...tempCountryMapping]);
+    setcountryFilterOpts([selectInitiVal, ...selectOpts]);
+    setcountryAllFilterOpts([...selectOpts]);
   }, [countryState.countryItems]);
 
   const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([]);
@@ -675,6 +683,7 @@ function Breachlog({ ...props }) {
     });
     selectOpts.sort(dynamicSort("label"));
     setfrmRegionSelectOpts([...selectOpts]);
+    setregionFilterOpts([selectInitiVal, ...selectOpts]);
   }, [regionState.regionItems]);
 
   /* Add Edit Delete functionality & show popup*/
@@ -801,10 +810,10 @@ function Breachlog({ ...props }) {
   };
 
   /* search Input functionality */
-  const [searchOptions, setsearchOptions] = useState([]);
+  /*const [searchOptions, setsearchOptions] = useState([]);
   useEffect(() => {
     setsearchOptions(userState.approverUsers);
-  }, [userState.approverUsers]);
+  }, [userState.approverUsers]);*/
   /*filter open close functions */
   const [filterbox, setfilterbox] = useState(false);
   const handleFilterBoxState = () => {
@@ -860,6 +869,7 @@ function Breachlog({ ...props }) {
           frmRegionSelectOpts={frmRegionSelectOpts}
           frmCountrySelectOpts={frmCountrySelectOpts}
           countrymapping={countrymapping}
+          userProfile={userProfile}
         ></AddEditForm>
       ) : (
         <>
@@ -1022,8 +1032,8 @@ function Breachlog({ ...props }) {
           <div>
             {breachlogState.loading ? (
               <Loading />
-            ) : userState.error ? (
-              <div>{userState.error}</div>
+            ) : breachlogState.error ? (
+              <div>{breachlogState.error}</div>
             ) : (
               <PaginationData
                 id={"userId"}
@@ -1037,6 +1047,7 @@ function Breachlog({ ...props }) {
                 buttonTitle={"New Breach"}
                 hidesearch={true}
                 exportExcludeFields={exportExcludeFields}
+                exportHtmlFields={exportHtmlFields}
               />
             )}
           </div>
@@ -1052,6 +1063,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: breachlogActions.getAll,
+  getActionResponsible: breachlogActions.getActionResponsible,
   getAllUsers: userActions.getAllUsers,
   getAllCountry: countryActions.getAllCountry,
   getAllRegion: regionActions.getAllRegions,

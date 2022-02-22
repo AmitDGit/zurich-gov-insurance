@@ -50,6 +50,18 @@ const getById = (requestParam) => {
   };
 };
 
+const getActionResponsible = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await breachlogService.getActionResponsibleService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 const checkIsInUse = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -88,6 +100,7 @@ export const breachlogActions = {
   checkIsInUse,
   postItem,
   deleteItem,
+  getActionResponsible,
 };
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
@@ -102,6 +115,11 @@ const getAllStatusService = async (requestParam) => {
 const getByIdService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`breachlog/getbreachlog`, param);
+  return response;
+};
+const getActionResponsibleService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`breachlog/getallactionresponsible`, param);
   return response;
 };
 const checkIsInUseService = async (requestParam) => {
@@ -126,4 +144,5 @@ const breachlogService = {
   checkIsInUseService,
   postItemService,
   deleteItemService,
+  getActionResponsibleService,
 };

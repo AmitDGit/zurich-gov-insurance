@@ -29,9 +29,13 @@ function ScrollToTop() {
   return null;
 }
 function App({ state, menuClick }) {
+  let userProfile;
   if (window.location.pathname === "/login") {
     //TokenService.removeUser();
+  } else {
+    userProfile = TokenService.getUser();
   }
+
   return (
     <div className="container-fluid">
       <div className="main-container">
@@ -42,7 +46,11 @@ function App({ state, menuClick }) {
             <Route
               path="/"
               render={(routeParams) => (
-                <Navbar state={state} {...routeParams} />
+                <Navbar
+                  userProfile={userProfile}
+                  state={state}
+                  {...routeParams}
+                />
               )}
             />
             <div className="pageview-container">

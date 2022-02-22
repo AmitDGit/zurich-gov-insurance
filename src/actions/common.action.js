@@ -19,9 +19,20 @@ const deleteFile = (requestParam) => {
     }
   };
 };
+const getToolTip = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await commonService.getToolTipService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const commonActions = {
   uploadFile,
   deleteFile,
+  getToolTip,
 };
 const uploadFileService = async (requestParam) => {
   const response = await Axios.post(`common/uploadfile`, requestParam, {
@@ -36,7 +47,13 @@ const deleteFileService = async (requestParam) => {
   const response = await Axios.delete(`common/deletefile`, param);
   return response;
 };
+const getToolTipService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`common/gettooltiptext`, param);
+  return response;
+};
 const commonService = {
   uploadFileService,
   deleteFileService,
+  getToolTipService,
 };
