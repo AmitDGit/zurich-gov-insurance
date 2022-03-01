@@ -38,7 +38,7 @@ function Loginpage({ ...props }) {
               <div className="login ">
                 <div className="ico-tna login-logo"></div>
                 <h2>Welcome</h2>
-                <p>Login to get start!</p>
+                <p>Login to get started!</p>
                 <form name="form" onSubmit={handleSubmit}>
                   <div
                     className={

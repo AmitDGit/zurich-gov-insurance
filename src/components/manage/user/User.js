@@ -467,6 +467,7 @@ function User({ ...props }) {
     let tempregionList = item.regionList.map((item) => item.value);
     tempregionList = tempregionList.join(",");
     if (item.isSuperAdmin) {
+      item.isAccessBreachLog = true;
       for (let i = 0; i < frmuserType.length; i++) {
         if (frmuserType[i]["label"] === "Super Admin") {
           item.userType = frmuserType[i]["value"];
@@ -503,6 +504,7 @@ function User({ ...props }) {
     let tempregionList = item.regionList.map((item) => item.value);
     tempregionList = tempregionList.join(",");
     if (item.isSuperAdmin) {
+      item.isAccessBreachLog = true;
       for (let i = 0; i < frmuserType.length; i++) {
         if (frmuserType[i]["label"] === "Super Admin") {
           item.userType = frmuserType[i]["value"];

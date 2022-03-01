@@ -14,6 +14,7 @@ function FrmFileUpload(props) {
     validationmsg,
     issubmitted,
     isshowloading,
+    isdisabled,
   } = props;
   const [selectedfile, setselectedfile] = useState();
   const [filename, setfilename] = useState("");
@@ -79,6 +80,7 @@ function FrmFileUpload(props) {
               multiple
               data-multiple-caption="{count} files selected"
               onChange={onfileselect}
+              disabled={isdisabled ? isdisabled : false}
             />
             <label for="file">
               <div className="select-filebox">

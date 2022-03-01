@@ -17,8 +17,9 @@ import Navbar from "./components/navbar/Navbar";
 import User from "./components/manage/user/User";
 import Lookup from "./components/manage/lookup/Lookup";
 import Lobchapter from "./components/manage/lobchapter/Lobchapter";
-import Testcomponent from "./components/manage/testcomponent/Testcomponent";
+
 import Breachlog from "./components/breachlog/Breachlog";
+import Rfelog from "./components/rfelog/Rfelog";
 import { PrivateRoute } from "./components/privateroute/PrivateRoute";
 import { connect } from "react-redux";
 import { appmenuActions } from "./actions/appmenu.action";
@@ -40,7 +41,7 @@ function App({ state, menuClick }) {
     <div className="container-fluid">
       <div className="main-container">
         <Router>
-          <Header state={state}></Header>
+          <Header userProfile={userProfile} state={state}></Header>
           <ScrollToTop />
           <div className="site-container">
             <Route
@@ -104,6 +105,16 @@ function App({ state, menuClick }) {
                 <PrivateRoute
                   path="/breachlogs"
                   component={Breachlog}
+                  menuClick={menuClick}
+                />
+                <PrivateRoute
+                  path="/rfelogs"
+                  component={Rfelog}
+                  menuClick={menuClick}
+                />
+                <PrivateRoute
+                  path="/exemptionlogs"
+                  component={Dashboard}
                   menuClick={menuClick}
                 />
                 <Route

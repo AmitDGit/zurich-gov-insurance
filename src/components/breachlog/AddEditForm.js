@@ -11,13 +11,16 @@ import FrmInputSearch from "../common-components/frmpeoplepicker/FrmInputSearch"
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
 import Loading from "../common-components/Loading";
 import moment from "moment";
-import parse from "html-react-parser";
+
 import "./Style.css";
 import {
-  BREACH_LOG_OPEN_STATUS,
-  BREACH_LOG_CLOSE_STATUS,
+  BREACH_LOG_STATUS_PENDING,
+  BREACH_LOG_STATUS_CLOSE,
+  BREACH_LOG_STATUS_REOPEN,
   REGION_EMEA,
+  REGION_ZNA,
   COUNTRY_ADMIN_ROLE_ID,
+  HOW_DETECTED_TUR,
 } from "../../constants";
 import {
   userActions,
@@ -64,11 +67,15 @@ function AddEditForm(props) {
     userProfile,
   } = props;
 
-  //console.log(sublobState);
+  //console.log(frmRegionSelectOpts);
   const selectInitiVal = { label: "Select", value: "" };
-  const closeStatusValue = BREACH_LOG_CLOSE_STATUS;
+  const closeStatusValue = BREACH_LOG_STATUS_CLOSE;
+  const openStatusValue = BREACH_LOG_STATUS_PENDING;
+  const reopenStatusValue = BREACH_LOG_STATUS_REOPEN;
   const countryadminrole = COUNTRY_ADMIN_ROLE_ID;
   const emeaRegionValue = REGION_EMEA;
+  const znaRegionValue = REGION_ZNA;
+  const howdetectedtur = HOW_DETECTED_TUR;
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
@@ -96,7 +103,7 @@ function AddEditForm(props) {
   const [frmRangeFinImpact, setfrmRangeFinImpact] = useState([]);
   const [frmHowDetected, setfrmHowDetected] = useState([]);
   const [frmBreachStatus, setfrmBreachStatus] = useState([]);
-  const [tooltip, settooltip] = useState([]);
+  const [tooltip, settooltip] = useState({});
 
   const [mandatoryFields, setmandatoryFields] = useState([
     "title",
@@ -155,6 +162,12 @@ function AddEditForm(props) {
     });
 
     let tempToolTips = await getToolTip({ type: "BreachLogs" });
+    let tooltipObj = {};
+    tempToolTips.forEach((item) => {
+      tooltipObj[item.toolTipField] = item.toolTipText;
+    });
+    settooltip(tooltipObj);
+
     tempSeverity = tempSeverity.map((item) => ({
       label: item.lookUpValue,
       value: item.lookupID,
@@ -181,17 +194,42 @@ function AddEditForm(props) {
     }));
     let frmbreachstatus = [];
     tempBreachStatus.forEach((item) => {
-      if (!isEditMode && item.lookUpValue === "Open") {
+      let isshow = false;
+      //draft status -
+      if (!formfield.isSubmit) {
+        if (item.lookupID === openStatusValue) {
+          isshow = true;
+        }
+      }
+      //open status
+      if (formfield.breachStatus === openStatusValue && formfield.isSubmit) {
+        if (
+          item.lookupID === openStatusValue ||
+          item.lookupID === closeStatusValue
+        ) {
+          isshow = true;
+        }
+      }
+      //close status && reopen status
+      if (
+        formfield.breachStatus === closeStatusValue ||
+        formfield.breachStatus === reopenStatusValue
+      ) {
+        if (
+          item.lookupID === reopenStatusValue ||
+          item.lookupID === closeStatusValue
+        ) {
+          isshow = true;
+        }
+      }
+      if (isshow) {
         frmbreachstatus.push({
           label: item.lookUpValue,
           value: item.lookupID,
         });
-        setformfield({ ...formfield, breachStatus: item.lookupID });
-      } else if (isEditMode) {
-        frmbreachstatus.push({
-          label: item.lookUpValue,
-          value: item.lookupID,
-        });
+        if (!formfield.isSubmit) {
+          setformfield({ ...formfield, breachStatus: item.lookupID });
+        }
       }
     });
 
@@ -200,6 +238,7 @@ function AddEditForm(props) {
     setfrmRootCauseBreach([selectInitiVal, ...tempRootCauseBreach]);
     setfrmNatureOfBreach([selectInitiVal, ...tempNatureOfBreach]);
     setfrmRangeFinImpact([selectInitiVal, ...tempRangeFinImpact]);
+
     setfrmHowDetected([selectInitiVal, ...tempHowDetected]);
 
     setfrmBreachStatus([selectInitiVal, ...frmbreachstatus]);
@@ -422,12 +461,28 @@ function AddEditForm(props) {
     }
   };
   useEffect(() => {
+    if (
+      formfield.regionId === znaRegionValue &&
+      formfield.howDetected === howdetectedtur
+    ) {
+      setmandatoryFields([...mandatoryFields, "turNumber"]);
+    } else {
+      if (mandatoryFields.includes("turNumber")) {
+        let tempmandatoryfields = mandatoryFields.filter(
+          (item) => item !== "turNumber"
+        );
+        setmandatoryFields([...tempmandatoryfields]);
+      }
+    }
+  }, [formfield.regionId, formfield.howDetected]);
+
+  /* useEffect(() => {
     let tempfullPathArr = formfield.breachAttachmentList.map(
       (item) => item.filePath
     );
-    let fullFilePath = tempfullPathArr.join(",");
-    setformfield({ ...formfield, fullFilePath: fullFilePath });
-  }, [formfield.breachAttachmentList]);
+    let fullFilePathval = tempfullPathArr.join(",");
+    setformfield({ ...formfield, fullFilePath: fullFilePathval });
+  }, [formfield.breachAttachmentList]);*/
 
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showpeoplepicker, setshowpeoplepicker] = useState(false);
@@ -467,6 +522,7 @@ function AddEditForm(props) {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
+
     setissubmitted(true);
     if (validateform()) {
       //added below code to set date action closed value
@@ -486,10 +542,13 @@ function AddEditForm(props) {
     }
   };
   const handleSaveLog = () => {
-    setissubmitted(true);
-    if (validateform()) {
+    //setissubmitted(true);
+    if (formfield.title && formfield.countryId) {
       postItem({ ...formfield, isSubmit: false });
+    } else {
+      alert(alertMessage.breachlog.draftInvalid);
     }
+    // }
     // hideAddPopup();
   };
 
@@ -600,7 +659,7 @@ function AddEditForm(props) {
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       isToolTip={true}
-                      tooltipmsg={"Tooltip text"}
+                      tooltipmsg={tooltip["Classification"]}
                       issubmitted={issubmitted}
                       selectopts={frmSeverity}
                       isdisabled={isdisabled}
@@ -615,6 +674,8 @@ function AddEditForm(props) {
                     handleChange={handleSelectChange}
                     isRequired={true}
                     isReadMode={isReadMode}
+                    isToolTip={true}
+                    tooltipmsg={tooltip["TypeOfBreach"]}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmTypeOfBreach}
@@ -666,7 +727,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     isToolTip={true}
-                    tooltipmsg={"Tooltip text"}
+                    tooltipmsg={tooltip["MaterialBreach"]}
                     issubmitted={issubmitted}
                     selectopts={yesnoopts}
                     isdisabled={isdisabled}
@@ -690,7 +751,15 @@ function AddEditForm(props) {
               <div className="row">
                 <div className="col-md-12">
                   <FrmRichTextEditor
-                    title={"Details"}
+                    title={
+                      <>
+                        Details{" "}
+                        <i>
+                          (Use the Upload Attachments field at the bottom of the
+                          form to upload supporting documents.)
+                        </i>
+                      </>
+                    }
                     name={"breachDetails"}
                     value={formfield.breachDetails}
                     handleChange={handleSelectChange}
@@ -735,7 +804,11 @@ function AddEditForm(props) {
                   />
                 </div>
               </div>
-              <div className="row border-bottom">
+              <div
+                className={`row ${
+                  formfield.regionId !== znaRegionValue ? "border-bottom" : ""
+                }`}
+              >
                 <div className="col-md-3">
                   <FrmSelect
                     title={"How detected"}
@@ -763,9 +836,7 @@ function AddEditForm(props) {
                       isRequired={false}
                       isReadMode={isReadMode}
                       isToolTip={true}
-                      tooltipmsg={
-                        "Has a loss naterialised as a result of the breach? If the answer is No, this is a near miss.<br>If the answer is Yes, this is an operational event."
-                      }
+                      tooltipmsg={tooltip["NearMisses"]}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
                       selectopts={yesnoopts}
@@ -776,6 +847,98 @@ function AddEditForm(props) {
                   )}
                 </div>
               </div>
+              {formfield.regionId === znaRegionValue && (
+                <>
+                  <div className="row">
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"UWr involved"}
+                        name={"uwrInvolved"}
+                        value={formfield.uwrInvolved}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Business Division"}
+                        name={"businessDivision"}
+                        value={formfield.businessDivision}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Office"}
+                        name={"office"}
+                        value={formfield.office}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                  </div>
+                  <div className="row border-bottom">
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Policy name"}
+                        name={"policyName"}
+                        value={formfield.policyName}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Policy number"}
+                        name={"policyNumber"}
+                        value={formfield.policyNumber}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"TUR number"}
+                        name={"turNumber"}
+                        value={formfield.turNumber}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={
+                          formfield.regionId === znaRegionValue &&
+                          formfield.howDetected === howdetectedtur
+                            ? true
+                            : false
+                        }
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="row">
                 <div className="col-md-3">
                   <FrmInput
@@ -842,7 +1005,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisable={
+                    isdisabled={
                       formfield.breachStatus === closeStatusValue &&
                       userProfile.userRoles[0].roleId === countryadminrole
                         ? true
@@ -862,10 +1025,33 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={true}
+                    minDate={moment(formfield.dateBreachOccurred).toDate()}
+                    isdisabled={
+                      formfield.breachStatus === closeStatusValue ? false : true
+                    }
                   />
                 </div>
-                <div className="col-md-3">
+              </div>
+              <div className={`row `}>
+                <div className="col-md-12">
+                  <FrmRichTextEditor
+                    title={"Action Update"}
+                    name={"actionUpdate"}
+                    value={formfield.actionUpdate}
+                    handleChange={handleSelectChange}
+                    isRequired={false}
+                    isReadMode={isReadMode}
+                    validationmsg={"Mandatory field"}
+                    issubmitted={issubmitted}
+                  />
+                </div>
+              </div>
+              <div
+                className={`row ${
+                  isEditMode || isReadMode ? "border-bottom" : ""
+                }`}
+              >
+                <div className="col-md-6">
                   <FrmFileUpload
                     title={"Upload Attachment"}
                     name={"fullFilePath"}
@@ -882,24 +1068,6 @@ function AddEditForm(props) {
                   />
                 </div>
               </div>
-              <div
-                className={`row ${
-                  isEditMode || isReadMode ? "border-bottom" : ""
-                }`}
-              >
-                <div className="col-md-12">
-                  <FrmRichTextEditor
-                    title={"Action Update"}
-                    name={"actionUpdate"}
-                    value={formfield.actionUpdate}
-                    handleChange={handleSelectChange}
-                    isRequired={false}
-                    isReadMode={isReadMode}
-                    validationmsg={"Mandatory field"}
-                    issubmitted={issubmitted}
-                  />
-                </div>
-              </div>
             </div>
             {isEditMode || isReadMode ? (
               <div className="row mb20">
@@ -909,7 +1077,7 @@ function AddEditForm(props) {
                   {formfield.creatorName}
                 </div>
                 <div className="col-md-3">
-                  <label>Created Dated</label>
+                  <label>Created Date</label>
                   <br></br>
                   {formfield.createdDate
                     ? formatDate(formfield.createdDate)

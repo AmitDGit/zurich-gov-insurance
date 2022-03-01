@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import ReactDOMServer from "react-dom/server";
 import { connect } from "react-redux";
 import {
   breachlogActions,
@@ -7,6 +6,8 @@ import {
   countryActions,
   regionActions,
   lookupActions,
+  segmentActions,
+  lobActions,
 } from "../../actions";
 import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
@@ -15,21 +16,27 @@ import PaginationData from "../common-components/PaginationData";
 import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import AddEditForm from "./AddEditForm";
 import FrmInput from "../common-components/frminput/FrmInput";
-import {
-  BREACH_LOG_OPEN_STATUS,
-  BREACH_LOG_CLOSE_STATUS,
-} from "../../constants";
+import { BREACH_LOG_STATUS_PENDING } from "../../constants";
 import moment from "moment";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
 function Breachlog({ ...props }) {
-  const { breachlogState, countryState, regionState, userState } = props.state;
+  const {
+    breachlogState,
+    countryState,
+    regionState,
+    userState,
+    segmentState,
+    lobState,
+  } = props.state;
   const {
     getAll,
     getActionResponsible,
     getAllUsers,
     getAllCountry,
     getAllRegion,
+    getAlllob,
+    getAllSegment,
     getAllStatus,
     getById,
     getLookupByType,
@@ -48,7 +55,7 @@ function Breachlog({ ...props }) {
   //console.log(breachlogState);
   const selectInitiVal = { label: "Select", value: "" };
   const draftTabVal = { label: "Draft", value: "", isSubmit: false };
-  const openStatusValue = BREACH_LOG_OPEN_STATUS;
+  const openStatusValue = BREACH_LOG_STATUS_PENDING;
 
   const exportExcludeFields = [
     "breachLogID",
@@ -86,6 +93,8 @@ function Breachlog({ ...props }) {
   const [countryFilterOpts, setcountryFilterOpts] = useState([]);
   const [countryAllFilterOpts, setcountryAllFilterOpts] = useState([]);
   const [regionFilterOpts, setregionFilterOpts] = useState([]);
+  const [segmentFilterOpts, setsegmentFilterOpts] = useState([]);
+  const [lobFilterOpts, setlobFilterOpts] = useState([]);
   const intialFilterState = {
     entityNumber: "",
     title: "",
@@ -166,109 +175,6 @@ function Breachlog({ ...props }) {
       }
     }
     getAllBreachItems(filter);
-    /*let tempdata = [...data];
-    if (
-      selfilter.entityNumber !== "" ||
-      selfilter.title !== "" ||
-      selfilter.classification !== "" ||
-      selfilter.group !== "" ||
-      selfilter.customersegment !== "" ||
-      selfilter.natureofbreach !== "" ||
-      selfilter.lobid !== "" ||
-      selfilter.actionResponsibleName !== "" ||
-      selfilter.entries !== "" ||
-      selfilter.regionId !== "" ||
-      selfilter.countryId !== ""
-    ) {
-      tempdata = tempdata.filter((item) => {
-        let isShow = true;
-        if (
-          isShow &&
-          selfilter.entityNumber !== "" &&
-          item.entityNumber &&
-          !item.entityNumber.includes(selfilter.entityNumber)
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.title.trim() !== "" &&
-          item.title &&
-          !item.title
-            .trim()
-            .toLowerCase()
-            .includes(selfilter.title.trim().toLowerCase())
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.classification !== "" &&
-          selfilter.classification !== item.classification
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.group !== "" &&
-          selfilter.group !== item.group
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.customersegment !== "" &&
-          selfilter.customersegment !== item.customerSegment
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.natureofbreach !== "" &&
-          selfilter.natureofbreach !== item.natureOfBreach
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.lobid !== "" &&
-          selfilter.lobid !== item.lobid
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.actionResponsibleName !== "" &&
-          selfilter.actionResponsibleName !== item.actionResponsibleName
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.entries !== "" &&
-          selfilter.entries === "My Entries" &&
-          item.createdByID !== userProfile.userId
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.regionId !== "" &&
-          selfilter.regionId !== item.regionId
-        ) {
-          isShow = false;
-        }
-        if (
-          isShow &&
-          selfilter.countryId !== "" &&
-          selfilter.countryId !== item.countryId
-        ) {
-          isShow = false;
-        }
-        return isShow;
-      });
-      setpaginationdata(tempdata);
-    }*/
   };
   const clearFilter = () => {
     setselfilter(intialFilterState);
@@ -378,14 +284,18 @@ function Breachlog({ ...props }) {
                   <table>
                     <tr>
                       <td>
-                        <b>Breach Details</b>
-                        <br></br>
-                        {row.breachDetails ? parse(row.breachDetails) : ""}
+                        <div className="tooltip-content">
+                          <b>Breach Details</b>
+                          <br></br>
+                          {row.breachDetails ? parse(row.breachDetails) : ""}
+                        </div>
                       </td>
                       <td>
-                        <b>Action Plan</b>
-                        <br></br>
-                        {row.actionPlan ? parse(row.actionPlan) : ""}
+                        <div className="tooltip-content">
+                          <b>Action Plan</b>
+                          <br></br>
+                          {row.actionPlan ? parse(row.actionPlan) : ""}
+                        </div>
                       </td>
                     </tr>
                   </table>
@@ -513,119 +423,50 @@ function Breachlog({ ...props }) {
   useEffect(() => {
     getAllCountry({ IsLog: true });
     getAllRegion({ IsLog: true });
+    getAllSegment({ isActive: true });
+    getAlllob({ isActive: true });
   }, []);
 
   useEffect(() => {
     let tempdata = [];
-    let tempcmmonfilterOpts = {
-      classificationFilterOpts: [],
-      groupFilterOpts: [],
-      entriesFilterOpts: [
-        selectInitiVal,
-        { label: "My Entries", value: "My Entries" },
-        { label: "All Entries", value: "All Entries" },
-      ],
-      customerSegmentFilterOpts: [],
-      natureOfBreachFilterOpts: [],
-      lobFilterOpts: [],
-      actionResponsibleFilterOpts: [],
-      statusFilterOpts: [],
-    };
-    let classificationOptsObj = {};
-    // let groupOptsObj= {};
-    // let entriesOptsObj= {};
-    let customerSegmentOptsObj = {};
-    let natureOfBreachOptsObj = {};
-    let lobOptsObj = {};
-    let actionResponsibleOptsObj = {};
-    let statusOptsObj = {};
-    let countryOptsObj = {};
-    //let tempcountryOpts = [];
-    let regionOptsObj = {};
-    let tempregionOpts = [];
-    breachlogState.items.forEach((item) => {
-      tempdata.push(item);
-      if (!customerSegmentOptsObj[item.customerSegment]) {
-        tempcmmonfilterOpts["customerSegmentFilterOpts"].push({
-          label: item.customerSegmentName,
-          value: item.customerSegment,
-        });
-        customerSegmentOptsObj[item.customerSegment] = item.customerSegmentName;
-      }
-      if (!natureOfBreachOptsObj[item.natureOfBreach]) {
-        tempcmmonfilterOpts["natureOfBreachFilterOpts"].push({
-          label: item.natureOfBreachValue,
-          value: item.natureOfBreach,
-        });
-        natureOfBreachOptsObj[item.natureOfBreach] = item.natureOfBreachValue;
-      }
-      if (!lobOptsObj[item.lobid]) {
-        tempcmmonfilterOpts["lobFilterOpts"].push({
-          label: item.lobName,
-          value: item.lobid,
-        });
-        lobOptsObj[item.lobid] = item.lobName;
-      }
-      if (
-        !actionResponsibleOptsObj[item.actionResponsible] &&
-        item.actionResponsible
-      ) {
-        tempcmmonfilterOpts["actionResponsibleFilterOpts"].push({
-          label: item.actionResponsibleName,
-          value: item.actionResponsibleName,
-        });
-        actionResponsibleOptsObj[item.actionResponsible] =
-          item.actionResponsible;
-      }
-      if (!classificationOptsObj[item.classification]) {
-        tempcmmonfilterOpts["classificationFilterOpts"].push({
-          label: item.classificationValue,
-          value: item.classification,
-        });
-        classificationOptsObj[item.classification] = item.classificationValue;
-      }
-      /* if (!countryOptsObj[item.countryId]) {
-        tempcountryOpts.push({
-          label: item.countryName,
-          value: item.countryId,
-          regionId: item.regionId,
-        });
-        countryOptsObj[item.countryId] = item.countryName;
-      }
-      if (!regionOptsObj[item.regionId]) {
-        tempregionOpts.push({
-          label: item.regionName,
-          value: item.regionId,
-        });
-        regionOptsObj[item.regionId] = item.regionName;
-      }*/
-    });
 
-    tempcmmonfilterOpts["customerSegmentFilterOpts"].sort(dynamicSort("label"));
-    tempcmmonfilterOpts["customerSegmentFilterOpts"].unshift(selectInitiVal);
-    tempcmmonfilterOpts["natureOfBreachFilterOpts"].sort(dynamicSort("label"));
-    tempcmmonfilterOpts["natureOfBreachFilterOpts"].unshift(selectInitiVal);
-    tempcmmonfilterOpts["lobFilterOpts"].sort(dynamicSort("label"));
-    tempcmmonfilterOpts["lobFilterOpts"].unshift(selectInitiVal);
-    tempcmmonfilterOpts["actionResponsibleFilterOpts"].sort(
-      dynamicSort("label")
-    );
-    tempcmmonfilterOpts["actionResponsibleFilterOpts"].unshift(selectInitiVal);
-    tempcmmonfilterOpts["classificationFilterOpts"].sort(dynamicSort("label"));
-    tempcmmonfilterOpts["classificationFilterOpts"].unshift(selectInitiVal);
-    // tempcountryOpts.sort(dynamicSort("label"));
-    //tempregionOpts.sort(dynamicSort("label"));
-    setcommonfilterOpts(tempcmmonfilterOpts);
-    //setcountryFilterOpts([selectInitiVal, ...tempcountryOpts]);
-    //setcountryAllFilterOpts([...tempcountryOpts]);
-    //setregionFilterOpts([selectInitiVal, ...tempregionOpts]);
+    tempdata = breachlogState.items;
+
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
   }, [breachlogState.items]);
 
   useEffect(async () => {
     let tempActionResponsible = await getActionResponsible();
-    console.log(tempActionResponsible);
+    let tempClassification = await getLookupByType({
+      LookupType: "BreachClassification",
+    });
+    let tempNatureOfBreach = await getLookupByType({
+      LookupType: "BreachNature",
+    });
+
+    tempActionResponsible = tempActionResponsible.map((item) => ({
+      label: item.userName,
+      value: item.emailAddress,
+    }));
+    tempClassification = tempClassification.map((item) => ({
+      label: item.lookUpValue,
+      value: item.lookupID,
+    }));
+    tempNatureOfBreach = tempNatureOfBreach.map((item) => ({
+      label: item.lookUpValue,
+      value: item.lookupID,
+    }));
+    tempActionResponsible.sort(dynamicSort("label"));
+    //tempClassification.sort(dynamicSort("label"));
+    tempNatureOfBreach.sort(dynamicSort("label"));
+
+    setcommonfilterOpts({
+      ...commonfilterOpts,
+      actionResponsibleFilterOpts: tempActionResponsible,
+      classificationFilterOpts: tempClassification,
+      natureOfBreachFilterOpts: tempNatureOfBreach,
+    });
   }, []);
 
   const [countrymapping, setcountrymapping] = useState([]);
@@ -686,6 +527,24 @@ function Breachlog({ ...props }) {
     setregionFilterOpts([selectInitiVal, ...selectOpts]);
   }, [regionState.regionItems]);
 
+  useEffect(() => {
+    let tempItems = segmentState.segmentItems.map((item) => ({
+      label: item.segmentName,
+      value: item.segmentID,
+      country: item.countryList,
+    }));
+    tempItems.sort(dynamicSort("label"));
+    setsegmentFilterOpts([...tempItems]);
+  }, [segmentState.segmentItems]);
+
+  useEffect(() => {
+    let tempItems = lobState.lobItems.map((item) => ({
+      label: item.lobName,
+      value: item.lobid,
+    }));
+    tempItems.sort(dynamicSort("label"));
+    setlobFilterOpts([...tempItems]);
+  }, [lobState.lobItems]);
   /* Add Edit Delete functionality & show popup*/
 
   const [isshowAddPopup, setshowAddPopup] = useState(false);
@@ -704,6 +563,7 @@ function Breachlog({ ...props }) {
   const [isEditMode, setisEditMode] = useState(false);
   const [isReadMode, setisReadMode] = useState(false);
   const formInitialValue = {
+    entityNumber: "",
     breachLogID: "",
     title: "",
     regionId: "",
@@ -733,6 +593,12 @@ function Breachlog({ ...props }) {
     createdDate: "",
     breachAttachmentList: [],
     isSubmit: false,
+    UWRinvolved: "",
+    BusinessDivision: "",
+    Office: "",
+    PolicyName: "",
+    PolicyNumber: "",
+    turNumber: "",
   };
   const [formIntialState, setformIntialState] = useState(formInitialValue);
 
@@ -756,8 +622,12 @@ function Breachlog({ ...props }) {
     });
     showAddPopup();
   };
-  const showToolTip = (e) => {};
   const putItemHandler = async (item) => {
+    let tempfullPathArr = item.breachAttachmentList.map(
+      (item) => item.filePath
+    );
+    let fullFilePath = tempfullPathArr.join(",");
+    item.fullFilePath = fullFilePath;
     let response = await postItem({
       ...item,
       modifiedByID: userProfile.userId,
@@ -771,11 +641,11 @@ function Breachlog({ ...props }) {
     setisEditMode(false);
   };
   const postItemHandler = async (item) => {
-    /*const { firstName, lastName, emailAddress } = item.user[0];
-    let response = await checkNameExist({
-      emailAddress: emailAddress,
-    });*/
-
+    let tempfullPathArr = item.breachAttachmentList.map(
+      (item) => item.filePath
+    );
+    let fullFilePath = tempfullPathArr.join(",");
+    item.fullFilePath = fullFilePath;
     let response = await postItem({
       ...item,
       createdByID: userProfile.userId,
@@ -826,7 +696,6 @@ function Breachlog({ ...props }) {
     let tempBreachStatus = await getLookupByType({
       LookupType: "BreachStatus",
     });
-    let openstatus = {};
     tempBreachStatus = tempBreachStatus.map((item) => {
       /* if (openStatusValue === item.lookupID) {
         openstatus = {
@@ -836,7 +705,7 @@ function Breachlog({ ...props }) {
         };
       }*/
       return {
-        label: item.lookUpValue,
+        label: item.lookUpName,
         value: item.lookupID,
         isSubmit: true,
       };
@@ -853,6 +722,7 @@ function Breachlog({ ...props }) {
   };
   useEffect(() => {
     getAllBreachItems();
+    setselfilter(intialFilterState);
   }, [sellogType]);
 
   return (
@@ -917,7 +787,7 @@ function Breachlog({ ...props }) {
                   <FrmSelect
                     title={"Customer Segment"}
                     name={"customersegment"}
-                    selectopts={commonfilterOpts.customerSegmentFilterOpts}
+                    selectopts={segmentFilterOpts}
                     handleChange={onSearchFilterSelect}
                     value={selfilter.customersegment}
                   />
@@ -935,7 +805,7 @@ function Breachlog({ ...props }) {
                   <FrmSelect
                     title={"LoB"}
                     name={"lobid"}
-                    selectopts={commonfilterOpts.lobFilterOpts}
+                    selectopts={lobFilterOpts}
                     handleChange={onSearchFilterSelect}
                     value={selfilter.lobid}
                   />
@@ -1067,6 +937,8 @@ const mapActions = {
   getAllUsers: userActions.getAllUsers,
   getAllCountry: countryActions.getAllCountry,
   getAllRegion: regionActions.getAllRegions,
+  getAlllob: lobActions.getAlllob,
+  getAllSegment: segmentActions.getAllSegment,
   getAllStatus: breachlogActions.getAllStatus,
   getById: breachlogActions.getById,
   checkIsInUse: breachlogActions.checkIsInUse,

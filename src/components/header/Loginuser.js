@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import locationlogo from "../../assets/location.png";
 import TokenService from "../../services/Tokenservice";
-function LoggedInUser() {
+function LoggedInUser({ ...props }) {
+  const { userProfile } = props;
+  // console.log(userProfile);
   const logout = () => {
     TokenService.removeUser();
     window.location.reload(true);
@@ -26,8 +28,9 @@ function LoggedInUser() {
           <img></img>
         </div>
       </div>
-      {showlogout && (
+      {showlogout && userProfile && (
         <div className="logout-container" ref={wrapperRef}>
+          <div>{userProfile.firstName + " " + userProfile.lastName}</div>
           <div className="logout-btn" onClick={logout}>
             Log out
           </div>

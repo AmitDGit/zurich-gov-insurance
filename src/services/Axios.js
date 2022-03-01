@@ -2,6 +2,7 @@ import axios from "axios";
 import TokenService from "./Tokenservice";
 //export const apiURL = "http://talentcentral.delphianlogic.com/TnaApi/api/";
 const BASE_URL = "http://192.168.0.7/ZurichAPI/";
+
 if (window.App_Config) {
   console.log("loading from config file");
 }

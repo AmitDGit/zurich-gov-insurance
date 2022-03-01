@@ -107,6 +107,16 @@ const deleteItem = (requestParam) => {
     }
   };
 };
+const getallLobApprovers = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await lobService.getallLobApproversService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const lobActions = {
   getAll,
   getAlllob,
@@ -116,6 +126,7 @@ export const lobActions = {
   checkIsInUse,
   postItem,
   deleteItem,
+  getallLobApprovers,
 };
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
@@ -156,6 +167,11 @@ const deleteItemService = async (requestParam) => {
   const response = await Axios.delete(`lob/deletelob`, param);
   return response;
 };
+const getallLobApproversService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`lob/getlobapproverlist`, param);
+  return response;
+};
 const lobService = {
   getAllService,
   getAlllobService,
@@ -165,4 +181,5 @@ const lobService = {
   checkIsInUseService,
   postItemService,
   deleteItemService,
+  getallLobApproversService,
 };

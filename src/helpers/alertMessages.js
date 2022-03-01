@@ -73,5 +73,23 @@ export const alertMessage = {
     deleteAttachment: "The attachment is deleted.",
     isInUse: "You can not delete this breachlog as it is in use.",
     nameExist: "breachlog name is already exist!",
+    draftInvalid: "Please enter title and country to save log.",
+  },
+  rfelog: {
+    draft: "The draft of the rfelog is added.",
+    add: "The new rfelog is successfully added.",
+    update: "The rfelog is successfully updated.",
+    delete: "The rfelog is deleted.",
+    deleteConfirm: "Are you sure you want to delete rfelog?",
+    deleteAttachmentConfirm: "Are you sure you want to delete Attachment?",
+    deleteAttachment: "The attachment is deleted.",
+    isInUse: "You can not delete this rfelog as it is in use.",
+    nameExist: "rfelog name is already exist!",
+    draftInvalid: "Please enter title and country to save log.",
+    orgalignmetmsg: "organizational alignment alert message.",
+  },
+  commonmsg: {
+    fileuploaderror:
+      "Error in file upload! Please check internet connectivity and try reuploading.",
   },
 };

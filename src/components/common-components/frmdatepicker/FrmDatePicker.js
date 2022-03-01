@@ -23,7 +23,7 @@ function FrmDatePicker(props) {
   const [startDate, setStartDate] = useState();
   useEffect(() => {
     if (value) {
-      setStartDate(new Date(formatDate(value)));
+      setStartDate(new Date(moment(value)));
     }
   }, [value]);
 
@@ -49,7 +49,8 @@ function FrmDatePicker(props) {
           disabled={isdisabled}
           minDate={minDate ? minDate : ""}
           maxDate={maxDate ? maxDate : ""}
-          placeholderText="mm/dd/yyyy"
+          placeholderText="dd/mm/yyyy"
+          dateFormat="dd/MM/yyyy"
           yearDropdownItemNumber={""}
           showYearDropdown
           showMonthDropdown
