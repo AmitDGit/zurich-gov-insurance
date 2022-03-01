@@ -50,6 +50,18 @@ const getById = (requestParam) => {
   };
 };
 
+const getActionResponsible = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await breachlogService.getActionResponsibleService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 const checkIsInUse = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -80,26 +92,7 @@ const deleteItem = (requestParam) => {
     }
   };
 };
-const uploadFile = (requestParam) => {
-  return async (dispatch) => {
-    try {
-      const response = await breachlogService.uploadFileService(requestParam);
-      return response.data;
-    } catch (err) {
-      return false;
-    }
-  };
-};
-const deleteFile = (requestParam) => {
-  return async (dispatch) => {
-    try {
-      const response = await breachlogService.deleteFileService(requestParam);
-      return response.data;
-    } catch (err) {
-      return false;
-    }
-  };
-};
+
 export const breachlogActions = {
   getAll,
   getAllStatus,
@@ -107,8 +100,7 @@ export const breachlogActions = {
   checkIsInUse,
   postItem,
   deleteItem,
-  uploadFile,
-  deleteFile,
+  getActionResponsible,
 };
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
@@ -125,6 +117,11 @@ const getByIdService = async (requestParam) => {
   const response = await Axios.get(`breachlog/getbreachlog`, param);
   return response;
 };
+const getActionResponsibleService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`breachlog/getallactionresponsible`, param);
+  return response;
+};
 const checkIsInUseService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`user/isinusecount`, param);
@@ -139,19 +136,7 @@ const deleteItemService = async (requestParam) => {
   const response = await Axios.delete(`breachlog/deletebreachlog`, param);
   return response;
 };
-const uploadFileService = async (requestParam) => {
-  const response = await Axios.post(`common/uploadfile`, requestParam, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response;
-};
-const deleteFileService = async (requestParam) => {
-  const param = { params: requestParam };
-  const response = await Axios.delete(`common/deletefile`, param);
-  return response;
-};
+
 const breachlogService = {
   getAllService,
   getAllStatusService,
@@ -159,6 +144,5 @@ const breachlogService = {
   checkIsInUseService,
   postItemService,
   deleteItemService,
-  uploadFileService,
-  deleteFileService,
+  getActionResponsibleService,
 };

@@ -31,7 +31,7 @@ const getAllSegment = (requestParam) => {
 
   return async (dispatch) => {
     try {
-      const response = await segmentService.getAllService(requestParam);
+      const response = await segmentService.getAllSegmentService(requestParam);
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
@@ -100,7 +100,11 @@ const getAllService = async (requestParam) => {
   const response = await Axios.get(`segment/getallsegmentlist`, param);
   return response;
 };
-
+const getAllSegmentService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`segment/getallsegment`, param);
+  return response;
+};
 const getByIdService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`segment/getsegment`, param);
@@ -127,6 +131,7 @@ const deleteItemService = async (requestParam) => {
 };
 const segmentService = {
   getAllService,
+  getAllSegmentService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,

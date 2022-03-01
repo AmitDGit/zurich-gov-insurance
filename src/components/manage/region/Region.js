@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { regionActions } from "../../../actions";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
-import Dropdown from "../../common-components/Dropdown";
+
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import AddEditForm from "./AddEditForm";
 import Loading from "../../common-components/Loading";

@@ -25,18 +25,18 @@ const getAll = () => {
     }
   };
 };
-const getAllCountry = () => {
+const getAllCountry = (requestParam) => {
   const success = (data) => {
     return { type: countryConstants.GETALLCOUNTRY_SUCCESS, payload: data };
   };
   const failure = (error) => {
     return { type: countryConstants.GETALLCOUNTRY_FAILURE, payload: error };
   };
-  const requestParams = {
+  let requestParams = requestParam ? requestParam : {};
+  /*const requestParams = {
     PageIndex: 1,
     PageSize: 50,
-  };
-
+  };*/
   return async (dispatch) => {
     try {
       const response = await countryService.getAllCountryService(requestParams);

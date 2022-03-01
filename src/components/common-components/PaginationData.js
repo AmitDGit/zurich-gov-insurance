@@ -18,6 +18,7 @@ function PaginationData(props) {
     exportReportTitle,
     exportFileName,
     exportExcludeFields,
+    exportHtmlFields,
   } = props;
   //console.log(data);
   const { SearchBar, ClearSearchButton } = Search;
@@ -85,6 +86,7 @@ function PaginationData(props) {
                       exportFileName={exportFileName}
                       exportData={data}
                       exportExcludeFields={exportExcludeFields}
+                      exportHtmlFields={exportHtmlFields}
                     />
                   ) : (
                     ""

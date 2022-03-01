@@ -9,7 +9,6 @@ import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditForm";
 import UserProfile from "../../common-components/UserProfile";
 import FrmInput from "../../common-components/frminput/FrmInput";
-import InputFilter from "../../common-components/InputFilter";
 
 function User({ ...props }) {
   const { userState, countryState, regionState } = props.state;
@@ -468,6 +467,7 @@ function User({ ...props }) {
     let tempregionList = item.regionList.map((item) => item.value);
     tempregionList = tempregionList.join(",");
     if (item.isSuperAdmin) {
+      item.isAccessBreachLog = true;
       for (let i = 0; i < frmuserType.length; i++) {
         if (frmuserType[i]["label"] === "Super Admin") {
           item.userType = frmuserType[i]["value"];
@@ -504,6 +504,7 @@ function User({ ...props }) {
     let tempregionList = item.regionList.map((item) => item.value);
     tempregionList = tempregionList.join(",");
     if (item.isSuperAdmin) {
+      item.isAccessBreachLog = true;
       for (let i = 0; i < frmuserType.length; i++) {
         if (frmuserType[i]["label"] === "Super Admin") {
           item.userType = frmuserType[i]["value"];

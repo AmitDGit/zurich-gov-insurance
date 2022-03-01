@@ -11,6 +11,7 @@ function ExportToExcel(props) {
     exportData,
     exportFileName,
     exportExcludeFields,
+    exportHtmlFields,
   } = props;
   let column = [];
   let data = [];
@@ -22,7 +23,11 @@ function ExportToExcel(props) {
         if (i == 0) {
           column.push(key);
         }
-        dataitem.push(item[key]);
+        if (exportHtmlFields.includes(key) && item[key]) {
+          dataitem.push(item[key].replace(/<\/?[^>]+(>|$)/g, ""));
+        } else {
+          dataitem.push(item[key]);
+        }
       }
     }
     data.push(dataitem);

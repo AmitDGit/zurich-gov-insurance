@@ -17,18 +17,23 @@ function FrmDatePicker(props) {
     validationmsg,
     issubmitted,
     minDate,
+    maxDate,
   } = props;
 
   const [startDate, setStartDate] = useState();
   useEffect(() => {
     if (value) {
-      setStartDate(new Date(formatDate(value)));
+      setStartDate(new Date(moment(value)));
     }
   }, [value]);
 
   const setChangedDate = (date) => {
-    handleChange(name, date);
-    setStartDate(date);
+    if (date) {
+      handleChange(name, date);
+      setStartDate(date);
+    } else {
+      setStartDate("");
+    }
   };
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
@@ -43,7 +48,9 @@ function FrmDatePicker(props) {
           onChange={(date) => setChangedDate(date)}
           disabled={isdisabled}
           minDate={minDate ? minDate : ""}
-          placeholderText="mm/dd/yyyy"
+          maxDate={maxDate ? maxDate : ""}
+          placeholderText="dd/mm/yyyy"
+          dateFormat="dd/MM/yyyy"
           yearDropdownItemNumber={""}
           showYearDropdown
           showMonthDropdown

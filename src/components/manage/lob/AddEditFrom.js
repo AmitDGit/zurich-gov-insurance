@@ -19,7 +19,7 @@ function AddEditForm(props) {
     getAllApprover,
     lobState,
   } = props;
-  console.log(lobState.approverUsers);
+
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [selectedTab, setselectedTab] = useState("tab1");

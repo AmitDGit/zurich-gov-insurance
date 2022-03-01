@@ -31,6 +31,11 @@
 .Tooltip-Tip table td {
   width: 50%;
   border: 0;
+  vertical-align: top;
+}
+.Tooltip-Tip table td .tooltip-content {
+  max-height: 200px;
+  overflow-y: auto;
 }
 .Tooltip-Tip table td:first-child {
   border-right: 1px solid #add8ef;
@@ -62,12 +67,12 @@
 .Tooltip-Tip.right {
   left: calc(100% + var(--tooltip-margin));
   top: 50%;
-  transform: translateX(0) translateY(-50%);
+  transform: translateX(0) translateY(-40%);
 }
 /* CSS border triangles */
 .Tooltip-Tip.right::before {
   left: calc(var(--tooltip-arrow-size) * -1);
-  top: 50%;
+  top: 40%;
   transform: translateX(0) translateY(-50%);
   border-right-color: var(--tooltip-background-color);
 }

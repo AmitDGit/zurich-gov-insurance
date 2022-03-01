@@ -13,6 +13,8 @@ function FrmFileUpload(props) {
     isRequired,
     validationmsg,
     issubmitted,
+    isshowloading,
+    isdisabled,
   } = props;
   const [selectedfile, setselectedfile] = useState();
   const [filename, setfilename] = useState("");
@@ -57,6 +59,7 @@ function FrmFileUpload(props) {
     handleFileUpload(name, selectedfile);
     setfilename("");
     setselectedfile("");
+    document.getElementById("file").value = null;
   };
   const deleteAttachment = (id, fileurl) => {
     handleFileDelete(id, fileurl);
@@ -77,6 +80,7 @@ function FrmFileUpload(props) {
               multiple
               data-multiple-caption="{count} files selected"
               onChange={onfileselect}
+              disabled={isdisabled ? isdisabled : false}
             />
             <label for="file">
               <div className="select-filebox">
@@ -94,6 +98,7 @@ function FrmFileUpload(props) {
             >
               Upload
             </div>
+            {isshowloading ? <span>Loading...</span> : ""}
           </div>
           {isRequired && issubmitted && !value ? (
             <div className="validationError">{validationmsg}</div>

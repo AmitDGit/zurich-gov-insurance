@@ -4,9 +4,8 @@ import { lookupActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
-import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
-import FrmInlineInput from "../../common-components/FrmInlineInput";
+import FrmInlineInput from "../../common-components/frminlineinput/FrmInlineInput";
 function Lookup({ ...props }) {
   const { lookupState } = props.state;
   const {

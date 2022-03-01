@@ -10,6 +10,7 @@ import { lobchapterReducer as lobchapterState } from "./lobchapter.reducer";
 import { lookupReducer as lookupState } from "./lookup.reducer";
 import { userReducer as userState } from "./user.reducer";
 import { breachlogReducer as breachlogState } from "./breachlog.reducer";
+import { rfelogReducer as rfelogState } from "./rfelog.reducer";
 const rootReducer = combineReducers({
   appmenu,
   regionState,
@@ -22,5 +23,6 @@ const rootReducer = combineReducers({
   userState,
   lookupState,
   breachlogState,
+  rfelogState,
 });
 export default rootReducer;
