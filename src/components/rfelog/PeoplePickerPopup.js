@@ -39,7 +39,6 @@ function PeoplePickerPopup(props) {
     let tempapprover = [];
     if (lobId) {
       tempapprover = await getallLobApprovers({ lobid: lobId });
-
       setsuggestedapprovers([...tempapprover]);
     }
   }, []);
@@ -69,6 +68,7 @@ function PeoplePickerPopup(props) {
                 issubmitted={issubmitted}
                 handleInputSearchChange={handleInputSearchChange}
                 searchItems={userState.userItems ? userState.userItems : []}
+                suggestedapprovers={suggestedapprovers}
               />
             </>
           </form>

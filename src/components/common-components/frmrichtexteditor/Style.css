@@ -67,6 +67,9 @@ a.ck.ck-button:not(.ck-disabled):hover {
   font-family: "ZurichSans", sans-serif, "Segoe UI";
   font-size: 14px;
 }
+.frm-field.disabled .RichTextEditor__root___2QXK- {
+  color: #00000060;
+}
 .frm-field .RichTextEditor__editor___1QqIU {
   font-family: "ZurichSans", sans-serif, "Segoe UI";
   font-size: 14px;
@@ -113,6 +116,4 @@ a.ck.ck-button:not(.ck-disabled):hover {
 }
 .frm-field .ButtonGroup__root___3lEAn > div > button {
   background: transparent;
-}
-.label {
 }

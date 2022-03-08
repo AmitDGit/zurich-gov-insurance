@@ -65,7 +65,11 @@ function FrmFileUpload(props) {
     handleFileDelete(id, fileurl);
   };
   return (
-    <div className={`frm-field fileupload ${isRequired ? "mandatory" : ""}`}>
+    <div
+      className={`frm-field fileupload ${
+        isRequired ? "mandatory" : ""
+      } ${isdisabled && "disabled"}`}
+    >
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
@@ -87,7 +91,11 @@ function FrmFileUpload(props) {
                 <div className="selected-files">
                   {filename ? filename : "Choose a file…"}
                 </div>
-                <div className="btn-blue browse-btn">Browse</div>
+                <div
+                  className={`btn-blue browse-btn ${isdisabled && "disable"}`}
+                >
+                  Browse
+                </div>
               </div>
             </label>
             <div
@@ -119,7 +127,7 @@ function FrmFileUpload(props) {
                   {item.filename}
                 </a>
               </div>
-              {!isReadMode ? (
+              {!isReadMode && !isdisabled ? (
                 <div
                   className="delete-icon"
                   onClick={() => deleteAttachment(item.id, item.fileurl)}

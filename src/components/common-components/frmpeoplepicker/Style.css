@@ -1,6 +1,6 @@
 .searched-container {
   position: absolute;
-  top: 52px;
+  top: 32px;
   width: 100%;
   background-color: #fff;
   border: 1px solid #add8ef;
@@ -17,7 +17,8 @@
   justify-content: space-between;
 }
 
-.searched-container .addbtn {
+.searched-container .addbtn,
+.suggested-users .addbtn {
   width: 22px;
   height: 15px;
   color: #fff;
@@ -32,4 +33,13 @@
   border-bottom: 0;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+.approver-list-container {
+  position: absolute;
+  top: 35px;
+  width: 100%;
+  z-index: 0;
+}
+.search-com-container {
+  position: relative;
 }
