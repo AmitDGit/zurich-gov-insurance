@@ -919,7 +919,7 @@ function AddEditForm(props) {
                     </div>
                     <div className="col-md-3">
                       <FrmInput
-                        title={"TUR number"}
+                        title={"UQA Review ID"}
                         name={"turNumber"}
                         value={formfield.turNumber}
                         type={"text"}

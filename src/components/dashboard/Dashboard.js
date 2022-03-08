@@ -9,7 +9,7 @@ function Dashboard({ ...props }) {
     props.menuClick
   );
   useEffect(() => {
-    getAllRegions();
+    //getAllRegions();
   }, []);
   return <div>Dashboard Page</div>;
 }

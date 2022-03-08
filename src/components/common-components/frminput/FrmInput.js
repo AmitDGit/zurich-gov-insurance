@@ -16,7 +16,7 @@ function FrmInput(props) {
   } = props;
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>
+      <label htmlFor={name} className={`${isdisabled ? "disabled" : ""}`}>
         <div className="label">{title}</div>
       </label>
       {isReadMode ? (

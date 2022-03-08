@@ -81,7 +81,11 @@ function FrmRichTextEditor(props) {
     handleChange(name, val.toString("html"));
   };
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
+    <div
+      className={`frm-field ${isRequired ? "mandatory" : ""} ${
+        isdisabled ? "disabled" : ""
+      }`}
+    >
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>

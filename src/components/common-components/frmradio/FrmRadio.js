@@ -42,6 +42,7 @@ function FrmRadio(props) {
             {selectopts.map((option) => (
               <div className="radiobtn-container">
                 <input
+                  key={option.label}
                   type="radio"
                   id={option.label}
                   className="regular-radio "
