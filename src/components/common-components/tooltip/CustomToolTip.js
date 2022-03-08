@@ -12,6 +12,7 @@ function CustomToolTip(props) {
   };
 
   const hideTip = () => {
+    // return;
     clearInterval(timeout);
     setActive(false);
   };

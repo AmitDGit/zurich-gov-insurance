@@ -50,8 +50,8 @@
 }
 .custom-multiselect .searchWrapper input {
   border: 1px solid #add8ef;
-  height: 34px;
-  border-radius: 17px;
+  height: 32px;
+  border-radius: 15px;
   padding: 3px 10px;
   background-color: #fff;
 }

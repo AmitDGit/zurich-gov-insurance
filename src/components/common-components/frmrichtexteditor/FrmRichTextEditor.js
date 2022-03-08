@@ -15,6 +15,7 @@ function FrmRichTextEditor(props) {
     isRequired,
     validationmsg,
     issubmitted,
+    isdisabled,
   } = props;
 
   /*ClassicEditor.defaultConfig = {
@@ -80,7 +81,11 @@ function FrmRichTextEditor(props) {
     handleChange(name, val.toString("html"));
   };
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
+    <div
+      className={`frm-field ${isRequired ? "mandatory" : ""} ${
+        isdisabled ? "disabled" : ""
+      }`}
+    >
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
@@ -92,10 +97,11 @@ function FrmRichTextEditor(props) {
             toolbarConfig={toolbarConfig}
             value={editorValue}
             onChange={setRichTextValue}
+            disabled={isdisabled ? isdisabled : false}
           />
           {isRequired &&
           issubmitted &&
-          !value.replace(/<\/?[^>]+(>|$)/g, "") ? (
+          (!value || (value && !value.replace(/<\/?[^>]+(>|$)/g, ""))) ? (
             <div className="validationError">{validationmsg}</div>
           ) : (
             ""

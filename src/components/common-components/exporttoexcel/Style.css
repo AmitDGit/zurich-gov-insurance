@@ -1,11 +1,11 @@
 .btn-container button.exportxlsbtn {
   min-width: 95px;
-  height: 26px;
+  height: 32px;
   background-color: rgba(33, 103, 173, 1);
   text-align: center;
-  line-height: 25px;
+  line-height: 31px;
   color: #fff;
-  border-radius: 13px;
+  border-radius: 15px;
   padding: 0 15px;
   padding-left: 25px;
   cursor: pointer;

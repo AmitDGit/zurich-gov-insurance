@@ -7,6 +7,7 @@ import "./Style.css";
 function FrmDatePicker(props) {
   const {
     title,
+    titlelinespace,
     name,
     value,
     type,
@@ -17,24 +18,34 @@ function FrmDatePicker(props) {
     validationmsg,
     issubmitted,
     minDate,
+    maxDate,
   } = props;
 
   const [startDate, setStartDate] = useState();
   useEffect(() => {
     if (value) {
-      setStartDate(new Date(formatDate(value)));
+      setStartDate(new Date(moment(value)));
     }
   }, [value]);
 
   const setChangedDate = (date) => {
-    handleChange(name, date);
-    setStartDate(date);
+    if (date) {
+      handleChange(name, date);
+      setStartDate(date);
+    } else {
+      setStartDate("");
+    }
   };
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
+    <div
+      className={`frm-field ${isRequired ? "mandatory" : ""} ${
+        isdisabled ? "disabled" : ""
+      }`}
+    >
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
+      {titlelinespace && <br></br>}
       {isReadMode ? (
         <div>{value ? formatDate(value) : ""}</div>
       ) : (
@@ -43,7 +54,9 @@ function FrmDatePicker(props) {
           onChange={(date) => setChangedDate(date)}
           disabled={isdisabled}
           minDate={minDate ? minDate : ""}
-          placeholderText="mm/dd/yyyy"
+          maxDate={maxDate ? maxDate : ""}
+          placeholderText="dd/mm/yyyy"
+          dateFormat="dd/MM/yyyy"
           yearDropdownItemNumber={""}
           showYearDropdown
           showMonthDropdown

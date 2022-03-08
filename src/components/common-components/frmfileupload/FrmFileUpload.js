@@ -13,6 +13,8 @@ function FrmFileUpload(props) {
     isRequired,
     validationmsg,
     issubmitted,
+    isshowloading,
+    isdisabled,
   } = props;
   const [selectedfile, setselectedfile] = useState();
   const [filename, setfilename] = useState("");
@@ -57,12 +59,17 @@ function FrmFileUpload(props) {
     handleFileUpload(name, selectedfile);
     setfilename("");
     setselectedfile("");
+    document.getElementById("file").value = null;
   };
   const deleteAttachment = (id, fileurl) => {
     handleFileDelete(id, fileurl);
   };
   return (
-    <div className={`frm-field fileupload ${isRequired ? "mandatory" : ""}`}>
+    <div
+      className={`frm-field fileupload ${
+        isRequired ? "mandatory" : ""
+      } ${isdisabled && "disabled"}`}
+    >
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
@@ -77,13 +84,18 @@ function FrmFileUpload(props) {
               multiple
               data-multiple-caption="{count} files selected"
               onChange={onfileselect}
+              disabled={isdisabled ? isdisabled : false}
             />
             <label for="file">
               <div className="select-filebox">
                 <div className="selected-files">
                   {filename ? filename : "Choose a file…"}
                 </div>
-                <div className="btn-blue browse-btn">Browse</div>
+                <div
+                  className={`btn-blue browse-btn ${isdisabled && "disable"}`}
+                >
+                  Browse
+                </div>
               </div>
             </label>
             <div
@@ -94,6 +106,7 @@ function FrmFileUpload(props) {
             >
               Upload
             </div>
+            {isshowloading ? <span>Loading...</span> : ""}
           </div>
           {isRequired && issubmitted && !value ? (
             <div className="validationError">{validationmsg}</div>
@@ -114,7 +127,7 @@ function FrmFileUpload(props) {
                   {item.filename}
                 </a>
               </div>
-              {!isReadMode ? (
+              {!isReadMode && !isdisabled ? (
                 <div
                   className="delete-icon"
                   onClick={() => deleteAttachment(item.id, item.fileurl)}

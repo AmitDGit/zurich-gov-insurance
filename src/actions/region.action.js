@@ -25,17 +25,18 @@ const getAll = () => {
     }
   };
 };
-const getAllRegions = () => {
+const getAllRegions = (requestParam) => {
   const success = (data) => {
     return { type: regionConstants.GETALLREGION_SUCCESS, payload: data };
   };
   const failure = (error) => {
     return { type: regionConstants.GETALLREGION_FAILURE, payload: error };
   };
-  const requestParams = {
+  const requestParams = requestParam ? requestParam : {};
+  /*const requestParams = {
     PageIndex: 1,
     PageSize: 50,
-  };
+  };*/
 
   return async (dispatch) => {
     try {

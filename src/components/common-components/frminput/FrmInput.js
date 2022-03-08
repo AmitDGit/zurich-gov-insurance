@@ -12,10 +12,11 @@ function FrmInput(props) {
     validationmsg,
     issubmitted,
     handleClick,
+    isdisabled,
   } = props;
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>
+      <label htmlFor={name} className={`${isdisabled ? "disabled" : ""}`}>
         <div className="label">{title}</div>
       </label>
       {isReadMode ? (
@@ -27,10 +28,11 @@ function FrmInput(props) {
             type={type}
             name={name}
             value={value}
+            disabled={isdisabled ? isdisabled : false}
             onChange={handleChange}
             onClick={handleClick}
             maxLength="60"
-            autocomplete="off"
+            autoComplete="off"
           ></input>
           {isRequired && issubmitted && !value ? (
             <div className="validationError">{validationmsg}</div>

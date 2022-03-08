@@ -72,7 +72,12 @@ body {
   background-color: #f3f3f3;
   line-height: 1.2;
 }
-
+a {
+  color: #2167ad;
+}
+.underline {
+  text-decoration: underline;
+}
 .spinner {
   position: relative;
   margin: 0 auto;
@@ -193,9 +198,15 @@ body {
   font-weight: normal;
 }
 .frm-field label.disabled,
-.frm-field div.disabled {
-  color: #00000029;
+.frm-field div.disabled,
+.frm-field.disabled,
+.frm-field.disabled label,
+.frm-field.disabled .label,
+.frm-field input:disabled,
+.frm-field.disabled input::placeholder {
+  color: #00000060;
 }
+
 .frm-field .validationError {
   margin-top: 3px;
   font-style: italic;
@@ -215,20 +226,21 @@ body {
 .frm-field.mandatory label:not(.disabled) .label:after {
   content: "*";
   color: #ff0000;
-  font-size: 10px;
+  font-size: 14px;
   top: 0px;
 }
 .frm-field input,
 .frm-field textarea,
 .frm-field select {
   width: 100%;
-  height: 34px;
+  height: 32px;
   border: 1px solid #add8ef;
   color: #2167ad;
   padding: 5px 10px;
   max-width: 350px;
   border-radius: 17px;
 }
+
 .frm-field input::placeholder {
   color: #2167ad;
   font-style: italic;
@@ -297,6 +309,15 @@ button:focus {
 .border-bottom {
   border-bottom: 1px solid #2167ad !important;
   margin-bottom: 10px;
+}
+.pt10 {
+  padding-top: 10px;
+}
+.mb10 {
+  margin-bottom: 10px;
+}
+.border-top {
+  border-top: 1px solid #2167ad !important;
 }
 .tab-btn {
   height: 34px;
@@ -376,11 +397,14 @@ button:focus {
   color: #243e6f;
 }
 .loggeduser-container {
-  display: flex;
+  position: relative;
   width: 200px;
+  margin-right: 20px;
+}
+.loggeduser {
   align-items: center;
   justify-content: space-around;
-  margin-right: 20px;
+  display: flex;
 }
 .loggeduser-container .userregion-container {
   width: 120px;
@@ -392,6 +416,7 @@ button:focus {
 }
 .loggeduser-container .user-image {
   text-align: center;
+  cursor: pointer;
 }
 .profile-picture {
   width: 35px;
@@ -404,6 +429,26 @@ button:focus {
   text-align: center;
   color: #009ee0;
   overflow: hidden;
+}
+.logout-container {
+  position: absolute;
+  margin-top: 22px;
+  right: 0px;
+  padding: 5px 10px;
+  text-align: left;
+  width: 90%;
+  background-color: #fff;
+  border: 1px solid #243e6f;
+  border-radius: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.logout-btn {
+  margin-top: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
 }
 .site-container {
   display: flex;
@@ -505,7 +550,7 @@ button:focus {
 .filter-container input {
   background-color: #fff;
   width: 260px;
-  height: 34px;
+  height: 32px;
   color: #21356e;
   border: 1px solid #add8ef;
 }
@@ -527,12 +572,12 @@ button:not(:last-child) {
 
 .btn-blue {
   min-width: 89px;
-  height: 26px;
+  height: 32px;
   background-color: rgba(33, 103, 173, 1);
   text-align: center;
-  line-height: 25px;
+  line-height: 31px;
   color: #fff;
-  border-radius: 13px;
+  border-radius: 15px;
   padding: 0 15px;
   cursor: pointer;
   border: none;
@@ -588,7 +633,7 @@ button:not(:last-child) {
 }
 .plus-icon {
   background-image: url("../assets/plus.png");
-  background-position: 10px 6px;
+  background-position: 10px center;
   background-repeat: no-repeat;
 }
 .export-icon {
@@ -743,14 +788,14 @@ button:not(:last-child) {
 }
 .searchbox .form-control {
   width: 400px;
-  height: 34px;
+  height: 32px;
   color: #2167ad;
   border: 0;
   border-radius: 0%;
   font-size: 14px;
   padding: 7px 10px;
   margin-right: 15px;
-  border-radius: 17px;
+  border-radius: 15px;
   background-color: #edeef0;
 }
 .searchbox .form-control:focus {
@@ -766,12 +811,12 @@ button:not(:last-child) {
 }
 .btn.btn-default {
   min-width: 89px;
-  height: 26px;
+  height: 32px;
   background-color: rgba(33, 103, 173, 1);
   text-align: center;
-  line-height: 25px;
+  line-height: 31px;
   color: #fff;
-  border-radius: 13px;
+  border-radius: 15px;
   padding: 0 15px;
   font-size: 14px;
   transition: none;

@@ -11,12 +11,16 @@ import FrmInputSearch from "../common-components/frmpeoplepicker/FrmInputSearch"
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
 import Loading from "../common-components/Loading";
 import moment from "moment";
-import parse from "html-react-parser";
+
 import "./Style.css";
 import {
-  BREACH_LOG_OPEN_STATUS,
-  BREACH_LOG_CLOSE_STATUS,
+  BREACH_LOG_STATUS_PENDING,
+  BREACH_LOG_STATUS_CLOSE,
+  BREACH_LOG_STATUS_REOPEN,
   REGION_EMEA,
+  REGION_ZNA,
+  COUNTRY_ADMIN_ROLE_ID,
+  HOW_DETECTED_TUR,
 } from "../../constants";
 import {
   userActions,
@@ -25,6 +29,7 @@ import {
   segmentActions,
   sublobActions,
   breachlogActions,
+  commonActions,
 } from "../../actions";
 import FrmRadio from "../common-components/frmradio/FrmRadio";
 import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTextEditor";
@@ -52,17 +57,25 @@ function AddEditForm(props) {
     countryAllOpts,
     getAllUsers,
     getLookupByType,
+    getToolTip,
     getAlllob,
     getAllSegment,
     getAllSublob,
     uploadFile,
     deleteFile,
     isReadMode,
+    userProfile,
   } = props;
-  //console.log(sublobState);
+
+  //console.log(frmRegionSelectOpts);
   const selectInitiVal = { label: "Select", value: "" };
-  const closeStatusValue = BREACH_LOG_CLOSE_STATUS;
+  const closeStatusValue = BREACH_LOG_STATUS_CLOSE;
+  const openStatusValue = BREACH_LOG_STATUS_PENDING;
+  const reopenStatusValue = BREACH_LOG_STATUS_REOPEN;
+  const countryadminrole = COUNTRY_ADMIN_ROLE_ID;
   const emeaRegionValue = REGION_EMEA;
+  const znaRegionValue = REGION_ZNA;
+  const howdetectedtur = HOW_DETECTED_TUR;
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
@@ -90,6 +103,7 @@ function AddEditForm(props) {
   const [frmRangeFinImpact, setfrmRangeFinImpact] = useState([]);
   const [frmHowDetected, setfrmHowDetected] = useState([]);
   const [frmBreachStatus, setfrmBreachStatus] = useState([]);
+  const [tooltip, settooltip] = useState({});
 
   const [mandatoryFields, setmandatoryFields] = useState([
     "title",
@@ -106,6 +120,7 @@ function AddEditForm(props) {
     "dueDate",
     "actionResponsibleName",
   ]);
+  const [fileuploadloader, setfileuploadloader] = useState(false);
   useEffect(() => {
     setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
     setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
@@ -146,6 +161,13 @@ function AddEditForm(props) {
       LookupType: "BreachStatus",
     });
 
+    let tempToolTips = await getToolTip({ type: "BreachLogs" });
+    let tooltipObj = {};
+    tempToolTips.forEach((item) => {
+      tooltipObj[item.toolTipField] = item.toolTipText;
+    });
+    settooltip(tooltipObj);
+
     tempSeverity = tempSeverity.map((item) => ({
       label: item.lookUpValue,
       value: item.lookupID,
@@ -172,17 +194,42 @@ function AddEditForm(props) {
     }));
     let frmbreachstatus = [];
     tempBreachStatus.forEach((item) => {
-      if (!isEditMode && item.lookUpValue === "Open") {
+      let isshow = false;
+      //draft status -
+      if (!formfield.isSubmit) {
+        if (item.lookupID === openStatusValue) {
+          isshow = true;
+        }
+      }
+      //open status
+      if (formfield.breachStatus === openStatusValue && formfield.isSubmit) {
+        if (
+          item.lookupID === openStatusValue ||
+          item.lookupID === closeStatusValue
+        ) {
+          isshow = true;
+        }
+      }
+      //close status && reopen status
+      if (
+        formfield.breachStatus === closeStatusValue ||
+        formfield.breachStatus === reopenStatusValue
+      ) {
+        if (
+          item.lookupID === reopenStatusValue ||
+          item.lookupID === closeStatusValue
+        ) {
+          isshow = true;
+        }
+      }
+      if (isshow) {
         frmbreachstatus.push({
           label: item.lookUpValue,
           value: item.lookupID,
         });
-        setformfield({ ...formfield, breachStatus: item.lookupID });
-      } else if (isEditMode) {
-        frmbreachstatus.push({
-          label: item.lookUpValue,
-          value: item.lookupID,
-        });
+        if (!formfield.isSubmit) {
+          setformfield({ ...formfield, breachStatus: item.lookupID });
+        }
       }
     });
 
@@ -191,6 +238,7 @@ function AddEditForm(props) {
     setfrmRootCauseBreach([selectInitiVal, ...tempRootCauseBreach]);
     setfrmNatureOfBreach([selectInitiVal, ...tempNatureOfBreach]);
     setfrmRangeFinImpact([selectInitiVal, ...tempRangeFinImpact]);
+
     setfrmHowDetected([selectInitiVal, ...tempHowDetected]);
 
     setfrmBreachStatus([selectInitiVal, ...frmbreachstatus]);
@@ -353,23 +401,42 @@ function AddEditForm(props) {
       formData.append("TempId", folderID);
       formData.append("LogType", "BreachLogs");
     }
+    setfileuploadloader(true);
     let response = await uploadFile(formData);
     if (response) {
+      setfileuploadloader(false);
       if (!formfield.breachLogID) {
         formfield.folderID = response.tempId;
       }
       let tempattachementfiles = [...formfield.breachAttachmentList];
 
       response.attachmentFiles.forEach((item) => {
-        tempattachementfiles.push({
-          filePath: item,
-          logAttachmentId: "",
-        });
+        let isExits = false;
+        for (let j = 0; j < tempattachementfiles.length; j++) {
+          let existfile = tempattachementfiles[j]["filePath"];
+          existfile = existfile.split("\\")[existfile.split("\\").length - 1];
+          let currentfile = item.split("\\")[item.split("\\").length - 1];
+          if (existfile === currentfile) {
+            isExits = true;
+            break;
+          }
+        }
+        if (!isExits) {
+          tempattachementfiles.push({
+            filePath: item,
+            logAttachmentId: "",
+          });
+        }
       });
       setformfield({
         ...formfield,
         breachAttachmentList: [...tempattachementfiles],
       });
+    } else {
+      setfileuploadloader(false);
+      alert(
+        "Error in file upload! Please check internet connectivity and try reuploading."
+      );
     }
   };
   const handleFileDelete = async (id, url) => {
@@ -394,12 +461,28 @@ function AddEditForm(props) {
     }
   };
   useEffect(() => {
+    if (
+      formfield.regionId === znaRegionValue &&
+      formfield.howDetected === howdetectedtur
+    ) {
+      setmandatoryFields([...mandatoryFields, "turNumber"]);
+    } else {
+      if (mandatoryFields.includes("turNumber")) {
+        let tempmandatoryfields = mandatoryFields.filter(
+          (item) => item !== "turNumber"
+        );
+        setmandatoryFields([...tempmandatoryfields]);
+      }
+    }
+  }, [formfield.regionId, formfield.howDetected]);
+
+  /* useEffect(() => {
     let tempfullPathArr = formfield.breachAttachmentList.map(
       (item) => item.filePath
     );
-    let fullFilePath = tempfullPathArr.join(",");
-    setformfield({ ...formfield, fullFilePath: fullFilePath });
-  }, [formfield.breachAttachmentList]);
+    let fullFilePathval = tempfullPathArr.join(",");
+    setformfield({ ...formfield, fullFilePath: fullFilePathval });
+  }, [formfield.breachAttachmentList]);*/
 
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showpeoplepicker, setshowpeoplepicker] = useState(false);
@@ -439,6 +522,7 @@ function AddEditForm(props) {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
+
     setissubmitted(true);
     if (validateform()) {
       //added below code to set date action closed value
@@ -458,12 +542,16 @@ function AddEditForm(props) {
     }
   };
   const handleSaveLog = () => {
-    setissubmitted(true);
-    if (validateform()) {
+    //setissubmitted(true);
+    if (formfield.title && formfield.countryId) {
       postItem({ ...formfield, isSubmit: false });
+    } else {
+      alert(alertMessage.breachlog.draftInvalid);
     }
+    // }
     // hideAddPopup();
   };
+
   return loading ? (
     <Loading />
   ) : (
@@ -571,7 +659,7 @@ function AddEditForm(props) {
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       isToolTip={true}
-                      tooltipmsg={"Tooltip text"}
+                      tooltipmsg={tooltip["Classification"]}
                       issubmitted={issubmitted}
                       selectopts={frmSeverity}
                       isdisabled={isdisabled}
@@ -586,6 +674,8 @@ function AddEditForm(props) {
                     handleChange={handleSelectChange}
                     isRequired={true}
                     isReadMode={isReadMode}
+                    isToolTip={true}
+                    tooltipmsg={tooltip["TypeOfBreach"]}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmTypeOfBreach}
@@ -636,6 +726,8 @@ function AddEditForm(props) {
                     isRequired={false}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
+                    isToolTip={true}
+                    tooltipmsg={tooltip["MaterialBreach"]}
                     issubmitted={issubmitted}
                     selectopts={yesnoopts}
                     isdisabled={isdisabled}
@@ -652,13 +744,22 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
+                    maxDate={moment().toDate()}
                   />
                 </div>
               </div>
               <div className="row">
                 <div className="col-md-12">
                   <FrmRichTextEditor
-                    title={"Details"}
+                    title={
+                      <>
+                        Details{" "}
+                        <i>
+                          (Use the Upload Attachments field at the bottom of the
+                          form to upload supporting documents.)
+                        </i>
+                      </>
+                    }
                     name={"breachDetails"}
                     value={formfield.breachDetails}
                     handleChange={handleSelectChange}
@@ -703,7 +804,11 @@ function AddEditForm(props) {
                   />
                 </div>
               </div>
-              <div className="row border-bottom">
+              <div
+                className={`row ${
+                  formfield.regionId !== znaRegionValue ? "border-bottom" : ""
+                }`}
+              >
                 <div className="col-md-3">
                   <FrmSelect
                     title={"How detected"}
@@ -731,9 +836,7 @@ function AddEditForm(props) {
                       isRequired={false}
                       isReadMode={isReadMode}
                       isToolTip={true}
-                      tooltipmsg={
-                        "Has a loss naterialised as a result of the breach? If the answer is No, this is a near miss.<br>If the answer is Yes, this is an operational event."
-                      }
+                      tooltipmsg={tooltip["NearMisses"]}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
                       selectopts={yesnoopts}
@@ -744,6 +847,98 @@ function AddEditForm(props) {
                   )}
                 </div>
               </div>
+              {formfield.regionId === znaRegionValue && (
+                <>
+                  <div className="row">
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"UWr involved"}
+                        name={"uwrInvolved"}
+                        value={formfield.uwrInvolved}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Business Division"}
+                        name={"businessDivision"}
+                        value={formfield.businessDivision}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Office"}
+                        name={"office"}
+                        value={formfield.office}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                  </div>
+                  <div className="row border-bottom">
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Policy name"}
+                        name={"policyName"}
+                        value={formfield.policyName}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"Policy number"}
+                        name={"policyNumber"}
+                        value={formfield.policyNumber}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={false}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <FrmInput
+                        title={"UQA Review ID"}
+                        name={"turNumber"}
+                        value={formfield.turNumber}
+                        type={"text"}
+                        handleChange={handleChange}
+                        isReadMode={isReadMode}
+                        isRequired={
+                          formfield.regionId === znaRegionValue &&
+                          formfield.howDetected === howdetectedtur
+                            ? true
+                            : false
+                        }
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="row">
                 <div className="col-md-3">
                   <FrmInput
@@ -797,6 +992,7 @@ function AddEditForm(props) {
                 </div>
               </div>
             </div>
+
             <div class="frm-container-bggray">
               <div className="row">
                 <div className="col-md-3">
@@ -809,6 +1005,12 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
+                    isdisabled={
+                      formfield.breachStatus === closeStatusValue &&
+                      userProfile.userRoles[0].roleId === countryadminrole
+                        ? true
+                        : false
+                    }
                     selectopts={frmBreachStatus}
                   />
                 </div>
@@ -823,30 +1025,14 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={true}
-                  />
-                </div>
-                <div className="col-md-3">
-                  <FrmFileUpload
-                    title={"Upload Attachment"}
-                    name={"fullFilePath"}
-                    uploadedfiles={formfield.breachAttachmentList}
-                    value={""}
-                    type={""}
-                    handleFileUpload={handleFileUpload}
-                    handleFileDelete={handleFileDelete}
-                    isRequired={false}
-                    isReadMode={isReadMode}
-                    validationmsg={"Mandatory field"}
-                    issubmitted={issubmitted}
+                    minDate={moment(formfield.dateBreachOccurred).toDate()}
+                    isdisabled={
+                      formfield.breachStatus === closeStatusValue ? false : true
+                    }
                   />
                 </div>
               </div>
-              <div
-                className={`row ${
-                  isEditMode || isReadMode ? "border-bottom" : ""
-                }`}
-              >
+              <div className={`row `}>
                 <div className="col-md-12">
                   <FrmRichTextEditor
                     title={"Action Update"}
@@ -860,6 +1046,28 @@ function AddEditForm(props) {
                   />
                 </div>
               </div>
+              <div
+                className={`row ${
+                  isEditMode || isReadMode ? "border-bottom" : ""
+                }`}
+              >
+                <div className="col-md-6">
+                  <FrmFileUpload
+                    title={"Upload Attachment"}
+                    name={"fullFilePath"}
+                    uploadedfiles={formfield.breachAttachmentList}
+                    value={""}
+                    type={""}
+                    handleFileUpload={handleFileUpload}
+                    handleFileDelete={handleFileDelete}
+                    isRequired={false}
+                    isReadMode={isReadMode}
+                    validationmsg={"Mandatory field"}
+                    issubmitted={issubmitted}
+                    isshowloading={fileuploadloader ? fileuploadloader : false}
+                  />
+                </div>
+              </div>
             </div>
             {isEditMode || isReadMode ? (
               <div className="row mb20">
@@ -869,7 +1077,7 @@ function AddEditForm(props) {
                   {formfield.creatorName}
                 </div>
                 <div className="col-md-3">
-                  <label>Created Dated</label>
+                  <label>Created Date</label>
                   <br></br>
                   {formfield.createdDate
                     ? formatDate(formfield.createdDate)
@@ -942,11 +1150,12 @@ const mapStateToProp = (state) => {
 const mapActions = {
   getAllUsers: userActions.getAllUsers,
   getLookupByType: lookupActions.getLookupByType,
+  getToolTip: commonActions.getToolTip,
   getAlllob: lobActions.getAlllob,
   getAllSegment: segmentActions.getAllSegment,
   getAllSublob: sublobActions.getAllSublob,
-  uploadFile: breachlogActions.uploadFile,
-  deleteFile: breachlogActions.deleteFile,
+  uploadFile: commonActions.uploadFile,
+  deleteFile: commonActions.deleteFile,
   getAllUsers: userActions.getAllUsers,
 };
 export default connect(mapStateToProp, mapActions)(AddEditForm);

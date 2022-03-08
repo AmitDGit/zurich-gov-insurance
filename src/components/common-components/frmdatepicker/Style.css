@@ -26,9 +26,10 @@
 .react-datepicker-year-header {
   color: #2167ad !important;
 }
-.react-datepicker__day:hover {
+.react-datepicker__day:hover:not(.react-datepicker__day--disabled) {
   background-color: #add8ef;
 }
+
 .react-datepicker__day--selected,
 .react-datepicker__day--keyboard-selected,
 .react-datepicker__day--keyboard-selected:hover {
@@ -36,7 +37,9 @@
   border: 1px solid #add8ef;
   border-radius: 45%;
 }
-
+.react-datepicker__day--disabled {
+  opacity: 0.5;
+}
 .react-datepicker-popper {
   z-index: 2;
 }

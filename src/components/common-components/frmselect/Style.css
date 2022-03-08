@@ -2,10 +2,10 @@
   font-size: 14px;
   color: #2167ad;
   border: 1px solid #add8ef;
-  height: 34px;
+  height: 32px;
   width: 100%;
   max-width: 350px;
-  border-radius: 17px;
+  border-radius: 15px;
   transition: none;
 }
 
@@ -49,9 +49,13 @@
 }
 .Dropdown-placeholder.is-selected {
   font-style: normal;
-  height: 20px;
+  height: 19px;
   overflow-y: hidden;
+  overflow-x: hidden;
 }
 .Dropdown-option.is-selected {
   background-color: #add8ef;
+}
+.Dropdown-disabled {
+  color: #00000060;
 }
