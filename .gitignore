@@ -27,3 +27,4 @@ azure-pipelines-1.yml
 azure-pipelines.yml
 /.vs/VSWorkspaceState.json
 /.vs/slnx.sqlite
+/.vs/slnx.sqlite-journal
