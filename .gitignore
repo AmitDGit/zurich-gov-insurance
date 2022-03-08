@@ -25,3 +25,5 @@ public/config.js
 /public/config.js
 azure-pipelines-1.yml
 azure-pipelines.yml
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite
