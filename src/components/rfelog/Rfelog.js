@@ -32,9 +32,9 @@ function Rfelog({ ...props }) {
   } = props;
 
   //console.log(userProfile);
+  //console.log(rfelogState.items);
   useSetNavMenu({ currentMenu: "Rfelog", isSubmenu: false }, props.menuClick);
   //initialize filter/search functionality
-  console.log(rfelogState);
   const selectInitiVal = { label: "Select", value: "" };
   const exportExcludeFields = [
     "rfeLogId",
@@ -51,6 +51,8 @@ function Rfelog({ ...props }) {
     "requestForEmpowermentStatus",
     "underwriter",
     "underwriterGrantingEmpowerment",
+    "roleData",
+    "isActive",
   ];
   const exportHtmlFields = [
     "rfeLogDetails",
@@ -61,9 +63,10 @@ function Rfelog({ ...props }) {
     underwriterFilterOpts: [],
     statusFilterOpts: [],
     rolesFilterOpts: [
-      { label: "All", value: "All" },
-      { label: "Approver", value: "Approver" },
-      { label: "Underwriter", value: "Underwriter" },
+      { label: "All", value: "all" },
+      { label: "Approver", value: "approver" },
+      { label: "Empowerment CC", value: "ccuser" },
+      { label: "Underwriter", value: "underwriter" },
     ],
   });
   const [countryFilterOpts, setcountryFilterOpts] = useState([]);
@@ -92,7 +95,7 @@ function Rfelog({ ...props }) {
       ...selfilter,
       [name]: value,
     });
-    if (name === "role" && value === "Underwriter") {
+    if (name === "role" && value === "underwriter") {
       setselfilter({
         ...selfilter,
         ["underwriter"]: "",
@@ -119,13 +122,16 @@ function Rfelog({ ...props }) {
         selfilter.requestForEmpowermentStatus;
     }
     if (selfilter.role !== "") {
-      if (selfilter.role === "All") {
+      if (selfilter.role === "all") {
         filter["underwriter"] = "";
         filter["underwriterGrantingEmpowerment"] = "";
-      } else if (selfilter.role === "Approver") {
+        filter["requestForEmpowermentCC"] = "";
+      } else if (selfilter.role === "approver") {
         filter["underwriterGrantingEmpowerment"] = userProfile.emailAddress;
-      } else if (selfilter.role === "Underwriter") {
+      } else if (selfilter.role === "underwriter") {
         filter["underwriter"] = userProfile.emailAddress;
+      } else if (selfilter.role === "ccuser") {
+        filter["requestForEmpowermentCC"] = userProfile.emailAddress;
       }
     }
     getAllRfeItems(filter);
@@ -166,14 +172,23 @@ function Rfelog({ ...props }) {
       dataField: "editaction",
       text: "Edit",
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        return (
+        let isedit = true;
+        let loggeduser = userProfile.emailAddress;
+        if (
+          row.requestForEmpowermentCC.indexOf(loggeduser) !== -1 &&
+          row.underwriterGrantingEmpowerment.indexOf(loggeduser) < 0
+        ) {
+          isedit = false;
+        }
+        return isedit ? (
           <div
-            className={`edit-icon ${row.roleData === "CC" ? "disable" : ""}`}
+            className={`edit-icon`}
             onClick={handleEdit}
             rowid={row.rfeLogId}
             mode={"edit"}
-            roleData={row.roleData}
           ></div>
+        ) : (
+          ""
         );
       },
       sort: false,
@@ -201,6 +216,15 @@ function Rfelog({ ...props }) {
                           <b>Details</b>
                           <br></br>
                           {row.rfeLogDetails ? parse(row.rfeLogDetails) : ""}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="tooltip-content">
+                          <b>Comments</b>
+                          <br></br>
+                          {row.underwriterGrantingEmpowermentComments
+                            ? parse(row.underwriterGrantingEmpowermentComments)
+                            : ""}
                         </div>
                       </td>
                     </tr>
@@ -338,6 +362,7 @@ function Rfelog({ ...props }) {
     if (sellogType === "draft") {
       requestParam.isSubmit = false;
     }
+    debugger;
     getAll(requestParam);
   };
   useEffect(() => {
@@ -424,7 +449,12 @@ function Rfelog({ ...props }) {
     countryId: "",
     underwriter: userProfile.emailAddress,
     underwriterName: userProfile.firstName + " " + userProfile.lastName,
-    underwriterAD: {},
+    underwriterAD: {
+      firstName: userProfile.firstName,
+      lastName: userProfile.lastName,
+      userName: userProfile.firstName + " " + userProfile.lastName,
+      emailAddress: userProfile.emailAddress,
+    },
     chz: "",
     lobId: "",
     requestForEmpowermentReason: "",
@@ -450,10 +480,7 @@ function Rfelog({ ...props }) {
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
     let mode = e.target.getAttribute("mode");
-    let roleData = e.target.getAttribute("roleData");
-    if (roleData === "CC" && mode === "edit") {
-      return;
-    }
+
     const response = await getById({ rfeLogId: itemid });
     if (response) {
       response.underwriterName = response.underwriterAD
@@ -472,7 +499,7 @@ function Rfelog({ ...props }) {
         );
         response.underwriterGrantingEmpowermentName = users.join(",");
       }
-      if (mode === "edit") {
+      if (mode === "edit" && response.isSubmit) {
         setisEditMode(true);
       }
       if (mode === "view") {
@@ -717,7 +744,7 @@ function Rfelog({ ...props }) {
                 defaultSorted={defaultSorted}
                 isExportReport={true}
                 exportReportTitle={"Export"}
-                exportFileName={"BreachLogReport"}
+                exportFileName={"RFELogReport"}
                 buttonTitle={"New RFE"}
                 hidesearch={true}
                 exportExcludeFields={exportExcludeFields}

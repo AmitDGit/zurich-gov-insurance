@@ -49,9 +49,13 @@
 }
 .Dropdown-placeholder.is-selected {
   font-style: normal;
-  height: 20px;
+  height: 19px;
   overflow-y: hidden;
+  overflow-x: hidden;
 }
 .Dropdown-option.is-selected {
   background-color: #add8ef;
+}
+.Dropdown-disabled {
+  color: #00000060;
 }

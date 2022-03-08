@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { connect } from "react-redux";
 import FrmInput from "../common-components/frminput/FrmInput";
 import FrmDatePicker from "../common-components/frmdatepicker/FrmDatePicker";
@@ -18,6 +18,7 @@ import {
   lobActions,
   sublobActions,
   commonActions,
+  countryActions,
 } from "../../actions";
 import FrmRadio from "../common-components/frmradio/FrmRadio";
 import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTextEditor";
@@ -25,7 +26,7 @@ import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import PeoplePickerPopup from "./PeoplePickerPopup";
 
 function AddEditForm(props) {
-  const { lobState, userState } = props.state;
+  const { lobState, userState, countryState } = props.state;
   const {
     title,
     hideAddPopup,
@@ -35,6 +36,7 @@ function AddEditForm(props) {
     formIntialState,
     frmCountrySelectOpts,
     getAllUsers,
+    getAllCountry,
     getLookupByType,
     getToolTip,
     getAlllob,
@@ -43,13 +45,14 @@ function AddEditForm(props) {
     isReadMode,
     userProfile,
   } = props;
-
-  console.log(userProfile);
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
   const [isfrmdisabled, setisfrmdisabled] = useState(false);
+  const [isshowlocallink, setisshowlocallink] = useState(false);
+  const [isstatusdisabled, setisstatusdisabled] = useState(false);
+  //const [isapprovermode, setisapprovermode] = useState(false);
   const [frmLoB, setfrmLoB] = useState([]);
   const [frmorgnizationalalignment, setfrmorgnizationalalignment] = useState(
     []
@@ -68,12 +71,14 @@ function AddEditForm(props) {
     Empowerment_not_granted: RFE_LOG_STATUS.Empowerment_not_granted,
     Withdrawn: RFE_LOG_STATUS.Withdrawn,
   };
-  const userroles = {
+  const [userroles, setuserroles] = useState({
     isunderwriter: false,
     isapprover: false,
     isadmin: false,
+    issuperadmin: false,
     iscc: false,
-  };
+  });
+
   const [mandatoryFields, setmandatoryFields] = useState([
     "accountName",
     "organizationalAlignment",
@@ -83,36 +88,66 @@ function AddEditForm(props) {
     "rfeLogDetails",
     "underwriterGrantingEmpowerment",
     "requestForEmpowermentStatus",
+    "receptionInformationDate",
+    "responseDate",
+    "underwriter",
   ]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
   useEffect(() => {
-    setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
-  }, []);
+    let selectOpts = [];
+    countryState.countryItems.forEach((item) => {
+      selectOpts.push({
+        label: item.countryName.trim(),
+        value: item.countryID,
+        regionId: item.regionID,
+      });
+    });
+    selectOpts.sort(dynamicSort("label"));
+    setcountryopts([selectInitiVal, ...selectOpts]);
+  }, [countryState.countryItems]);
 
   const [loading, setloading] = useState(true);
-  useEffect(async () => {
+
+  useEffect(() => {
+    const tempuserroles = {
+      isunderwriter: false,
+      isapprover: false,
+      isadmin: false,
+      issuperadmin: false,
+      iscc: false,
+    };
     if (formfield.isSubmit) {
       if (formfield.underwriter.indexOf(userProfile.emailAddress) !== -1) {
-        userroles.isunderwriter = true;
+        tempuserroles.isunderwriter = true;
       }
       if (
         formfield.underwriterGrantingEmpowerment.indexOf(
           userProfile.emailAddress
         ) !== -1
       ) {
-        userroles.isapprover = true;
+        tempuserroles.isapprover = true;
       }
       if (
         formfield.requestForEmpowermentCC.indexOf(userProfile.emailAddress) !==
         -1
       ) {
-        userroles.iscc = true;
+        tempuserroles.iscc = true;
       }
       if (userProfile.isAdmin) {
-        userroles.isadmin = true;
+        tempuserroles.isadmin = true;
+      }
+      if (userProfile.userRoles[0].roleName === "SuperAdmin") {
+        tempuserroles.issuperadmin = true;
       }
     }
-
+    setuserroles({ ...userroles, ...tempuserroles });
+  }, []);
+  useEffect(async () => {
+    if (userroles.isapprover || userroles.iscc) {
+      getAllCountry();
+    } else {
+      getAllCountry({ IsLog: true });
+    }
     let temporgnizationalalignment = await getLookupByType({
       LookupType: "RFEOrganizationalAlignment",
     });
@@ -125,7 +160,6 @@ function AddEditForm(props) {
     let tempstatus = await getLookupByType({
       LookupType: "RFEEmpowermentStatusRequest",
     });
-
     let tempToolTips = await getToolTip({ type: "BreachLogs" });
     let tooltipObj = {};
     tempToolTips.forEach((item) => {
@@ -158,10 +192,11 @@ function AddEditForm(props) {
         }
       }
       //status more information needed
-      if (item.lookupID !== rfelog_status.Pending) {
-        if (userroles.isapprover) {
-          isshow = true;
-        }
+      if (item.lookupID !== rfelog_status.Pending && formfield.isSubmit) {
+        isshow = true;
+        /* if (userroles.isapprover || userroles.issuperadmin) {
+          
+        }*/
       }
 
       if (isshow) {
@@ -171,19 +206,43 @@ function AddEditForm(props) {
         });
       }
     });
-    if (!formfield.isSubmit) {
-      setformfield({
-        ...formfield,
-        requestForEmpowermentStatus: rfelog_status.Pending,
-      });
-    }
 
     setfrmorgnizationalalignment([...temporgnizationalalignment]);
     setfrmrfechz([selectInitiVal, ...temprfechz]);
     setfrmrfeempourment([selectInitiVal, ...temprfeempourment]);
     setfrmstatus([...frmstatus]);
     setloading(false);
-  }, []);
+
+    if (formfield.isSubmit) {
+      if (
+        (userroles.isapprover || userroles.issuperadmin) &&
+        (formfield.requestForEmpowermentStatus === rfelog_status.Pending ||
+          formfield.requestForEmpowermentStatus ===
+            rfelog_status.More_information_needed)
+      ) {
+        setisstatusdisabled(false);
+      } else {
+        if (!isReadMode) setisstatusdisabled(true);
+      }
+      if (userroles.isapprover && !userroles.issuperadmin && !isReadMode) {
+        //setisapprovermode(true);
+      }
+    } else {
+      setformfield({
+        ...formfield,
+        requestForEmpowermentStatus: rfelog_status.Pending,
+      });
+    }
+    if (
+      formfield.requestForEmpowermentStatus !== rfelog_status.Pending &&
+      formfield.requestForEmpowermentStatus !==
+        rfelog_status.More_information_needed &&
+      formfield.isSubmit &&
+      !isReadMode
+    ) {
+      setisfrmdisabled(true);
+    }
+  }, [userroles]);
 
   useEffect(() => {
     getAlllob({ isActive: true });
@@ -208,12 +267,14 @@ function AddEditForm(props) {
       value === organizationalAlignmentCountry
     ) {
       setisfrmdisabled(true);
+      setisshowlocallink(true);
       alert(alertMessage.rfelog.orgalignmetmsg);
     } else if (
       name === "organizationalAlignment" &&
       value !== organizationalAlignmentCountry
     ) {
       setisfrmdisabled(false);
+      setisshowlocallink(false);
     }
     setformfield({ ...formfield, [name]: value });
   };
@@ -310,6 +371,7 @@ function AddEditForm(props) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showApprover, setshowApprover] = useState(false);
   const [showCCUser, setshowCCUser] = useState(false);
+  const [showUnderwriter, setshowUnderwriter] = useState(false);
   const handleshowpeoplepicker = (usertype) => {
     const position = window.pageYOffset;
     setScrollPosition(position);
@@ -317,11 +379,14 @@ function AddEditForm(props) {
       setshowApprover(true);
     } else if (usertype === "ccuser") {
       setshowCCUser(true);
+    } else if (usertype === "underwriter") {
+      setshowUnderwriter(true);
     }
   };
   const hidePeoplePickerPopup = () => {
     setshowApprover(false);
     setshowCCUser(false);
+    setshowUnderwriter(false);
     window.scrollTo({ top: scrollPosition, behavior: "smooth" });
   };
   const assignPeoplepikerUser = (name, value, usertype) => {
@@ -337,9 +402,12 @@ function AddEditForm(props) {
     if (usertype === "approver") {
       namefield = "underwriterGrantingEmpowermentName";
       adfield = "underwriterGrantingEmpowermentAD";
-    } else {
+    } else if (usertype === "ccuser") {
       namefield = "requestForEmpowermentCCName";
       adfield = "requestForEmpowermentCCAD";
+    } else if (usertype === "underwriter") {
+      namefield = "underwriterName";
+      adfield = "underwriterAD";
     }
     setformfield({
       ...formfield,
@@ -370,12 +438,18 @@ function AddEditForm(props) {
     }
     setissubmitted(true);
     if (validateform()) {
-      formfield.underwriterAD = {
-        zurichADUserId: "1",
+      /*formfield.underwriterAD = {
         userName: formfield.underwriterName,
         emailAddress: formfield.underwriter,
-      };
+      };*/
       if (isEditMode) {
+        if (
+          (userroles.isadmin || userroles.isunderwriter) &&
+          formfield.requestForEmpowermentStatus ===
+            rfelog_status.More_information_needed
+        ) {
+          formfield.requestForEmpowermentStatus = rfelog_status.Pending;
+        }
         putItem(formfield);
       } else {
         postItem({ ...formfield, isSubmit: true });
@@ -439,12 +513,19 @@ function AddEditForm(props) {
                     tooltipmsg={tooltip["Classification"]}
                     issubmitted={issubmitted}
                     selectopts={frmorgnizationalalignment}
+                    isdisabled={isfrmdisabled && !isshowlocallink}
                   />
                 </div>
                 <div className="col-md-3">
-                  {isfrmdisabled ? (
+                  {isshowlocallink ? (
                     <>
-                      <a href="">Link for local log</a>
+                      <a
+                        href="https://zurichinsurance.sharepoint.com/sites/grfel/SitePages/Home.aspx"
+                        className="underline"
+                        target="_blank"
+                      >
+                        Link for local log
+                      </a>
                     </>
                   ) : (
                     <FrmSelect
@@ -473,9 +554,10 @@ function AddEditForm(props) {
                     value={formfield.underwriterName}
                     type={"text"}
                     handleChange={handleChange}
+                    handleClick={() => handleshowpeoplepicker("underwriter")}
                     isReadMode={isReadMode}
-                    isRequired={false}
-                    isdisabled={true}
+                    isRequired={true}
+                    isdisabled={isfrmdisabled}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                   />
@@ -505,11 +587,8 @@ function AddEditForm(props) {
 
                 <div className="col-md-3">
                   <FrmSelect
-                    title={
-                      <>
-                        <div className="mb5">LoB</div>
-                      </>
-                    }
+                    title={<>LoB</>}
+                    titlelinespace={true}
                     name={"lobId"}
                     value={formfield.lobId}
                     handleChange={handleSelectChange}
@@ -524,13 +603,8 @@ function AddEditForm(props) {
 
                 <div className="col-md-3">
                   <FrmSelect
-                    title={
-                      <>
-                        <div className="mb5">
-                          Request for empowerment reason
-                        </div>
-                      </>
-                    }
+                    title={<>Request for empowerment reason</>}
+                    titlelinespace={true}
                     name={"requestForEmpowermentReason"}
                     value={formfield.requestForEmpowermentReason}
                     handleChange={handleSelectChange}
@@ -602,22 +676,7 @@ function AddEditForm(props) {
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     selectopts={frmstatus}
-                    isdisabled={isfrmdisabled}
-                  />
-                </div>
-
-                <div className="col-md-3">
-                  <FrmDatePicker
-                    title={"Date of response"}
-                    name={"responseDate"}
-                    value={formfield.responseDate}
-                    type={"date"}
-                    handleChange={handleDateSelectChange}
-                    isRequired={true}
-                    isReadMode={isReadMode}
-                    validationmsg={"Mandatory field"}
-                    issubmitted={issubmitted}
-                    isdisabled={isfrmdisabled}
+                    isdisabled={isfrmdisabled || isstatusdisabled}
                   />
                 </div>
               </div>
@@ -629,6 +688,22 @@ function AddEditForm(props) {
                     }
                     name={"receptionInformationDate"}
                     value={formfield.receptionInformationDate}
+                    type={"date"}
+                    handleChange={handleDateSelectChange}
+                    isRequired={true}
+                    isReadMode={isReadMode}
+                    minDate={moment().toDate()}
+                    validationmsg={"Mandatory field"}
+                    issubmitted={issubmitted}
+                    isdisabled={isfrmdisabled}
+                  />
+                </div>
+                <div className="col-md-3">
+                  <FrmDatePicker
+                    title={"Date of response"}
+                    titlelinespace={true}
+                    name={"responseDate"}
+                    value={formfield.responseDate}
                     type={"date"}
                     handleChange={handleDateSelectChange}
                     isRequired={true}
@@ -654,14 +729,14 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={isfrmdisabled}
+                    isdisabled={!isReadMode && isfrmdisabled}
                   />
                 </div>
               </div>
             </div>
 
             <div class="">
-              <div className="row">
+              <div className="row ">
                 <div className="col-md-6">
                   <FrmFileUpload
                     title={"Upload Attachment"}
@@ -682,7 +757,7 @@ function AddEditForm(props) {
               </div>
             </div>
             {isEditMode || isReadMode ? (
-              <div className="row mb20">
+              <div className="row mb20 border-top pt10">
                 <div className="col-md-3">
                   <label>Created by</label>
                   <br></br>
@@ -778,6 +853,20 @@ function AddEditForm(props) {
       ) : (
         ""
       )}
+      {showUnderwriter ? (
+        <PeoplePickerPopup
+          title={"Underwriter"}
+          name={"underwriter"}
+          usertype="underwriter"
+          actionResponsible={
+            formfield.underwriter ? [formfield.underwriterAD] : []
+          }
+          assignPeoplepikerUser={assignPeoplepikerUser}
+          hideAddPopup={hidePeoplePickerPopup}
+        />
+      ) : (
+        ""
+      )}
     </div>
   );
 }
@@ -791,7 +880,7 @@ const mapActions = {
   getLookupByType: lookupActions.getLookupByType,
   getToolTip: commonActions.getToolTip,
   getAlllob: lobActions.getAlllob,
-
+  getAllCountry: countryActions.getAllCountry,
   getAllSublob: sublobActions.getAllSublob,
   uploadFile: commonActions.uploadFile,
   deleteFile: commonActions.deleteFile,

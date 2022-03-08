@@ -7,6 +7,7 @@ import "./Style.css";
 function FrmDatePicker(props) {
   const {
     title,
+    titlelinespace,
     name,
     value,
     type,
@@ -36,10 +37,15 @@ function FrmDatePicker(props) {
     }
   };
   return (
-    <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
+    <div
+      className={`frm-field ${isRequired ? "mandatory" : ""} ${
+        isdisabled ? "disabled" : ""
+      }`}
+    >
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
+      {titlelinespace && <br></br>}
       {isReadMode ? (
         <div>{value ? formatDate(value) : ""}</div>
       ) : (

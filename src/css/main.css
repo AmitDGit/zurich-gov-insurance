@@ -75,6 +75,9 @@ body {
 a {
   color: #2167ad;
 }
+.underline {
+  text-decoration: underline;
+}
 .spinner {
   position: relative;
   margin: 0 auto;
@@ -195,9 +198,15 @@ a {
   font-weight: normal;
 }
 .frm-field label.disabled,
-.frm-field div.disabled {
-  color: #00000029;
+.frm-field div.disabled,
+.frm-field.disabled,
+.frm-field.disabled label,
+.frm-field.disabled .label,
+.frm-field input:disabled,
+.frm-field.disabled input::placeholder {
+  color: #00000060;
 }
+
 .frm-field .validationError {
   margin-top: 3px;
   font-style: italic;
@@ -231,6 +240,7 @@ a {
   max-width: 350px;
   border-radius: 17px;
 }
+
 .frm-field input::placeholder {
   color: #2167ad;
   font-style: italic;
@@ -299,6 +309,15 @@ button:focus {
 .border-bottom {
   border-bottom: 1px solid #2167ad !important;
   margin-bottom: 10px;
+}
+.pt10 {
+  padding-top: 10px;
+}
+.mb10 {
+  margin-bottom: 10px;
+}
+.border-top {
+  border-top: 1px solid #2167ad !important;
 }
 .tab-btn {
   height: 34px;
@@ -413,14 +432,16 @@ button:focus {
 }
 .logout-container {
   position: absolute;
-  margin-top: 5px;
-  right: 5px;
+  margin-top: 22px;
+  right: 0px;
   padding: 5px 10px;
-  text-align: center;
+  text-align: left;
   width: 90%;
   background-color: #fff;
-  border: 1px solid #add8ef;
+  border: 1px solid #243e6f;
   border-radius: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .logout-btn {
