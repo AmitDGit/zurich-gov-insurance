@@ -493,7 +493,8 @@ button:focus {
 }
 .pageview-container {
   margin: 10px;
-  flex: 3 0 auto;
+  width: 200px;
+  flex-grow: 1;
   min-height: 525px;
   background-color: #fff;
 }

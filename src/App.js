@@ -36,14 +36,13 @@ function App({ state, menuClick }) {
   } else {
     userProfile = TokenService.getUser();
   }
-  const updateWidthAndHeight = () => {
+  /*const updateWidthAndHeight = () => {
     const maincontainerwidth = document.querySelector(".main-container")
       .offsetWidth;
     const menucontainerwidth = document.querySelector(".menu-nav").offsetWidth;
     const pageviewcontainer = document.querySelector(".pageview-container");
     const marginwidth = 20;
-    pageviewcontainer.style.width =
-      maincontainerwidth - menucontainerwidth - marginwidth + "px";
+    pageviewcontainer.style.width =      maincontainerwidth - menucontainerwidth - marginwidth + "px";
   };
   useEffect(() => {
     window.addEventListener("load", updateWidthAndHeight);
@@ -52,7 +51,7 @@ function App({ state, menuClick }) {
       window.removeEventListener("resize", updateWidthAndHeight);
       window.removeEventListener("load", updateWidthAndHeight);
     };
-  }, []);
+  }, []);*/
 
   return (
     <div className="container-fluid">
