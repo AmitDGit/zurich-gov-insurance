@@ -384,6 +384,7 @@ button:focus {
 }
 .site-logo {
   width: 200px;
+  min-width: 200px;
   height: 100%;
   /*border-right: 1px solid #dce3e3;*/
   background-image: url("../../src/assets/Zurich_72_Logo_Horz_Blue_RGB.png");
@@ -398,6 +399,7 @@ button:focus {
 }
 .loggeduser-container {
   position: relative;
+  min-width: 200px;
   width: 200px;
   margin-right: 20px;
 }
@@ -456,6 +458,7 @@ button:focus {
 
 .menu-nav {
   width: 200px;
+  min-width: 200px;
   background-color: #fff;
 }
 
@@ -490,7 +493,7 @@ button:focus {
 }
 .pageview-container {
   margin: 10px;
-  width: 1125px;
+  flex: 3 0 auto;
   min-height: 525px;
   background-color: #fff;
 }
@@ -840,6 +843,7 @@ button:not(:last-child) {
   margin: 0 20px;
   border: 1px solid #add8ef;
   border-radius: 10px;
+  line-height: 25px;
   min-width: 60px !important;
 }
 .react-bs-table-sizePerPage-dropdown.open #pageDropDown {

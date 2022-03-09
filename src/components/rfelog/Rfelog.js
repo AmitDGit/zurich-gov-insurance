@@ -362,7 +362,7 @@ function Rfelog({ ...props }) {
     if (sellogType === "draft") {
       requestParam.isSubmit = false;
     }
-    debugger;
+
     getAll(requestParam);
   };
   useEffect(() => {
@@ -440,7 +440,10 @@ function Rfelog({ ...props }) {
     setisEditMode(false);
     setisReadMode(false);
   };
-
+  const setInEditMode = () => {
+    setisEditMode(true);
+    setisReadMode(false);
+  };
   const [isEditMode, setisEditMode] = useState(false);
   const [isReadMode, setisReadMode] = useState(false);
   const formInitialValue = {
@@ -621,6 +624,7 @@ function Rfelog({ ...props }) {
           formIntialState={formIntialState}
           frmCountrySelectOpts={frmCountrySelectOpts}
           userProfile={userProfile}
+          setInEditMode={setInEditMode}
         ></AddEditForm>
       ) : (
         <>

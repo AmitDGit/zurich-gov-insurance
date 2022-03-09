@@ -15,6 +15,7 @@ function PeoplePickerPopup(props) {
     getAllUsers,
     lobId,
     getallLobApprovers,
+    singleSelection,
   } = props;
   const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
@@ -62,7 +63,7 @@ function PeoplePickerPopup(props) {
                 value={actionResponsible}
                 type={"text"}
                 handleChange={handleApproverChange}
-                singleSelection={false}
+                singleSelection={singleSelection ? singleSelection : false}
                 isRequired={true}
                 validationmsg={"Mandatory field"}
                 issubmitted={issubmitted}
