@@ -32,7 +32,9 @@ function AddEditForm(props) {
     hideAddPopup,
     postItem,
     putItem,
+    isReadMode,
     isEditMode,
+    setInEditMode,
     formIntialState,
     frmCountrySelectOpts,
     getAllUsers,
@@ -42,7 +44,6 @@ function AddEditForm(props) {
     getAlllob,
     uploadFile,
     deleteFile,
-    isReadMode,
     userProfile,
   } = props;
   const selectInitiVal = { label: "Select", value: "" };
@@ -242,7 +243,7 @@ function AddEditForm(props) {
     ) {
       setisfrmdisabled(true);
     }
-  }, [userroles]);
+  }, [userroles, isEditMode]);
 
   useEffect(() => {
     getAlllob({ isActive: true });
@@ -399,6 +400,8 @@ function AddEditForm(props) {
     });
     let namefield = "";
     let adfield = "";
+    let selvalue = value;
+
     if (usertype === "approver") {
       namefield = "underwriterGrantingEmpowermentName";
       adfield = "underwriterGrantingEmpowermentAD";
@@ -408,12 +411,14 @@ function AddEditForm(props) {
     } else if (usertype === "underwriter") {
       namefield = "underwriterName";
       adfield = "underwriterAD";
+      selvalue = value[0];
     }
+
     setformfield({
       ...formfield,
       [name]: email.join(","),
       [namefield]: displayname.join(","),
-      [adfield]: value,
+      [adfield]: selvalue,
     });
   };
   const validateform = () => {
@@ -476,8 +481,22 @@ function AddEditForm(props) {
     <div className="addedit-logs-container">
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
-        <div className="addedit-close btn-blue" onClick={() => hideAddPopup()}>
-          Back
+        <div className="header-btn-container">
+          {!isEditMode && !userroles.iscc && (
+            <div
+              className="btn-blue"
+              onClick={() => setInEditMode()}
+              style={{ marginRight: "10px" }}
+            >
+              Set in edit
+            </div>
+          )}
+          <div
+            className="addedit-close btn-blue"
+            onClick={() => hideAddPopup()}
+          >
+            Back
+          </div>
         </div>
       </div>
 
@@ -863,6 +882,7 @@ function AddEditForm(props) {
           }
           assignPeoplepikerUser={assignPeoplepikerUser}
           hideAddPopup={hidePeoplePickerPopup}
+          singleSelection={true}
         />
       ) : (
         ""
