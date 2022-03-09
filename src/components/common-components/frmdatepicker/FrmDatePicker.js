@@ -55,8 +55,8 @@ function FrmDatePicker(props) {
           disabled={isdisabled}
           minDate={minDate ? minDate : ""}
           maxDate={maxDate ? maxDate : ""}
-          placeholderText="dd/mm/yyyy"
-          dateFormat="dd/MM/yyyy"
+          placeholderText="dd-mmm-yyyy"
+          dateFormat="dd-MMM-yyyy"
           yearDropdownItemNumber={""}
           showYearDropdown
           showMonthDropdown
