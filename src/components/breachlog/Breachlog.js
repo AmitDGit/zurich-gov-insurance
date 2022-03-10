@@ -31,6 +31,7 @@ function Breachlog({ ...props }) {
   } = props.state;
   const {
     getAll,
+    getAllCount,
     getActionResponsible,
     getAllUsers,
     getAllCountry,
@@ -52,9 +53,9 @@ function Breachlog({ ...props }) {
     props.menuClick
   );
   //initialize filter/search functionality
-  //console.log(breachlogState);
+  console.log(breachlogState);
   const selectInitiVal = { label: "Select", value: "" };
-  const draftTabVal = { label: "Draft", value: "", isSubmit: false };
+
   const openStatusValue = BREACH_LOG_STATUS_PENDING;
 
   const exportExcludeFields = [
@@ -166,6 +167,9 @@ function Breachlog({ ...props }) {
     }
     if (selfilter.countryId !== "") {
       filter["countryId"] = selfilter.countryId;
+    }
+    if (selfilter.breachStatus !== "") {
+      filter["breachStatus"] = selfilter.breachStatus;
     }
     if (selfilter.entries !== "") {
       if (selfilter.entries === "My Entries") {
@@ -332,6 +336,14 @@ function Breachlog({ ...props }) {
       },
     },
     {
+      dataField: "regionName",
+      text: "Region",
+      sort: true,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+    },
+    {
       dataField: "lobName",
       text: "LoB",
       sort: true,
@@ -387,6 +399,14 @@ function Breachlog({ ...props }) {
       },
     },
     {
+      dataField: "breachStatusValue",
+      text: "Status",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "120px" };
+      },
+    },
+    {
       dataField: "actionResponsibleName",
       text: "Action Responsible",
       sort: false,
@@ -403,22 +423,37 @@ function Breachlog({ ...props }) {
     },
   ];
 
-  const getAllBreachItems = (filters) => {
+  const getAllBreachItems = async (filters) => {
     let requestParam = {
       RequesterUserId: userProfile.userId,
-      breachStatus: "",
+      isSubmit: true,
     };
     if (filters) {
       for (let key in filters) {
         requestParam[key] = filters[key];
       }
     }
-    let tempseltype = logTypes.filter((item) => item.value === sellogType);
+    if (sellogType === "draft") {
+      requestParam.isSubmit = false;
+    }
+    getAll(requestParam);
+
+    let tempdraftcount = await getAllCount({
+      RequesterUserId: userProfile.userId,
+      isSubmit: false,
+    });
+
+    if (tempdraftcount.length) {
+      setshowDraft(true);
+    } else {
+      setshowDraft(false);
+    }
+    /*let tempseltype = logTypes.filter((item) => item.value === sellogType);
     if (tempseltype.length) {
       requestParam["breachStatus"] = tempseltype[0]["value"];
       requestParam["isSubmit"] = tempseltype[0]["isSubmit"];
-      getAll(requestParam);
-    }
+      
+    }*/
   };
   useEffect(() => {
     getAllCountry({ IsLog: true });
@@ -444,6 +479,9 @@ function Breachlog({ ...props }) {
     let tempNatureOfBreach = await getLookupByType({
       LookupType: "BreachNature",
     });
+    let tempStatus = await getLookupByType({
+      LookupType: "BreachStatus",
+    });
 
     tempActionResponsible = tempActionResponsible.map((item) => ({
       label: item.userName,
@@ -457,15 +495,20 @@ function Breachlog({ ...props }) {
       label: item.lookUpValue,
       value: item.lookupID,
     }));
+    tempStatus = tempStatus.map((item) => ({
+      label: item.lookUpValue,
+      value: item.lookupID,
+    }));
     tempActionResponsible.sort(dynamicSort("label"));
     //tempClassification.sort(dynamicSort("label"));
     tempNatureOfBreach.sort(dynamicSort("label"));
-
+    tempStatus.sort(dynamicSort("label"));
     setcommonfilterOpts({
       ...commonfilterOpts,
       actionResponsibleFilterOpts: tempActionResponsible,
       classificationFilterOpts: tempClassification,
       natureOfBreachFilterOpts: tempNatureOfBreach,
+      statusFilterOpts: tempStatus,
     });
   }, []);
 
@@ -559,7 +602,10 @@ function Breachlog({ ...props }) {
     setisReadMode(false);
     // getAllApprover({ UserName: "#$%" });
   };
-
+  const setInEditMode = () => {
+    setisEditMode(true);
+    setisReadMode(false);
+  };
   const [isEditMode, setisEditMode] = useState(false);
   const [isReadMode, setisReadMode] = useState(false);
   const formInitialValue = {
@@ -689,34 +735,44 @@ function Breachlog({ ...props }) {
   const handleFilterBoxState = () => {
     setfilterbox(!filterbox);
   };
-
+  const [showDraft, setshowDraft] = useState(false);
   const [logTypes, setlogTypes] = useState([]);
   const [sellogType, setsellogType] = useState("");
   useEffect(async () => {
-    let tempBreachStatus = await getLookupByType({
+    /* let tempBreachStatus = await getLookupByType({
       LookupType: "BreachStatus",
     });
     tempBreachStatus = tempBreachStatus.map((item) => {
-      /* if (openStatusValue === item.lookupID) {
+      if (openStatusValue === item.lookupID) {
         openstatus = {
           label: item.lookUpValue,
           value: item.lookupID,
           isSubmit: true,
         };
-      }*/
+      }
       return {
         label: item.lookUpName,
         value: item.lookupID,
         isSubmit: true,
       };
-    });
-    setlogTypes([
-      { label: "Draft", value: "", isSubmit: false },
-      ...tempBreachStatus,
-    ]);
-    setsellogType(tempBreachStatus[0].value);
+    });*/
+    let tempStatus = [{ label: "All", value: "all" }];
+    setlogTypes(tempStatus);
+    setsellogType(tempStatus[0].value);
   }, []);
-
+  useEffect(() => {
+    if (showDraft) {
+      let tempStatus = [
+        { label: "All", value: "all" },
+        { label: "Draft", value: "draft", isSubmit: false },
+      ];
+      setlogTypes(tempStatus);
+    } else {
+      let tempStatus = [{ label: "All", value: "all" }];
+      setlogTypes(tempStatus);
+      setsellogType(tempStatus[0].value);
+    }
+  }, [showDraft]);
   const openBreachlogTab = (type) => {
     setsellogType(type);
   };
@@ -735,6 +791,7 @@ function Breachlog({ ...props }) {
           putItem={putItemHandler}
           isEditMode={isEditMode}
           isReadMode={isReadMode}
+          setInEditMode={setInEditMode}
           formIntialState={formIntialState}
           frmRegionSelectOpts={frmRegionSelectOpts}
           frmCountrySelectOpts={frmCountrySelectOpts}
@@ -846,6 +903,15 @@ function Breachlog({ ...props }) {
                     value={selfilter.countryId}
                   />
                 </div>
+                <div className="frm-filter">
+                  <FrmSelect
+                    title={"Status"}
+                    name={"breachStatus"}
+                    selectopts={commonfilterOpts.statusFilterOpts}
+                    handleChange={onSearchFilterSelect}
+                    value={selfilter.breachStatus}
+                  />
+                </div>
               </div>
               <div className="btn-container">
                 <div
@@ -856,6 +922,7 @@ function Breachlog({ ...props }) {
                     selfilter.group !== "" ||
                     selfilter.customersegment !== "" ||
                     selfilter.natureofbreach !== "" ||
+                    selfilter.breachStatus !== "" ||
                     selfilter.lobid !== "" ||
                     selfilter.actionResponsibleName !== "" ||
                     selfilter.entries !== "" ||
@@ -933,6 +1000,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: breachlogActions.getAll,
+  getAllCount: breachlogActions.getAllCount,
   getActionResponsible: breachlogActions.getActionResponsible,
   getAllUsers: userActions.getAllUsers,
   getAllCountry: countryActions.getAllCountry,

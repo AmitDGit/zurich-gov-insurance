@@ -3,6 +3,7 @@ import "./Style.css";
 function FrmInput(props) {
   const {
     title,
+    titlelinespace,
     name,
     value,
     type,
@@ -19,6 +20,7 @@ function FrmInput(props) {
       <label htmlFor={name} className={`${isdisabled ? "disabled" : ""}`}>
         <div className="label">{title}</div>
       </label>
+      {titlelinespace && <br></br>}
       {isReadMode ? (
         <div>{value}</div>
       ) : (
