@@ -34,7 +34,12 @@ function FrmSelect(props) {
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
       <label htmlFor={name}>
-        <div className={`label ${isdisabled ? "disabled" : ""}`}>{title}</div>
+        <div
+          className={`label ${isdisabled ? "disabled" : ""} ${isToolTip &&
+            "hastooltip"}`}
+        >
+          {title}
+        </div>
         {isToolTip ? (
           <>
             <div className="icon info-icon" data-tip={tooltipmsg}></div>

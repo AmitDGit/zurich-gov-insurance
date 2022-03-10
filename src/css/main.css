@@ -138,13 +138,12 @@ a {
   height: 50px;
   border-top: 1px solid #2167ad;
   padding: 20px;
-
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
 }
 .popup-header-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #243e6f;
 }
@@ -535,10 +534,10 @@ button:focus {
   max-width: 100%;
 }
 .page-filter.collapsable .frm-filter:nth-child(4n) {
-  margin: 0;
+  /* margin: 0;*/
 }
 .frm-filter {
-  width: 257px;
+  width: 232px;
   margin-right: 10px;
 }
 
@@ -553,7 +552,8 @@ button:focus {
 .filter-container .dropdown select,
 .filter-container input {
   background-color: #fff;
-  width: 260px;
+  width: 250px;
+  max-width: 100%;
   height: 32px;
   color: #21356e;
   border: 1px solid #add8ef;

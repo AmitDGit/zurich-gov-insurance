@@ -109,7 +109,7 @@ function Navbar({ ...props }) {
             className={`menu-item ${location.pathname === "/rfelogs" &&
               "active"}`}
           >
-            RFE Logs
+            RfE Logs
           </div>
         </Link>
         <Link to="/exemptionlogs">

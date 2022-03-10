@@ -25,6 +25,8 @@ function FrmDatePicker(props) {
   useEffect(() => {
     if (value) {
       setStartDate(new Date(moment(value)));
+    } else {
+      setStartDate("");
     }
   }, [value]);
 

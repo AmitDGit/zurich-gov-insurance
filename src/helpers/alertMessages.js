@@ -76,17 +76,19 @@ export const alertMessage = {
     draftInvalid: "Please enter title and country to save log.",
   },
   rfelog: {
-    draft: "The draft of the rfelog is added.",
-    add: "The new rfelog is successfully added.",
-    update: "The rfelog is successfully updated.",
-    delete: "The rfelog is deleted.",
-    deleteConfirm: "Are you sure you want to delete rfelog?",
+    draft: "The draft of the RfE log is added.",
+    add: "The new RfE log is successfully added.",
+    update: "The RfE log is successfully updated.",
+    delete: "The RfE log is deleted.",
+    deleteConfirm: "Are you sure you want to delete RfE log?",
     deleteAttachmentConfirm: "Are you sure you want to delete Attachment?",
     deleteAttachment: "The attachment is deleted.",
-    isInUse: "You can not delete this rfelog as it is in use.",
-    nameExist: "rfelog name is already exist!",
-    draftInvalid: "Please enter title and country to save log.",
-    orgalignmetmsg: "organizational alignment alert message.",
+    isInUse: "You can not delete this RfE log as it is in use.",
+    nameExist: "RfE log name is already exist!",
+    draftInvalid: "Please enter title to save log.",
+    orgalignmetmsg: "Please use the local RfE log from the list below.",
+    invalidapprovermsg:
+      "Please note that, the underwriter and 'Underwriter granting empowerment' can't be same person.",
   },
   commonmsg: {
     fileuploaderror:
