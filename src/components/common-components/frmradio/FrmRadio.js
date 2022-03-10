@@ -19,7 +19,7 @@ function FrmRadio(props) {
   const getSelectedOpt = () => {
     let selectopt;
     selectopt = selectopts.filter((item) => item.value === value);
-    return selectopt[0].label;
+    return selectopt.length ? selectopt[0].label : "";
   };
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>

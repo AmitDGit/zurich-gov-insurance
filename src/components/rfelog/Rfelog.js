@@ -20,6 +20,7 @@ function Rfelog({ ...props }) {
   const { rfelogState, countryState, lobState } = props.state;
   const {
     getAll,
+    getallCount,
     getallunderwriter,
     getAllCountry,
     getAlllob,
@@ -175,6 +176,8 @@ function Rfelog({ ...props }) {
         let isedit = true;
         let loggeduser = userProfile.emailAddress;
         if (
+          row.requestForEmpowermentCC &&
+          row.underwriterGrantingEmpowerment &&
           row.requestForEmpowermentCC.indexOf(loggeduser) !== -1 &&
           row.underwriterGrantingEmpowerment.indexOf(loggeduser) < 0
         ) {
@@ -197,6 +200,14 @@ function Rfelog({ ...props }) {
           width: "50px",
           textAlign: "center",
         };
+      },
+    },
+    {
+      dataField: "entryNumber",
+      text: "Entry Number",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "120px" };
       },
     },
     {
@@ -288,7 +299,7 @@ function Rfelog({ ...props }) {
     },
     {
       dataField: "requestForEmpowermentReasonValue",
-      text: "Request for Empowerment Reason",
+      text: "Request for empowerment reason",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -349,7 +360,7 @@ function Rfelog({ ...props }) {
     },
   ];
 
-  const getAllRfeItems = (filters) => {
+  const getAllRfeItems = async (filters) => {
     let requestParam = {
       RequesterUserId: userProfile.userId,
       isSubmit: true,
@@ -362,8 +373,16 @@ function Rfelog({ ...props }) {
     if (sellogType === "draft") {
       requestParam.isSubmit = false;
     }
-
     getAll(requestParam);
+    let tempdraftcount = await getallCount({
+      RequesterUserId: userProfile.userId,
+      isSubmit: false,
+    });
+    if (tempdraftcount.length) {
+      setshowDraft(true);
+    } else {
+      setshowDraft(false);
+    }
   };
   useEffect(() => {
     getAllCountry({ IsLog: true });
@@ -477,6 +496,7 @@ function Rfelog({ ...props }) {
     rfeAttachmentList: [],
     fullFilePath: "",
     isSubmit: false,
+    RFELogEmailLink: window.location.href,
   };
   const [formIntialState, setformIntialState] = useState(formInitialValue);
 
@@ -490,12 +510,18 @@ function Rfelog({ ...props }) {
         ? response.underwriterAD.userName
         : "";
 
-      if (response.requestForEmpowermentCCAD.length) {
+      if (
+        response.requestForEmpowermentCCAD &&
+        response.requestForEmpowermentCCAD.length
+      ) {
         let users = "";
         users = response.requestForEmpowermentCCAD.map((item) => item.userName);
         response.requestForEmpowermentCCName = users.join(",");
       }
-      if (response.underwriterGrantingEmpowermentAD.length) {
+      if (
+        response.underwriterGrantingEmpowermentAD &&
+        response.underwriterGrantingEmpowermentAD.length
+      ) {
         let users = "";
         users = response.underwriterGrantingEmpowermentAD.map(
           (item) => item.userName
@@ -519,6 +545,7 @@ function Rfelog({ ...props }) {
     let tempfullPathArr = item.rfeAttachmentList.map((item) => item.filePath);
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
+    item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
     let response = await postItem({
       ...item,
       modifiedByID: userProfile.userId,
@@ -535,12 +562,20 @@ function Rfelog({ ...props }) {
     let tempfullPathArr = item.rfeAttachmentList.map((item) => item.filePath);
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
+    let response;
 
-    let response = await postItem({
-      ...item,
-      createdByID: userProfile.userId,
-    });
-
+    if (item.rfeLogId) {
+      item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
+      response = await postItem({
+        ...item,
+        modifiedByID: userProfile.userId,
+      });
+    } else {
+      response = await postItem({
+        ...item,
+        createdByID: userProfile.userId,
+      });
+    }
     if (response) {
       setselfilter(intialFilterState);
       getAllRfeItems();
@@ -551,6 +586,7 @@ function Rfelog({ ...props }) {
         alert(alertMessage.rfelog.draft);
       }
     }
+    setisEditMode(false);
   };
   const handleDelete = async (e) => {
     let itemid = e.target.getAttribute("rowid");
@@ -573,35 +609,40 @@ function Rfelog({ ...props }) {
   const handleFilterBoxState = () => {
     setfilterbox(!filterbox);
   };
-
+  const [showDraft, setshowDraft] = useState(false);
   const [logTypes, setlogTypes] = useState([]);
   const [sellogType, setsellogType] = useState("");
+
   useEffect(async () => {
-    /* let tempStatus = await getLookupByType({
-      LookupType: "RFEEmpowermentStatusRequest",
-    });
-    tempStatus = tempStatus.map((item) => {
-       if (openStatusValue === item.lookupID) {
-        openstatus = {
-          label: item.lookUpValue,
-          value: item.lookupID,
-          isSubmit: true,
-        };
-      }
-      return {
-        label: item.lookUpName,
-        value: item.lookupID,
-        isSubmit: true,
-      };
-    });
-    */
-    let tempStatus = [
-      { label: "Draft", value: "draft", isSubmit: false },
-      { label: "All", value: "all" },
-    ];
+    let tempStatus = [{ label: "All", value: "all" }];
     setlogTypes(tempStatus);
-    setsellogType(tempStatus[1].value);
+    setsellogType(tempStatus[0].value);
   }, []);
+  /*useEffect(async () => {
+    let tempdraftcount = await getallCount({
+      RequesterUserId: userProfile.userId,
+      isSubmit: false,
+    });
+    if (tempdraftcount.length) {
+      setshowDraft(true);
+    } else {
+      setshowDraft(false);
+    }
+  }, []);*/
+
+  useEffect(() => {
+    if (showDraft) {
+      let tempStatus = [
+        { label: "All", value: "all" },
+        { label: "Draft", value: "draft", isSubmit: false },
+      ];
+      setlogTypes(tempStatus);
+    } else {
+      let tempStatus = [{ label: "All", value: "all" }];
+      setlogTypes(tempStatus);
+      setsellogType(tempStatus[0].value);
+    }
+  }, [showDraft]);
 
   const openlogTab = (type) => {
     setsellogType(type);
@@ -615,7 +656,7 @@ function Rfelog({ ...props }) {
     <>
       {isshowAddPopup ? (
         <AddEditForm
-          title={isReadMode ? "View RFE Log" : "Add/Edit RFE Log"}
+          title={isReadMode ? "View RfE Log" : "Add/Edit RfE Log"}
           hideAddPopup={hideAddPopup}
           postItem={postItemHandler}
           putItem={putItemHandler}
@@ -628,7 +669,7 @@ function Rfelog({ ...props }) {
         ></AddEditForm>
       ) : (
         <>
-          <div className="page-title">RFE Log</div>
+          <div className="page-title">RfE Log</div>
           {filterbox ? (
             <div className="page-filter collapsable">
               <div className="filter-container">
@@ -661,7 +702,11 @@ function Rfelog({ ...props }) {
                 </div>
                 <div className="frm-filter">
                   <FrmSelect
-                    title={"Underwriter (Submitter)"}
+                    title={
+                      <>
+                        Underwriter <i>(submitter)</i>
+                      </>
+                    }
                     name={"underwriter"}
                     selectopts={commonfilterOpts.underwriterFilterOpts}
                     handleChange={onSearchFilterSelect}
@@ -749,7 +794,7 @@ function Rfelog({ ...props }) {
                 isExportReport={true}
                 exportReportTitle={"Export"}
                 exportFileName={"RFELogReport"}
-                buttonTitle={"New RFE"}
+                buttonTitle={"New RfE"}
                 hidesearch={true}
                 exportExcludeFields={exportExcludeFields}
                 exportHtmlFields={exportHtmlFields}
@@ -768,6 +813,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAll: rfelogActions.getAll,
+  getallCount: rfelogActions.getallCount,
   getAllCountry: countryActions.getAllCountry,
   getAlllob: lobActions.getAlllob,
   getById: rfelogActions.getById,

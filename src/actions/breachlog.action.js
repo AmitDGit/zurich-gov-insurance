@@ -92,9 +92,19 @@ const deleteItem = (requestParam) => {
     }
   };
 };
-
+const getAllCount = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await breachlogService.getAllCountService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const breachlogActions = {
   getAll,
+  getAllCount,
   getAllStatus,
   getById,
   checkIsInUse,
@@ -136,9 +146,14 @@ const deleteItemService = async (requestParam) => {
   const response = await Axios.delete(`breachlog/deletebreachlog`, param);
   return response;
 };
-
+const getAllCountService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`breachlog/getallbreachlogs`, param);
+  return response;
+};
 const breachlogService = {
   getAllService,
+  getAllCountService,
   getAllStatusService,
   getByIdService,
   checkIsInUseService,

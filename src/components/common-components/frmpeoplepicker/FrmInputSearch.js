@@ -20,6 +20,7 @@ function FrmInputSearch(props) {
     handleInputSearchChange,
     isEditMode,
   } = props;
+
   const isSingleSelect = singleSelection ? singleSelection : false;
   const [showloading, setshowloading] = useState(false);
   const delayedHandleChange = useCallback(
@@ -166,7 +167,7 @@ function FrmInputSearch(props) {
           disabled={isEditMode}
           ref={inputRef}
         ></input>
-        {isRequired && issubmitted && !value.length ? (
+        {isRequired && issubmitted && !approvers.length ? (
           <div className="validationError">{validationmsg}</div>
         ) : (
           ""

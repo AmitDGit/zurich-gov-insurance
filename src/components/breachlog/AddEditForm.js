@@ -50,6 +50,7 @@ function AddEditForm(props) {
     postItem,
     putItem,
     isEditMode,
+    setInEditMode,
     formIntialState,
     frmCountrySelectOpts,
     frmRegionSelectOpts,
@@ -558,8 +559,22 @@ function AddEditForm(props) {
     <div className="addedit-logs-container">
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
-        <div className="addedit-close btn-blue" onClick={() => hideAddPopup()}>
-          Back
+        <div className="header-btn-container">
+          {!isEditMode && isReadMode && (
+            <div
+              className="btn-blue"
+              onClick={() => setInEditMode()}
+              style={{ marginRight: "10px" }}
+            >
+              Edit
+            </div>
+          )}
+          <div
+            className="addedit-close btn-blue"
+            onClick={() => hideAddPopup()}
+          >
+            Back
+          </div>
         </div>
       </div>
 

@@ -122,6 +122,7 @@ function AddEditForm(props) {
         tempuserroles.isunderwriter = true;
       }
       if (
+        formfield.underwriterGrantingEmpowerment &&
         formfield.underwriterGrantingEmpowerment.indexOf(
           userProfile.emailAddress
         ) !== -1
@@ -129,8 +130,9 @@ function AddEditForm(props) {
         tempuserroles.isapprover = true;
       }
       if (
+        formfield.requestForEmpowermentCC &&
         formfield.requestForEmpowermentCC.indexOf(userProfile.emailAddress) !==
-        -1
+          -1
       ) {
         tempuserroles.iscc = true;
       }
@@ -215,12 +217,7 @@ function AddEditForm(props) {
     setloading(false);
 
     if (formfield.isSubmit) {
-      if (
-        (userroles.isapprover || userroles.issuperadmin) &&
-        (formfield.requestForEmpowermentStatus === rfelog_status.Pending ||
-          formfield.requestForEmpowermentStatus ===
-            rfelog_status.More_information_needed)
-      ) {
+      if (userroles.isapprover || userroles.issuperadmin) {
         setisstatusdisabled(false);
       } else {
         if (!isReadMode) setisstatusdisabled(true);
@@ -241,7 +238,7 @@ function AddEditForm(props) {
       formfield.isSubmit &&
       !isReadMode
     ) {
-      setisfrmdisabled(true);
+      // setisfrmdisabled(true);
     }
   }, [userroles, isEditMode]);
 
@@ -292,7 +289,15 @@ function AddEditForm(props) {
   };
   const handleDateSelectChange = (name, value) => {
     let dateval = moment(value).format("YYYY-MM-DD");
-    setformfield({ ...formfield, [name]: dateval });
+    if (
+      name === "receptionInformationDate" &&
+      formfield.responseDate &&
+      moment(value).isAfter(formfield.responseDate)
+    ) {
+      setformfield({ ...formfield, [name]: dateval, responseDate: null });
+    } else {
+      setformfield({ ...formfield, [name]: dateval });
+    }
   };
   const handleFileUpload = async (name, selectedfile) => {
     const formData = new FormData();
@@ -373,7 +378,8 @@ function AddEditForm(props) {
   const [showApprover, setshowApprover] = useState(false);
   const [showCCUser, setshowCCUser] = useState(false);
   const [showUnderwriter, setshowUnderwriter] = useState(false);
-  const handleshowpeoplepicker = (usertype) => {
+  const handleshowpeoplepicker = (usertype, e) => {
+    e.target.blur();
     const position = window.pageYOffset;
     setScrollPosition(position);
     if (usertype === "approver") {
@@ -447,17 +453,25 @@ function AddEditForm(props) {
         userName: formfield.underwriterName,
         emailAddress: formfield.underwriter,
       };*/
-      if (isEditMode) {
-        if (
-          (userroles.isadmin || userroles.isunderwriter) &&
-          formfield.requestForEmpowermentStatus ===
-            rfelog_status.More_information_needed
-        ) {
-          formfield.requestForEmpowermentStatus = rfelog_status.Pending;
+      if (
+        formfield.underwriterGrantingEmpowerment.indexOf(
+          formfield.underwriter
+        ) < 0
+      ) {
+        if (isEditMode) {
+          if (
+            (userroles.isadmin || userroles.isunderwriter) &&
+            formfield.requestForEmpowermentStatus ===
+              rfelog_status.More_information_needed
+          ) {
+            formfield.requestForEmpowermentStatus = rfelog_status.Pending;
+          }
+          putItem(formfield);
+        } else {
+          postItem({ ...formfield, isSubmit: true });
         }
-        putItem(formfield);
       } else {
-        postItem({ ...formfield, isSubmit: true });
+        alert(alertMessage.rfelog.invalidapprovermsg);
       }
     }
   };
@@ -482,13 +496,13 @@ function AddEditForm(props) {
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
         <div className="header-btn-container">
-          {!isEditMode && !userroles.iscc && (
+          {!isEditMode && isReadMode && !userroles.iscc && (
             <div
               className="btn-blue"
               onClick={() => setInEditMode()}
               style={{ marginRight: "10px" }}
             >
-              Set in edit
+              Edit
             </div>
           )}
           <div
@@ -573,7 +587,9 @@ function AddEditForm(props) {
                     value={formfield.underwriterName}
                     type={"text"}
                     handleChange={handleChange}
-                    handleClick={() => handleshowpeoplepicker("underwriter")}
+                    handleClick={(e) =>
+                      handleshowpeoplepicker("underwriter", e)
+                    }
                     isReadMode={isReadMode}
                     isRequired={true}
                     isdisabled={isfrmdisabled}
@@ -585,11 +601,7 @@ function AddEditForm(props) {
               <div className="row">
                 <div className="col-md-3">
                   <FrmSelect
-                    title={
-                      <>
-                        CHZ Sustainability Desk / CHZ<br></br> GI Credit Risk
-                      </>
-                    }
+                    title={<>CHZ Sustainability Desk / CHZ GI Credit Risk</>}
                     name={"chz"}
                     value={formfield.chz}
                     handleChange={handleSelectChange}
@@ -622,8 +634,11 @@ function AddEditForm(props) {
 
                 <div className="col-md-3">
                   <FrmSelect
-                    title={<>Request for empowerment reason</>}
-                    titlelinespace={true}
+                    title={
+                      <>
+                        Request for empowerment<br></br>reason
+                      </>
+                    }
                     name={"requestForEmpowermentReason"}
                     value={formfield.requestForEmpowermentReason}
                     handleChange={handleSelectChange}
@@ -661,7 +676,7 @@ function AddEditForm(props) {
                     value={formfield.underwriterGrantingEmpowermentName}
                     type={"text"}
                     handleChange={handleChange}
-                    handleClick={() => handleshowpeoplepicker("approver")}
+                    handleClick={(e) => handleshowpeoplepicker("approver", e)}
                     isRequired={true}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
@@ -672,11 +687,12 @@ function AddEditForm(props) {
                 <div className="col-md-3">
                   <FrmInput
                     title={"Request for empowerment CC"}
+                    titlelinespace={true}
                     name={"requestForEmpowermentCCName"}
                     value={formfield.requestForEmpowermentCCName}
                     type={"text"}
                     handleChange={handleChange}
-                    handleClick={() => handleshowpeoplepicker("ccuser")}
+                    handleClick={(e) => handleshowpeoplepicker("ccuser", e)}
                     isRequired={false}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
@@ -686,11 +702,15 @@ function AddEditForm(props) {
                 </div>
                 <div className="col-md-3">
                   <FrmSelect
-                    title={<>Request for empowerment status</>}
+                    title={
+                      <>
+                        Request for empowerment<br></br>status
+                      </>
+                    }
                     name={"requestForEmpowermentStatus"}
                     value={formfield.requestForEmpowermentStatus}
                     handleChange={handleSelectChange}
-                    isRequired={true}
+                    isRequired={false}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
@@ -711,7 +731,7 @@ function AddEditForm(props) {
                     handleChange={handleDateSelectChange}
                     isRequired={true}
                     isReadMode={isReadMode}
-                    minDate={moment().toDate()}
+                    minDate={""}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isdisabled={isfrmdisabled}
@@ -727,7 +747,9 @@ function AddEditForm(props) {
                     handleChange={handleDateSelectChange}
                     isRequired={true}
                     isReadMode={isReadMode}
-                    minDate={moment().toDate()}
+                    minDate={moment(
+                      formfield.receptionInformationDate
+                    ).toDate()}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isdisabled={isfrmdisabled}
@@ -739,7 +761,7 @@ function AddEditForm(props) {
                 <div className="col-md-12">
                   <FrmRichTextEditor
                     title={
-                      "Underwriter granting empowerment comments/condition"
+                      "Underwriter granting empowerment comments / condition"
                     }
                     name={"underwriterGrantingEmpowermentComments"}
                     value={formfield.underwriterGrantingEmpowermentComments}
@@ -858,7 +880,7 @@ function AddEditForm(props) {
       )}
       {showCCUser ? (
         <PeoplePickerPopup
-          title={"EmpowermentCC"}
+          title={"Empowerment CC"}
           name={"requestForEmpowermentCC"}
           usertype="ccuser"
           actionResponsible={
