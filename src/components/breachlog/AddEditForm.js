@@ -11,15 +11,13 @@ import FrmInputSearch from "../common-components/frmpeoplepicker/FrmInputSearch"
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
 import Loading from "../common-components/Loading";
 import moment from "moment";
-
+import axios from "axios";
 import "./Style.css";
 import {
-  BREACH_LOG_STATUS_PENDING,
-  BREACH_LOG_STATUS_CLOSE,
-  BREACH_LOG_STATUS_REOPEN,
+  BREACH_LOG_STATUS,
   REGION_EMEA,
   REGION_ZNA,
-  COUNTRY_ADMIN_ROLE_ID,
+  USER_ROLE,
   HOW_DETECTED_TUR,
 } from "../../constants";
 import {
@@ -29,6 +27,9 @@ import {
   segmentActions,
   sublobActions,
   breachlogActions,
+  znaorgnization1Actions,
+  znaorgnization2Actions,
+  znaorgnization3Actions,
   commonActions,
 } from "../../actions";
 import FrmRadio from "../common-components/frmradio/FrmRadio";
@@ -43,6 +44,9 @@ function AddEditForm(props) {
     lobState,
     sublobState,
     userState,
+    znaorgnization1State,
+    znaorgnization2State,
+    znaorgnization3State,
   } = props.state;
   const {
     title,
@@ -62,18 +66,26 @@ function AddEditForm(props) {
     getAlllob,
     getAllSegment,
     getAllSublob,
+    getallZNASegments,
+    getallZNASBU,
+    getallZNAMarketBasket,
     uploadFile,
     deleteFile,
+    downloadFile,
     isReadMode,
     userProfile,
+    queryparam,
   } = props;
 
   //console.log(frmRegionSelectOpts);
   const selectInitiVal = { label: "Select", value: "" };
-  const closeStatusValue = BREACH_LOG_STATUS_CLOSE;
-  const openStatusValue = BREACH_LOG_STATUS_PENDING;
-  const reopenStatusValue = BREACH_LOG_STATUS_REOPEN;
-  const countryadminrole = COUNTRY_ADMIN_ROLE_ID;
+  const breachlog_status = {
+    Pending: BREACH_LOG_STATUS.Pending,
+    Close: BREACH_LOG_STATUS.Close,
+    Reopen: BREACH_LOG_STATUS.Reopen,
+  };
+  const FileDownload = require("js-file-download");
+  const countryadminrole = USER_ROLE.countryAdmin;
   const emeaRegionValue = REGION_EMEA;
   const znaRegionValue = REGION_ZNA;
   const howdetectedtur = HOW_DETECTED_TUR;
@@ -97,6 +109,9 @@ function AddEditForm(props) {
   const [frmLoB, setfrmLoB] = useState([]);
   const [frmSublob, setfrmSublob] = useState([]);
   const [frmSublobAll, setfrmSublobAll] = useState([]);
+  const [frmZNASegmentOpts, setfrmZNASegmentOpts] = useState([]);
+  const [frmZNASBUOpts, setfrmZNASBUOpts] = useState([]);
+  const [frmZNAMarketBasketOpts, setfrmZNAMarketBasketOpts] = useState([]);
   const [frmSeverity, setfrmSeverity] = useState([]);
   const [frmTypeOfBreach, setfrmTypeOfBreach] = useState([]);
   const [frmRootCauseBreach, setfrmRootCauseBreach] = useState([]);
@@ -106,11 +121,10 @@ function AddEditForm(props) {
   const [frmBreachStatus, setfrmBreachStatus] = useState([]);
   const [tooltip, settooltip] = useState({});
 
-  const [mandatoryFields, setmandatoryFields] = useState([
+  const [commonMandatoryFields, setcommonMandatoryFields] = useState([
     "title",
     "countryId",
     "regionId",
-    "customerSegment",
     "lobid",
     "severity",
     "typeOfBreach",
@@ -121,21 +135,20 @@ function AddEditForm(props) {
     "dueDate",
     "actionResponsibleName",
   ]);
+  const [znaMandotoryFields, setznaMandotoryFields] = useState([
+    "znaSegmentId",
+    "znasbuId",
+    "marketBasketId",
+  ]);
+  const [regionMandotoryFields, setregionMandotoryFields] = useState([
+    "customerSegment",
+  ]);
+  const [mandatoryFields, setmandatoryFields] = useState([]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
   useEffect(() => {
     setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
     setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
-    /*if (formIntialState.countryId) {
-      let region = frmCountrySelectOpts.filter(
-        (item) => item.value === formIntialState.countryId
-      );
-      let regionOpts = frmRegionSelectOpts.filter(
-        (item) => item.value === region[0].regionId
-      );
-      setregionopts([...regionOpts]);
-    } else {
-      setregionopts([...frmRegionSelectOpts]);
-    }*/
+    setmandatoryFields(...commonMandatoryFields, regionMandotoryFields);
   }, []);
 
   const [loading, setloading] = useState(true);
@@ -198,27 +211,30 @@ function AddEditForm(props) {
       let isshow = false;
       //draft status -
       if (!formfield.isSubmit) {
-        if (item.lookupID === openStatusValue) {
+        if (item.lookupID === breachlog_status.Pending) {
           isshow = true;
         }
       }
       //open status
-      if (formfield.breachStatus === openStatusValue && formfield.isSubmit) {
+      if (
+        formfield.breachStatus === breachlog_status.Pending &&
+        formfield.isSubmit
+      ) {
         if (
-          item.lookupID === openStatusValue ||
-          item.lookupID === closeStatusValue
+          item.lookupID === breachlog_status.Pending ||
+          item.lookupID === breachlog_status.Close
         ) {
           isshow = true;
         }
       }
       //close status && reopen status
       if (
-        formfield.breachStatus === closeStatusValue ||
-        formfield.breachStatus === reopenStatusValue
+        formfield.breachStatus === breachlog_status.Close ||
+        formfield.breachStatus === breachlog_status.Reopen
       ) {
         if (
-          item.lookupID === reopenStatusValue ||
-          item.lookupID === closeStatusValue
+          item.lookupID === breachlog_status.Reopen ||
+          item.lookupID === breachlog_status.Close
         ) {
           isshow = true;
         }
@@ -250,6 +266,7 @@ function AddEditForm(props) {
     getAlllob({ isActive: true });
     getAllSegment({ isActive: true });
     getAllSublob({ isActive: true });
+    getallZNASegments({ isActive: true });
   }, []);
 
   useEffect(() => {
@@ -286,6 +303,51 @@ function AddEditForm(props) {
       setfrmSublob([...sublobopts]);
     }
   }, [sublobState.sublobitems]);
+
+  useEffect(() => {
+    let tempItems = znaorgnization1State.org1Items.map((item) => {
+      return {
+        label: item.znaSegmentName,
+        value: item.znaSegmentId,
+      };
+    });
+    tempItems.sort(dynamicSort("label"));
+    setfrmZNASegmentOpts([selectInitiVal, ...tempItems]);
+  }, [znaorgnization1State.org1Items]);
+
+  useEffect(() => {
+    if (formfield.znaSegmentId) {
+      getallZNASBU({ znaSegmentId: formfield.znaSegmentId });
+    }
+  }, [formfield.znaSegmentId]);
+
+  useEffect(() => {
+    if (formfield.znasbuId) {
+      getallZNAMarketBasket({ znasbuId: formfield.znasbuId });
+    }
+  }, [formfield.znasbuId]);
+
+  useEffect(() => {
+    let tempItems = znaorgnization2State.org2Items.map((item) => {
+      return {
+        label: item.sbuName,
+        value: item.znasbuId,
+      };
+    });
+    tempItems.sort(dynamicSort("label"));
+    setfrmZNASBUOpts([...tempItems]);
+  }, [znaorgnization2State.org2Items]);
+
+  useEffect(() => {
+    let tempItems = znaorgnization3State.org3Items.map((item) => {
+      return {
+        label: item.marketBasketName,
+        value: item.marketBasketId,
+      };
+    });
+    tempItems.sort(dynamicSort("label"));
+    setfrmZNAMarketBasketOpts([...tempItems]);
+  }, [znaorgnization3State.org3Items]);
 
   const handleChange = (e) => {
     let { name, value } = e.target;
@@ -366,7 +428,7 @@ function AddEditForm(props) {
     }
     if (
       name === "breachStatus" &&
-      value === closeStatusValue &&
+      value === breachlog_status.Close &&
       !formfield.dateActionClosed
     ) {
       setformfield({
@@ -400,7 +462,9 @@ function AddEditForm(props) {
         : "";
 
       formData.append("TempId", folderID);
-      formData.append("LogType", "BreachLogs");
+      if (formfield.breachLogID) {
+        formData.append("LogType", "BreachLogs");
+      }
     }
     setfileuploadloader(true);
     let response = await uploadFile(formData);
@@ -426,6 +490,7 @@ function AddEditForm(props) {
           tempattachementfiles.push({
             filePath: item,
             logAttachmentId: "",
+            isNew: true,
           });
         }
       });
@@ -466,28 +531,38 @@ function AddEditForm(props) {
       formfield.regionId === znaRegionValue &&
       formfield.howDetected === howdetectedtur
     ) {
-      setmandatoryFields([...mandatoryFields, "turNumber"]);
+      setmandatoryFields([
+        ...commonMandatoryFields,
+        ...znaMandotoryFields,
+        "turNumber",
+      ]);
+    } else if (formfield.regionId === znaRegionValue) {
+      setmandatoryFields([...commonMandatoryFields, ...znaMandotoryFields]);
+      setformfield({
+        ...formfield,
+        customerSegment: "",
+      });
     } else {
-      if (mandatoryFields.includes("turNumber")) {
-        let tempmandatoryfields = mandatoryFields.filter(
-          (item) => item !== "turNumber"
-        );
-        setmandatoryFields([...tempmandatoryfields]);
-      }
+      setmandatoryFields([...commonMandatoryFields, ...regionMandotoryFields]);
+      setformfield({
+        ...formfield,
+        znaSegmentId: "",
+        znasbuId: "",
+        marketBasketId: "",
+        uwrInvolved: "",
+        businessDivision: "",
+        office: "",
+        policyName: "",
+        policyNumber: "",
+        turNumber: "",
+      });
     }
   }, [formfield.regionId, formfield.howDetected]);
 
-  /* useEffect(() => {
-    let tempfullPathArr = formfield.breachAttachmentList.map(
-      (item) => item.filePath
-    );
-    let fullFilePathval = tempfullPathArr.join(",");
-    setformfield({ ...formfield, fullFilePath: fullFilePathval });
-  }, [formfield.breachAttachmentList]);*/
-
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showpeoplepicker, setshowpeoplepicker] = useState(false);
-  const handleshowpeoplepicker = () => {
+  const handleshowpeoplepicker = (e) => {
+    e.target.blur();
     const position = window.pageYOffset;
     setScrollPosition(position);
     setshowpeoplepicker(true);
@@ -528,7 +603,7 @@ function AddEditForm(props) {
     if (validateform()) {
       //added below code to set date action closed value
       /*if (
-        formfield.breachStatus === closeStatusValue &&
+        formfield.breachStatus === breachlog_status.Close &&
         !formfield.dateActionClosed
       ) {
         formfield.dateActionClosed = moment().format("YYYY-MM-DD");
@@ -552,7 +627,21 @@ function AddEditForm(props) {
     // }
     // hideAddPopup();
   };
+  const hidePopup = () => {
+    if (queryparam.id) {
+      window.location = "/breachlogs";
+    } else {
+      hideAddPopup();
+    }
+  };
+  const downloadfile = async (fileurl) => {
+    const responsedata = await downloadFile({
+      uploadedFile: fileurl,
+    });
 
+    const filename = fileurl.split("/")[fileurl.split("/").length - 1];
+    FileDownload(responsedata, filename);
+  };
   return loading ? (
     <Loading />
   ) : (
@@ -569,15 +658,11 @@ function AddEditForm(props) {
               Edit
             </div>
           )}
-          <div
-            className="addedit-close btn-blue"
-            onClick={() => hideAddPopup()}
-          >
+          <div className="addedit-close btn-blue" onClick={() => hidePopup()}>
             Back
           </div>
         </div>
       </div>
-
       <div className="popup-formitems">
         <form onSubmit={handleSubmit} id="myForm">
           <>
@@ -622,20 +707,67 @@ function AddEditForm(props) {
                     selectopts={regionopts}
                   />
                 </div>
-                <div className="col-md-3">
-                  <FrmSelect
-                    title={"Customer Segment"}
-                    name={"customerSegment"}
-                    value={formfield.customerSegment}
-                    handleChange={handleSelectChange}
-                    isRequired={true}
-                    isReadMode={isReadMode}
-                    validationmsg={"Mandatory field"}
-                    issubmitted={issubmitted}
-                    selectopts={frmSegmentOpts}
-                  />
-                </div>
+                {formfield.regionId !== znaRegionValue && (
+                  <div className="col-md-3">
+                    <FrmSelect
+                      title={"Customer Segment"}
+                      name={"customerSegment"}
+                      value={formfield.customerSegment}
+                      handleChange={handleSelectChange}
+                      isRequired={true}
+                      isReadMode={isReadMode}
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
+                      selectopts={frmSegmentOpts}
+                    />
+                  </div>
+                )}
               </div>
+              {formfield.regionId === znaRegionValue ? (
+                <div className="row">
+                  <div className="col-md-3">
+                    <FrmSelect
+                      title={"ZNA Segment"}
+                      name={"znaSegmentId"}
+                      value={formfield.znaSegmentId}
+                      handleChange={handleSelectChange}
+                      isRequired={true}
+                      isReadMode={isReadMode}
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
+                      selectopts={frmZNASegmentOpts}
+                    />
+                  </div>
+                  <div className="col-md-3">
+                    <FrmSelect
+                      title={"ZNA SBU"}
+                      name={"znasbuId"}
+                      value={formfield.znasbuId}
+                      handleChange={handleSelectChange}
+                      isRequired={true}
+                      isReadMode={isReadMode}
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
+                      selectopts={frmZNASBUOpts}
+                    />
+                  </div>
+                  <div className="col-md-3">
+                    <FrmSelect
+                      title={"ZNA Market Basket"}
+                      name={"marketBasketId"}
+                      value={formfield.marketBasketId}
+                      handleChange={handleSelectChange}
+                      isRequired={true}
+                      isReadMode={isReadMode}
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
+                      selectopts={frmZNAMarketBasketOpts}
+                    />
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
               <div className="row">
                 <div className="col-md-3">
                   <FrmSelect
@@ -1021,7 +1153,7 @@ function AddEditForm(props) {
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isdisabled={
-                      formfield.breachStatus === closeStatusValue &&
+                      formfield.breachStatus === breachlog_status.Close &&
                       userProfile.userRoles[0].roleId === countryadminrole
                         ? true
                         : false
@@ -1042,7 +1174,9 @@ function AddEditForm(props) {
                     issubmitted={issubmitted}
                     minDate={moment(formfield.dateBreachOccurred).toDate()}
                     isdisabled={
-                      formfield.breachStatus === closeStatusValue ? false : true
+                      formfield.breachStatus === breachlog_status.Close
+                        ? false
+                        : true
                     }
                   />
                 </div>
@@ -1077,9 +1211,13 @@ function AddEditForm(props) {
                     handleFileDelete={handleFileDelete}
                     isRequired={false}
                     isReadMode={isReadMode}
+                    isShowDelete={
+                      !isReadMode && !isdisabled && !formfield.isSubmit
+                    }
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isshowloading={fileuploadloader ? fileuploadloader : false}
+                    downloadfile={downloadfile}
                   />
                 </div>
               </div>
@@ -1132,7 +1270,7 @@ function AddEditForm(props) {
             <button className="btn-blue" type="submit" form="myForm">
               Submit
             </button>
-            <div className="btn-blue" onClick={() => hideAddPopup()}>
+            <div className="btn-blue" onClick={() => hidePopup()}>
               Cancel
             </div>
           </div>
@@ -1171,6 +1309,10 @@ const mapActions = {
   getAllSublob: sublobActions.getAllSublob,
   uploadFile: commonActions.uploadFile,
   deleteFile: commonActions.deleteFile,
+  downloadFile: commonActions.downloadFile,
   getAllUsers: userActions.getAllUsers,
+  getallZNASegments: znaorgnization1Actions.getAllOrgnization,
+  getallZNASBU: znaorgnization2Actions.getAllOrgnization,
+  getallZNAMarketBasket: znaorgnization3Actions.getAllOrgnization,
 };
 export default connect(mapStateToProp, mapActions)(AddEditForm);

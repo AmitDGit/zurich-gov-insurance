@@ -10,6 +10,7 @@ function ToolTip(props) {
       multiline
       backgroundColor="#EBF4FB"
       textColor="#2167AD"
+      html={true}
     ></ReactTooltip>
   );
 }

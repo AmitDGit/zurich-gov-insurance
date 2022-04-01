@@ -105,7 +105,7 @@ function Segment({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },

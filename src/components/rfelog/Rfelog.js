@@ -10,17 +10,25 @@ import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
 import FrmSelect from "../common-components/frmselect/FrmSelect";
 import PaginationData from "../common-components/PaginationData";
-import { alertMessage, dynamicSort, formatDate } from "../../helpers";
+import {
+  alertMessage,
+  dynamicSort,
+  formatDate,
+  getUrlParameter,
+} from "../../helpers";
 import AddEditForm from "./AddEditForm";
 import FrmInput from "../common-components/frminput/FrmInput";
 import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
+let pageIndex = 1;
+let totalLogCount = 0;
 function Rfelog({ ...props }) {
   const { rfelogState, countryState, lobState } = props.state;
   const {
     getAll,
     getallCount,
+    getallLogs,
     getallunderwriter,
     getAllCountry,
     getAlllob,
@@ -32,11 +40,18 @@ function Rfelog({ ...props }) {
     userProfile,
   } = props;
 
-  //console.log(userProfile);
-  //console.log(rfelogState.items);
+  const [logstate, setlogstate] = useState({
+    loading: true,
+    error: "",
+    data: [],
+  });
+  const [logsDraftData, setlogsDraftData] = useState([]);
   useSetNavMenu({ currentMenu: "Rfelog", isSubmenu: false }, props.menuClick);
   //initialize filter/search functionality
-  const selectInitiVal = { label: "Select", value: "" };
+  const selectInitiVal = {
+    label: "Select",
+    value: "",
+  };
   const exportExcludeFields = [
     "rfeLogId",
     "chz",
@@ -55,19 +70,29 @@ function Rfelog({ ...props }) {
     "roleData",
     "isActive",
   ];
+  const exportFieldTitles = {
+    rfeLogDetails: "RfELogDetails",
+    rfeLogEmailLink: "Link",
+  };
+  const exportDateFields = {};
   const exportHtmlFields = [
     "rfeLogDetails",
     "underwriterGrantingEmpowermentComments",
   ];
-
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     underwriterFilterOpts: [],
     statusFilterOpts: [],
     rolesFilterOpts: [
       { label: "All", value: "all" },
       { label: "Approver", value: "approver" },
-      { label: "Empowerment CC", value: "ccuser" },
-      { label: "Underwriter", value: "underwriter" },
+      {
+        label: "Empowerment CC",
+        value: "ccuser",
+      },
+      {
+        label: "Underwriter",
+        value: "underwriter",
+      },
     ],
   });
   const [countryFilterOpts, setcountryFilterOpts] = useState([]);
@@ -105,7 +130,89 @@ function Rfelog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
-    let filter = {};
+    if (
+      selfilter.accountName.trim() !== "" ||
+      selfilter.lobId !== "" ||
+      selfilter.countryId !== "" ||
+      selfilter.underwriter !== "" ||
+      selfilter.requestForEmpowermentStatus !== "" ||
+      selfilter.role !== ""
+    ) {
+      let dataArr;
+      if (sellogTabType === "draft") {
+        dataArr = logsDraftData;
+      } else {
+        dataArr = logstate.data;
+      }
+      let tempdata = [...dataArr];
+      tempdata = tempdata.filter((item) => {
+        let isShow = true;
+
+        if (
+          isShow &&
+          selfilter.accountName.trim() !== "" &&
+          !item.accountName
+            .toLowerCase()
+            .includes(selfilter.accountName.toLowerCase())
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.lobId !== "" &&
+          item.lobId &&
+          selfilter.lobId !== item.lobId
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.countryId !== "" &&
+          item.countryId &&
+          selfilter.countryId !== item.countryId
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.underwriter !== "" &&
+          item.underwriter &&
+          !item.underwriter.toLowerCase().includes(selfilter.underwriter)
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.requestForEmpowermentStatus !== "" &&
+          selfilter.requestForEmpowermentStatus !==
+            item.requestForEmpowermentStatus
+        ) {
+          isShow = false;
+        }
+        if (isShow && selfilter.role !== "") {
+          if (
+            selfilter.role === "approver" &&
+            item.underwriterGrantingEmpowerment !== userProfile.emailAddress
+          ) {
+            isShow = false;
+          } else if (
+            selfilter.role === "underwriter" &&
+            item.underwriter !== userProfile.emailAddress
+          ) {
+            isShow = false;
+          } else if (
+            selfilter.role === "ccuser" &&
+            item.requestForEmpowermentCC !== userProfile.emailAddress
+          ) {
+            isShow = false;
+          }
+        }
+        return isShow;
+      });
+      setpaginationdata(tempdata);
+    }
+
+    /*let filter = {};
     if (selfilter.accountName.trim() !== "") {
       filter["accountName"] = selfilter.accountName;
     }
@@ -135,16 +242,22 @@ function Rfelog({ ...props }) {
         filter["requestForEmpowermentCC"] = userProfile.emailAddress;
       }
     }
-    getAllRfeItems(filter);
+    getAllRfeItems(filter);*/
   };
   const clearFilter = () => {
     setselfilter(intialFilterState);
-    getAllRfeItems();
+    let dataArr;
+    if (sellogTabType === "draft") {
+      dataArr = logsDraftData;
+    } else {
+      dataArr = logstate.data;
+    }
+    setpaginationdata(dataArr);
   };
 
   //set pagination data and functionality
 
-  const [data, setdata] = useState([]);
+  // const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
@@ -164,7 +277,7 @@ function Rfelog({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },
@@ -197,7 +310,7 @@ function Rfelog({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },
@@ -207,7 +320,7 @@ function Rfelog({ ...props }) {
       text: "Entry Number",
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "120px" };
+        return { width: "150px" };
       },
     },
     {
@@ -284,7 +397,7 @@ function Rfelog({ ...props }) {
     {
       dataField: "underwriterName",
       text: "Underwriter",
-      sort: false,
+      sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
@@ -292,7 +405,7 @@ function Rfelog({ ...props }) {
     {
       dataField: "lobName",
       text: "LoB",
-      sort: false,
+      sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "160px" };
       },
@@ -359,22 +472,113 @@ function Rfelog({ ...props }) {
       order: "desc",
     },
   ];
-
-  const getAllRfeItems = async (filters) => {
-    let requestParam = {
+  //load logs data in recurrsive
+  const [logItmes, setlogItmes] = useState([]);
+  const [pagesize, setpagesize] = useState(500);
+  const [alllogsloaded, setalllogsloaded] = useState(false);
+  const [isLoadingStarted, setisLoadingStarted] = useState(false);
+  const getAllLogsInRecurssion = async () => {
+    let tempItems = await getallLogs({
       RequesterUserId: userProfile.userId,
       isSubmit: true,
-    };
-    if (filters) {
-      for (let key in filters) {
-        requestParam[key] = filters[key];
+      PageIndex: pageIndex,
+      PageSize: pagesize,
+    });
+    totalLogCount = tempItems.length && tempItems[0].totalCount;
+    setisLoadingStarted(true);
+    setlogItmes([...logItmes, ...tempItems]);
+  };
+
+  useEffect(() => {
+    if (isLoadingStarted) {
+      //setdata(logItmes);
+      setpaginationdata(logItmes);
+      setlogstate({
+        ...logstate,
+        loading: false,
+        data: [...logItmes],
+      });
+
+      let chunkPercentage = Math.round((logItmes.length / totalLogCount) * 100);
+      const progressbar = document.querySelector(".progress-color");
+      const progressbarcontainer = document.querySelector(
+        ".progress-bar-container"
+      );
+      if (progressbar) {
+        progressbar.style.width = chunkPercentage + "%";
+      }
+
+      if (totalLogCount > logItmes.length) {
+        pageIndex++;
+        getAllLogsInRecurssion();
+      } else {
+        pageIndex = 1;
+        totalLogCount = 0;
+        setalllogsloaded(true);
       }
     }
-    if (sellogType === "draft") {
-      requestParam.isSubmit = false;
+  }, [logItmes]);
+
+  useEffect(() => {
+    pageIndex = 1;
+    totalLogCount = 0;
+    getallDraftItems();
+    getAllLogsInRecurssion();
+  }, []);
+
+  const [showDraft, setshowDraft] = useState(false);
+  const [logTypes, setlogTypes] = useState([]);
+  const [sellogTabType, setsellogTabType] = useState("");
+  useEffect(() => {
+    if (showDraft) {
+      let tempStatus = [
+        { label: "All", value: "all" },
+        {
+          label: "Draft",
+          value: "draft",
+        },
+      ];
+      setlogTypes(tempStatus);
+      if (!sellogTabType) {
+        setsellogTabType(tempStatus[0].value);
+      }
+    } else {
+      let tempStatus = [{ label: "All", value: "all" }];
+      setlogTypes(tempStatus);
+      setsellogTabType(tempStatus[0].value);
     }
-    getAll(requestParam);
-    let tempdraftcount = await getallCount({
+  }, [showDraft]);
+
+  const getallDraftItems = async () => {
+    let tempdraftItems = await getallLogs({
+      RequesterUserId: userProfile.userId,
+      isSubmit: false,
+    });
+    if (tempdraftItems.length) {
+      setshowDraft(true);
+      setlogsDraftData([...tempdraftItems]);
+    } else {
+      setlogsDraftData([]);
+      setshowDraft(false);
+    }
+  };
+
+  const openlogTab = (type) => {
+    setsellogTabType(type);
+  };
+  useEffect(() => {
+    // getAllRfeItems();
+    setselfilter(intialFilterState);
+    if (sellogTabType === "draft") {
+      setpaginationdata(logsDraftData);
+    } else {
+      setpaginationdata(logstate.data);
+    }
+  }, [sellogTabType, logsDraftData, logstate.data]);
+
+  const getAllRfeItems = async (filters) => {
+    //getAll(requestParam);
+    /*let tempdraftcount = await getallCount({
       RequesterUserId: userProfile.userId,
       isSubmit: false,
     });
@@ -382,8 +586,9 @@ function Rfelog({ ...props }) {
       setshowDraft(true);
     } else {
       setshowDraft(false);
-    }
+    }*/
   };
+
   useEffect(() => {
     getAllCountry({ IsLog: true });
     getAlllob({ isActive: true });
@@ -392,8 +597,8 @@ function Rfelog({ ...props }) {
   useEffect(() => {
     let tempdata = [];
     tempdata = rfelogState.items;
-    setdata([...tempdata]);
-    setpaginationdata([...tempdata]);
+    //setdata([...tempdata]);
+    // setpaginationdata([...tempdata]);
   }, [rfelogState.items]);
 
   useEffect(async () => {
@@ -419,6 +624,24 @@ function Rfelog({ ...props }) {
       underwriterFilterOpts: [selectInitiVal, ...tempUnderwritter],
     });
   }, []);
+
+  const [queryparam, setqueryparam] = useState({
+    id: "",
+    status: "",
+  });
+  const [queryparamloaded, setqueryparamloaded] = useState(false);
+  useEffect(() => {
+    let itemid = getUrlParameter("id");
+    let status = getUrlParameter("status");
+    setqueryparam({ id: itemid, status: status });
+  }, []);
+
+  useEffect(() => {
+    setqueryparamloaded(true);
+    if (queryparam.id) {
+      handleEdit(this, true);
+    }
+  }, [queryparam]);
 
   const [frmCountrySelectOpts, setfrmCountrySelectOpts] = useState([]);
 
@@ -489,7 +712,6 @@ function Rfelog({ ...props }) {
     requestForEmpowermentCCName: "",
     requestForEmpowermentStatus: "",
     rfeAttachmentList: [],
-    fullFilePath: "",
     responseDate: null,
     receptionInformationDate: null,
     underwriterGrantingEmpowermentComments: "",
@@ -500,11 +722,23 @@ function Rfelog({ ...props }) {
   };
   const [formIntialState, setformIntialState] = useState(formInitialValue);
 
-  const handleEdit = async (e) => {
-    let itemid = e.target.getAttribute("rowid");
-    let mode = e.target.getAttribute("mode");
-
-    const response = await getById({ rfeLogId: itemid });
+  const handleEdit = async (e, hasqueryparam) => {
+    let itemid;
+    let mode;
+    if (hasqueryparam) {
+      itemid = queryparam.id;
+      if (queryparam.status) {
+        mode = "edit";
+      } else {
+        mode = "view";
+      }
+    } else {
+      itemid = e.target.getAttribute("rowid");
+      mode = e.target.getAttribute("mode");
+    }
+    const response = await getById({
+      rfeLogId: itemid,
+    });
     if (response) {
       response.underwriterName = response.underwriterAD
         ? response.underwriterAD.userName
@@ -534,6 +768,9 @@ function Rfelog({ ...props }) {
       if (mode === "view") {
         setisReadMode(true);
       }
+      if (queryparam.status) {
+        response.requestForEmpowermentStatus = queryparam.status;
+      }
       setformIntialState({
         ...response,
       });
@@ -545,16 +782,41 @@ function Rfelog({ ...props }) {
     let tempfullPathArr = item.rfeAttachmentList.map((item) => item.filePath);
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
-    item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
+    //item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
     let response = await postItem({
       ...item,
       modifiedByID: userProfile.userId,
     });
     if (response) {
-      setselfilter(intialFilterState);
-      getAllRfeItems();
-      hideAddPopup();
       alert(alertMessage.rfelog.update);
+      /*let tpostItem = await getallLogs({
+        RequesterUserId: userProfile.userId,
+        rfeLogId: item.rfeLogId,
+      });*/
+      if (queryparam.id) {
+        window.location = "/rfelogs";
+      } else {
+        setselfilter(intialFilterState);
+        //if item is submitted and in edit mode
+        if (item.isSubmit) {
+          let isfound = false;
+          for (let i = 0; i < logstate.data.length; i++) {
+            let listitem = logstate.data[i];
+            if (listitem.rfeLogId === item.rfeLogId) {
+              listitem = { ...listitem, ...item };
+              logstate.data[i] = listitem;
+              isfound = true;
+            }
+          }
+          if (!isfound) {
+            logstate.data.unshift(item);
+          }
+        } else {
+          //if item is saved and in draft mode
+        }
+        getallDraftItems();
+        hideAddPopup();
+      }
     }
     setisEditMode(false);
   };
@@ -565,7 +827,8 @@ function Rfelog({ ...props }) {
     let response;
 
     if (item.rfeLogId) {
-      item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
+      // item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
+
       response = await postItem({
         ...item,
         modifiedByID: userProfile.userId,
@@ -577,13 +840,30 @@ function Rfelog({ ...props }) {
       });
     }
     if (response) {
-      setselfilter(intialFilterState);
-      getAllRfeItems();
-      hideAddPopup();
-      if (item.isSubmit) {
-        alert(alertMessage.rfelog.add);
+      if (queryparam.id) {
+        window.location = "/rfelogs";
       } else {
-        alert(alertMessage.rfelog.draft);
+        if (item.isSubmit) {
+          alert(alertMessage.rfelog.add);
+          let isfound = false;
+          for (let i = 0; i < logstate.data.length; i++) {
+            let listitem = logstate.data[i];
+            if (listitem.rfeLogId === item.rfeLogId) {
+              listitem = { ...listitem, ...item };
+              logstate.data[i] = listitem;
+              isfound = true;
+            }
+          }
+          if (!isfound) {
+            logstate.data.unshift(item);
+          }
+        } else {
+          alert(alertMessage.rfelog.draft);
+        }
+        setselfilter(intialFilterState);
+        //getAllRfeItems();
+        getallDraftItems();
+        hideAddPopup();
       }
     }
     setisEditMode(false);
@@ -593,11 +873,17 @@ function Rfelog({ ...props }) {
     if (!window.confirm(alertMessage.rfelog.deleteConfirm)) {
       return;
     }
-    let resonse = await checkIsInUse({ UserId: itemid });
+    let resonse = await checkIsInUse({
+      UserId: itemid,
+    });
     if (!resonse) {
-      resonse = await deleteItem({ UserId: itemid });
+      resonse = await deleteItem({
+        UserId: itemid,
+      });
       if (resonse) {
-        getAll({ RequesterUserId: userProfile.userId });
+        getAll({
+          RequesterUserId: userProfile.userId,
+        });
         alert(alertMessage.rfelog.delete);
       }
     } else {
@@ -609,48 +895,6 @@ function Rfelog({ ...props }) {
   const handleFilterBoxState = () => {
     setfilterbox(!filterbox);
   };
-  const [showDraft, setshowDraft] = useState(false);
-  const [logTypes, setlogTypes] = useState([]);
-  const [sellogType, setsellogType] = useState("");
-
-  useEffect(async () => {
-    let tempStatus = [{ label: "All", value: "all" }];
-    setlogTypes(tempStatus);
-    setsellogType(tempStatus[0].value);
-  }, []);
-  /*useEffect(async () => {
-    let tempdraftcount = await getallCount({
-      RequesterUserId: userProfile.userId,
-      isSubmit: false,
-    });
-    if (tempdraftcount.length) {
-      setshowDraft(true);
-    } else {
-      setshowDraft(false);
-    }
-  }, []);*/
-
-  useEffect(() => {
-    if (showDraft) {
-      let tempStatus = [
-        { label: "All", value: "all" },
-        { label: "Draft", value: "draft", isSubmit: false },
-      ];
-      setlogTypes(tempStatus);
-    } else {
-      let tempStatus = [{ label: "All", value: "all" }];
-      setlogTypes(tempStatus);
-      setsellogType(tempStatus[0].value);
-    }
-  }, [showDraft]);
-
-  const openlogTab = (type) => {
-    setsellogType(type);
-  };
-  useEffect(() => {
-    getAllRfeItems();
-    setselfilter(intialFilterState);
-  }, [sellogType]);
 
   return (
     <>
@@ -666,6 +910,7 @@ function Rfelog({ ...props }) {
           frmCountrySelectOpts={frmCountrySelectOpts}
           userProfile={userProfile}
           setInEditMode={setInEditMode}
+          queryparam={queryparam}
         ></AddEditForm>
       ) : (
         <>
@@ -766,12 +1011,21 @@ function Rfelog({ ...props }) {
               Filters
             </div>
           </div>
+          {!alllogsloaded && (
+            <div className="progress-bar-container">
+              <div className="progress-bar">
+                <div className="progress-color"></div>
+              </div>
+              <div className="progress-completion">Loading logs...</div>
+            </div>
+          )}
+
           <div className="tabs-container">
             {logTypes.map((item) => (
               <div
                 key={item.label}
                 className={`tab-btn ${
-                  sellogType === item.value ? "selected" : "normal"
+                  sellogTabType === item.value ? "selected" : "normal"
                 }`}
                 onClick={() => openlogTab(item.value)}
               >
@@ -780,25 +1034,29 @@ function Rfelog({ ...props }) {
             ))}
           </div>
           <div>
-            {rfelogState.loading ? (
+            {!isLoadingStarted ? (
               <Loading />
-            ) : rfelogState.error ? (
-              <div>{rfelogState.error}</div>
+            ) : logstate.error ? (
+              <div>{logstate.error}</div>
             ) : (
-              <PaginationData
-                id={"rfeLogId"}
-                column={columns}
-                data={paginationdata}
-                showAddPopup={showAddPopup}
-                defaultSorted={defaultSorted}
-                isExportReport={true}
-                exportReportTitle={"Export"}
-                exportFileName={"RFELogReport"}
-                buttonTitle={"New RfE"}
-                hidesearch={true}
-                exportExcludeFields={exportExcludeFields}
-                exportHtmlFields={exportHtmlFields}
-              />
+              queryparamloaded && (
+                <PaginationData
+                  id={"rfeLogId"}
+                  column={columns}
+                  data={paginationdata}
+                  showAddPopup={showAddPopup}
+                  defaultSorted={defaultSorted}
+                  isExportReport={true}
+                  exportReportTitle={"Export"}
+                  exportFileName={"RfELogReport"}
+                  buttonTitle={"New RfE"}
+                  hidesearch={true}
+                  exportExcludeFields={exportExcludeFields}
+                  exportFieldTitles={exportFieldTitles}
+                  exportDateFields={exportDateFields}
+                  exportHtmlFields={exportHtmlFields}
+                />
+              )
             )}
           </div>
         </>
@@ -814,6 +1072,7 @@ const mapStateToProp = (state) => {
 const mapActions = {
   getAll: rfelogActions.getAll,
   getallCount: rfelogActions.getallCount,
+  getallLogs: rfelogActions.getallLogs,
   getAllCountry: countryActions.getAllCountry,
   getAlllob: lobActions.getAlllob,
   getById: rfelogActions.getById,

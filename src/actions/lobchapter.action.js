@@ -21,7 +21,35 @@ const getAll = (requestParam) => {
     }
   };
 };
+const getAlllobChapter = () => {
+  const success = (data) => {
+    return {
+      type: lobchapterConstants.GETALLLOBCHAPTER_SUCCESS,
+      payload: data,
+    };
+  };
+  const failure = (error) => {
+    return {
+      type: lobchapterConstants.GETALLLOBCHAPTER_FAILURE,
+      payload: error,
+    };
+  };
+  const requestParams = {
+    PageIndex: 1,
+    PageSize: 500,
+  };
 
+  return async (dispatch) => {
+    try {
+      const response = await lobchapterService.getAlllobChapterService(
+        requestParams
+      );
+      dispatch(success(response.data));
+    } catch (err) {
+      dispatch(failure(err));
+    }
+  };
+};
 const getById = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -76,6 +104,7 @@ const deleteItem = (requestParam) => {
 };
 export const lobchapterActions = {
   getAll,
+  getAlllobChapter,
   getById,
   checkNameExist,
   checkIsInUse,
@@ -85,6 +114,11 @@ export const lobchapterActions = {
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`lobchapter/getalllobchapterlist`, param);
+  return response;
+};
+const getAlllobChapterService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`lobchapter/getalllobchapter`, param);
   return response;
 };
 const getByIdService = async (requestParam) => {
@@ -116,6 +150,7 @@ const deleteItemService = async (requestParam) => {
 };
 const lobchapterService = {
   getAllService,
+  getAlllobChapterService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,

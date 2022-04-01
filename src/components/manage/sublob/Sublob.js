@@ -76,6 +76,9 @@ function Sublob({ ...props }) {
     }
   }, [selfilter.lob]);
   //set pagination data and functionality
+  const [datapagesize, setdatapagesize] = useState(500);
+  const [datapageindex, setdatapageindex] = useState(1);
+  const [datatotalcount, setdatatotalcount] = useState(0);
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
@@ -115,7 +118,7 @@ function Sublob({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },
@@ -150,7 +153,11 @@ function Sublob({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({ RequesterUserId: userProfile.userId });
+    getAll({
+      RequesterUserId: userProfile.userId,
+      //PageIndex: datapageindex,
+      //PageSize: datapagesize,
+    });
     getAlllob();
   }, []);
   useEffect(() => {
@@ -159,6 +166,9 @@ function Sublob({ ...props }) {
     let templobFilterOpts = [];
     let tempLobListObj = {};
     let tempLobMapping = [];
+    if (sublobState.items.length) {
+      setdatatotalcount(parseInt(sublobState.items[0].totalCount));
+    }
     sublobState.items.forEach((item) => {
       if (item.isActive) {
         tempdata.push(item);
@@ -371,6 +381,7 @@ function Sublob({ ...props }) {
             id={"subLOBID"}
             column={columns}
             data={paginationdata}
+            datatotalcount={datatotalcount}
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New Sub-LoB"}

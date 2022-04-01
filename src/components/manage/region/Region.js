@@ -73,7 +73,7 @@ function Region({ ...props }) {
       },
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "50px", textAlign: "center" };
+        return { width: "70px", textAlign: "center" };
       },
       align: "center",
     },

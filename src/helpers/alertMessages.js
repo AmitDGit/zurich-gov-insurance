@@ -47,6 +47,14 @@ export const alertMessage = {
     isInUse: "You can not delete this LoB Chapter as it is in use.",
     nameExist: "LoB Chapter name is already exist!",
   },
+  orgnization1: {
+    add: "The new Organization is successfully added.",
+    update: "The Organization is successfully updated.",
+    delete: "The Organization is deleted.",
+    deleteConfirm: "Are you sure you want to delete Organization?",
+    isInUse: "You can not delete this Organization as it is in use.",
+    nameExist: "The Organization name already exists!",
+  },
   user: {
     add: "The new User is successfully added.",
     update: "The User is successfully updated.",
@@ -85,13 +93,28 @@ export const alertMessage = {
     deleteAttachment: "The attachment is deleted.",
     isInUse: "You can not delete this RfE log as it is in use.",
     nameExist: "RfE log name is already exist!",
-    draftInvalid: "Please enter title to save log.",
+    draftInvalid: "Please enter Account Name to save log.",
     orgalignmetmsg: "Please use the local RfE log from the list below.",
     invalidapprovermsg:
       "Please note that, the underwriter and 'Underwriter granting empowerment' can't be same person.",
   },
+  exemptionlog: {
+    draft: "The draft of the Exemption log is added.",
+    add: "The new Exemption log is successfully added.",
+    update: "The Exemption log is successfully updated.",
+    delete: "The Exemption log is deleted.",
+    deleteConfirm: "Are you sure you want to delete Exemption log?",
+    deleteAttachmentConfirm: "Are you sure you want to delete Attachment?",
+    deleteAttachment: "The attachment is deleted.",
+    isInUse: "You can not delete this Exemption log as it is in use.",
+    nameExist: "Exemption log name is already exist!",
+    draftInvalid: "Please select Country to save log.",
+    invalidapprovermsg:
+      "Please note that, the approver and 'Empowerment Requester' can't be same person.",
+  },
   commonmsg: {
     fileuploaderror:
       "Error in file upload! Please check internet connectivity and try reuploading.",
+    servererror: "Internal server error - 500",
   },
 };

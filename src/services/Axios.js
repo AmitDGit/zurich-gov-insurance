@@ -1,5 +1,8 @@
+import React from "react";
 import axios from "axios";
 import TokenService from "./Tokenservice";
+import { Redirect } from "react-router-dom";
+import { alertMessage } from "../helpers";
 //export const apiURL = "http://talentcentral.delphianlogic.com/TnaApi/api/";
 const BASE_URL = "http://192.168.0.7/ZurichAPI/";
 
@@ -40,8 +43,22 @@ Axios.interceptors.response.use(
   async (err) => {
     const originalConfig = err.config;
     if (err.response.status === 401) {
-      TokenService.removeUser();
-      window.location.reload(true);
+      console.log(err.response);
+      debugger;
+
+      if (
+        err.response.data.value &&
+        err.response.data.value.msg === "UnauthorizedAccess"
+      ) {
+        window.location = "/unauthorized";
+      } else {
+        TokenService.removeUser();
+        window.location.reload(true);
+      }
+    } else if (err.response.status === 500) {
+      debugger;
+      alert(alertMessage.commonmsg.servererror);
+      // window.location = "/";
     } else {
       return Promise.reject(err);
     }

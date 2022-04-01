@@ -56,7 +56,6 @@ function User({ ...props }) {
     });
 
     if (name === "region" && value !== "") {
-      debugger;
       let region = frmRegionSelectOpts.filter((item) => item.label === value);
       let tempmapObj = countrymapping.filter(
         (item) => item.region === region[0].value
@@ -181,7 +180,7 @@ function User({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },

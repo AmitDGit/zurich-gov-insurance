@@ -183,7 +183,7 @@ function Lookup({ ...props }) {
     setdata([...tempData]);
   };
   const pageFilterStyle = { justifyContent: "flex-start" };
-  const tableiconclmStyle = { width: "40px" };
+  const tableiconclmStyle = { width: "70px" };
   return (
     <>
       <div className="page-title">Manage Lookup</div>
