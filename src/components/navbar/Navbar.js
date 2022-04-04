@@ -1,11 +1,28 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { SUPER_ADMIN_ROLE_ID } from "../../constants";
+import { USER_ROLE } from "../../constants";
 
 function Navbar({ ...props }) {
   const { appmenu } = props.state;
   const { location, userProfile } = props;
-  const superadminrole = SUPER_ADMIN_ROLE_ID;
+  const superadminrole = USER_ROLE.superAdmin;
+  const [loggeduserrole, setloggeduserrole] = useState("");
+  const [roleadmin, setroleadmin] = useState(false);
+
+  useEffect(() => {
+    let loggeduserrole = userProfile ? userProfile.userRoles[0].roleId : "";
+    let roleadmin = false;
+    if (
+      loggeduserrole === USER_ROLE.globalAdmin ||
+      loggeduserrole === USER_ROLE.regionAdmin ||
+      loggeduserrole === USER_ROLE.countryAdmin
+    ) {
+      roleadmin = true;
+    }
+    setloggeduserrole(loggeduserrole);
+    setroleadmin(roleadmin);
+  }, [userProfile]);
+
   //console.log(userProfile);
   return (
     <nav className="menu-nav">
@@ -15,77 +32,116 @@ function Navbar({ ...props }) {
             Dashboard
           </div>
         </Link>
-        {userProfile && userProfile.userRoles[0].roleId === superadminrole && (
+        {userProfile && (
           <>
-            <Link to="/region">
-              <div className="menu-item">Manage</div>
-            </Link>
+            {loggeduserrole === superadminrole && (
+              <Link to="/region">
+                <div className="menu-item">Manage</div>
+              </Link>
+            )}
+            {/*loggeduserrole !== superadminrole && roleadmin && (
+              <Link to="/user">
+                <div className="menu-item">Manage</div>
+              </Link>
+            )*/}
             {appmenu.isSubmenu ? (
               <div className="submenu-container">
-                <Link to="/region">
-                  <div
-                    className={`menu-item ${location.pathname === "/region" &&
-                      "active"}`}
-                  >
-                    Region
-                  </div>
-                </Link>
-                <Link to="/country">
-                  <div
-                    className={`menu-item ${location.pathname === "/country" &&
-                      "active"}`}
-                  >
-                    Country
-                  </div>
-                </Link>
-                <Link to="/segment">
-                  <div
-                    className={`menu-item ${location.pathname === "/segment" &&
-                      "active"}`}
-                  >
-                    Segment
-                  </div>
-                </Link>
-                <Link to="/lob">
-                  <div
-                    className={`menu-item ${location.pathname === "/lob" &&
-                      "active"}`}
-                  >
-                    LoB
-                  </div>
-                </Link>
-                <Link to="/sublob">
-                  <div
-                    className={`menu-item ${location.pathname === "/sublob" &&
-                      "active"}`}
-                  >
-                    Sub-LoB
-                  </div>
-                </Link>
-                <Link to="/lobchapter">
-                  <div
-                    className={`menu-item ${location.pathname ===
-                      "/lobchapter" && "active"}`}
-                  >
-                    LoB Chapter
-                  </div>
-                </Link>
-                <Link to="/user">
-                  <div
-                    className={`menu-item ${location.pathname === "/user" &&
-                      "active"}`}
-                  >
-                    User
-                  </div>
-                </Link>
-                <Link to="/lookup">
-                  <div
-                    className={`menu-item ${location.pathname === "/lookup" &&
-                      "active"}`}
-                  >
-                    Lookup
-                  </div>
-                </Link>
+                {loggeduserrole === superadminrole && (
+                  <>
+                    <Link to="/region">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/region" && "active"}`}
+                      >
+                        Region
+                      </div>
+                    </Link>
+                    <Link to="/country">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/country" && "active"}`}
+                      >
+                        Country
+                      </div>
+                    </Link>
+                    <Link to="/segment">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/segment" && "active"}`}
+                      >
+                        Segment
+                      </div>
+                    </Link>
+                    <Link to="/lob">
+                      <div
+                        className={`menu-item ${location.pathname === "/lob" &&
+                          "active"}`}
+                      >
+                        LoB
+                      </div>
+                    </Link>
+                    <Link to="/sublob">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/sublob" && "active"}`}
+                      >
+                        Sub-LoB
+                      </div>
+                    </Link>
+                    <Link to="/lobchapter">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/lobchapter" && "active"}`}
+                      >
+                        LoB Chapter
+                      </div>
+                    </Link>
+                    <Link to="/znaorganization1">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/znaorganization1" && "active"}`}
+                      >
+                        ZNA Organization 1
+                      </div>
+                    </Link>
+                    <Link to="/znaorganization2">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/znaorganization2" && "active"}`}
+                      >
+                        ZNA Organization 2
+                      </div>
+                    </Link>
+                    <Link to="/znaorganization3">
+                      <div
+                        className={`menu-item ${location.pathname ===
+                          "/znaorganization3" && "active"}`}
+                      >
+                        ZNA Organization 3
+                      </div>
+                    </Link>
+                  </>
+                )}
+                {loggeduserrole === superadminrole && (
+                  <Link to="/user">
+                    <div
+                      className={`menu-item ${location.pathname === "/user" &&
+                        "active"}`}
+                    >
+                      User
+                    </div>
+                  </Link>
+                )}
+                {loggeduserrole === superadminrole && (
+                  <Link to="/lookup">
+                    <div
+                      className={`menu-item ${location.pathname === "/lookup" &&
+                        "active"}`}
+                    >
+                      Lookup
+                    </div>
+                  </Link>
+                )}
               </div>
             ) : (
               ""

@@ -110,7 +110,7 @@ function Lookup({ ...props }) {
     let item = {};
     let response;
     if (param.lookupID) {
-      item = data.filter((item) => item.lookupID == param.lookupID);
+      item = data.filter((item) => item.lookupID === param.lookupID);
     } else {
       response = await checkNameExist({
         lookUpType: param.lookUpType,
@@ -183,7 +183,7 @@ function Lookup({ ...props }) {
     setdata([...tempData]);
   };
   const pageFilterStyle = { justifyContent: "flex-start" };
-  const tableiconclmStyle = { width: "40px" };
+  const tableiconclmStyle = { width: "70px" };
   return (
     <>
       <div className="page-title">Manage Lookup</div>

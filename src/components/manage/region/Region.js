@@ -73,7 +73,7 @@ function Region({ ...props }) {
       },
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "50px", textAlign: "center" };
+        return { width: "70px", textAlign: "center" };
       },
       align: "center",
     },
@@ -188,7 +188,7 @@ function Region({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeRegionName.toLowerCase() != item.regionName.toLowerCase()) {
+    if (editmodeRegionName.toLowerCase() !== item.regionName.toLowerCase()) {
       response = await checkRegionExist({ RegionName: item.regionName });
     }
     if (!response) {

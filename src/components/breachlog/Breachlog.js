@@ -8,18 +8,26 @@ import {
   lookupActions,
   segmentActions,
   lobActions,
+  commonActions,
 } from "../../actions";
 import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
 import FrmSelect from "../common-components/frmselect/FrmSelect";
 import PaginationData from "../common-components/PaginationData";
-import { alertMessage, dynamicSort, formatDate } from "../../helpers";
+import {
+  alertMessage,
+  dynamicSort,
+  formatDate,
+  getUrlParameter,
+} from "../../helpers";
 import AddEditForm from "./AddEditForm";
 import FrmInput from "../common-components/frminput/FrmInput";
-import { BREACH_LOG_STATUS_PENDING } from "../../constants";
+import { BREACH_LOG_STATUS } from "../../constants";
 import moment from "moment";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
+let pageIndex = 1;
+let totalLogCount = 0;
 function Breachlog({ ...props }) {
   const {
     breachlogState,
@@ -32,6 +40,7 @@ function Breachlog({ ...props }) {
   const {
     getAll,
     getAllCount,
+    getallLogs,
     getActionResponsible,
     getAllUsers,
     getAllCountry,
@@ -46,17 +55,31 @@ function Breachlog({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    sendLogNotification,
   } = props;
 
   useSetNavMenu(
-    { currentMenu: "Breachlog", isSubmenu: false },
+    {
+      currentMenu: "Breachlog",
+      isSubmenu: false,
+    },
     props.menuClick
   );
-  //initialize filter/search functionality
-  console.log(breachlogState);
-  const selectInitiVal = { label: "Select", value: "" };
 
-  const openStatusValue = BREACH_LOG_STATUS_PENDING;
+  const [logstate, setlogstate] = useState({
+    loading: true,
+    error: "",
+    data: [],
+  });
+  const [logsDraftData, setlogsDraftData] = useState([]);
+  //initialize filter/search functionality
+  //console.log(breachlogState);
+  const selectInitiVal = {
+    label: "Select",
+    value: "",
+  };
+
+  const openStatusValue = BREACH_LOG_STATUS.Pending;
 
   const exportExcludeFields = [
     "breachLogID",
@@ -76,14 +99,69 @@ function Breachlog({ ...props }) {
     "totalCount",
     "sublobid",
     "isSubmit",
+    "znaSegmentId",
+    "znasbuId",
+    "marketBasketId",
   ];
+  const exportDateFields = {
+    dateBreachOccurred: "dateBreachOccurred",
+    dueDate: "dueDate",
+    originalDueDate: "originalDueDate",
+    dateActionClosed: "dateActionClosed",
+    createdDate: "createdDate",
+  };
+  const exportFieldTitles = {
+    entityNumber: "Entity Number",
+    title: "Title",
+    regionName: "Region",
+    countryName: "Country",
+    customerSegmentName: "Customer Segment",
+    lobName: "LoB",
+    materialBreach: "Material Breach",
+    dateBreachOccurred: "Date Breach Occurred",
+    nearMisses: "Near Misses",
+    breachDetails: "Breach Details",
+    actionResponsible: "Action Responsible",
+    dueDate: "Due Date",
+    originalDueDate: "Original Due Date",
+    dateActionClosed: "Date Action Closed",
+    createdDate: "Created Date",
+    actionPlan: "Action Plan",
+    actionUpdate: "Action Update",
+    subLOBName: "Sub LoB",
+    classificationValue: "Classification",
+    typeOfBreachValue: "Type Of Breach",
+    rootCauseOfTheBreachValue: "Root Cause of the Breach",
+    natureOfBreachValue: "Nature of Breach",
+    rangeOfFinancialImpactValue: "Range of financial impact",
+    howDetectedValue: "How detected",
+    breachStatusValue: "Breach Status",
+    creatorName: "Creator",
+    actionResponsibleName: "Action Responsible Name",
+    uwrInvolved: "UWr involved",
+    businessDivision: "Business Division",
+    office: "office",
+    policyName: "Policy name",
+    policyNumber: "Policy number",
+    breachLogEmailLink: "Link",
+    turNumber: "UQA Review ID",
+    znaSegmentName: "ZNA Segment",
+    sbuName: "ZNA SBU",
+    marketBasketName: "ZNA Market Basket",
+  };
   const exportHtmlFields = ["breachDetails", "actionPlan", "actionUpdate"];
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     classificationFilterOpts: [],
     groupFilterOpts: [],
     entriesFilterOpts: [
-      { label: "My Entries", value: "My Entries" },
-      { label: "All Entries", value: "All Entries" },
+      {
+        label: "My Entries",
+        value: "My Entries",
+      },
+      {
+        label: "All Entries",
+        value: "All Entries",
+      },
     ],
     customerSegmentFilterOpts: [],
     natureOfBreachFilterOpts: [],
@@ -104,11 +182,12 @@ function Breachlog({ ...props }) {
     customersegment: "",
     natureofbreach: "",
     lobid: "",
-    actionResponsibleName: "",
+    actionResponsible: "",
     entries: "",
     regionId: "",
     countryId: "",
     status: "",
+    breachStatus: "",
   };
   const [selfilter, setselfilter] = useState(intialFilterState);
   const onSearchFilterInput = (e) => {
@@ -140,7 +219,123 @@ function Breachlog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
-    let filter = {};
+    if (
+      selfilter.entityNumber.trim() !== "" ||
+      selfilter.title.trim() !== "" ||
+      selfilter.classification !== "" ||
+      selfilter.customersegment !== "" ||
+      selfilter.natureofbreach !== "" ||
+      selfilter.lobid !== "" ||
+      selfilter.actionResponsible !== "" ||
+      selfilter.regionId !== "" ||
+      selfilter.countryId !== "" ||
+      selfilter.breachStatus !== "" ||
+      selfilter.entries !== ""
+    ) {
+      let dataArr;
+      if (sellogTabType === "draft") {
+        dataArr = logsDraftData;
+      } else {
+        dataArr = logstate.data;
+      }
+      let tempdata = [...dataArr];
+      tempdata = tempdata.filter((item) => {
+        let isShow = true;
+        if (
+          isShow &&
+          selfilter.entityNumber.trim() !== "" &&
+          item.entityNumber &&
+          !item.entityNumber
+            .toLowerCase()
+            .includes(selfilter.entityNumber.toLowerCase())
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.title.trim() !== "" &&
+          !item.title.toLowerCase().includes(selfilter.title.toLowerCase())
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.classification !== "" &&
+          item.classification &&
+          selfilter.classification !== item.classification
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.customersegment !== "" &&
+          item.customerSegment &&
+          selfilter.customersegment !== item.customerSegment
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.natureofbreach !== "" &&
+          item.natureOfBreach &&
+          item.natureOfBreach !== selfilter.natureofbreach
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.lobid !== "" &&
+          item.lobid &&
+          item.lobid !== selfilter.lobid
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.actionResponsible !== "" &&
+          item.actionResponsible &&
+          item.actionResponsible !== selfilter.actionResponsible
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.regionId !== "" &&
+          item.regionId &&
+          item.regionId !== selfilter.regionId
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.countryId !== "" &&
+          item.countryId &&
+          item.countryId !== selfilter.countryId
+        ) {
+          isShow = false;
+        }
+        if (
+          isShow &&
+          selfilter.breachStatus !== "" &&
+          item.breachStatus &&
+          item.breachStatus !== selfilter.breachStatus
+        ) {
+          isShow = false;
+        }
+        if (isShow && selfilter.entries !== "") {
+          if (
+            selfilter.entries === "My Entries" &&
+            item.createdByID !== userProfile.userId
+          ) {
+            isShow = false;
+          }
+        }
+        return isShow;
+      });
+      setpaginationdata(tempdata);
+    }
+
+    /*let filter = {};
     if (selfilter.entityNumber !== "") {
       filter["entityNumber"] = selfilter.entityNumber;
     }
@@ -178,12 +373,18 @@ function Breachlog({ ...props }) {
         filter["createdByID"] = "";
       }
     }
-    getAllBreachItems(filter);
+    getAllBreachItems(filter);*/
   };
   const clearFilter = () => {
     setselfilter(intialFilterState);
-    //setpaginationdata(data);
-    getAllBreachItems();
+    let dataArr;
+    if (sellogTabType === "draft") {
+      dataArr = logsDraftData;
+    } else {
+      dataArr = logstate.data;
+    }
+    setpaginationdata(dataArr);
+    // getAllBreachItems();
   };
   const checkDueDatePriority = (value) => {
     let priorityCls = "";
@@ -201,7 +402,7 @@ function Breachlog({ ...props }) {
   };
   //set pagination data and functionality
 
-  const [data, setdata] = useState([]);
+  //const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
   const [exportData, setexportData] = useState([{ columns: [], data: [] }]);
   const columns = [
@@ -227,26 +428,6 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "viewaction",
-      text: "View",
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return (
-          <div
-            className="view-icon"
-            onClick={handleView}
-            rowid={row.breachLogID}
-          ></div>
-        );
-      },
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return {
-          width: "50px",
-          textAlign: "center",
-        };
-      },
-    },
-    {
       dataField: "editaction",
       text: "Edit",
       formatter: (cell, row, rowIndex, formatExtraData) => {
@@ -255,13 +436,35 @@ function Breachlog({ ...props }) {
             className="edit-icon"
             onClick={handleEdit}
             rowid={row.breachLogID}
+            mode={"edit"}
           ></div>
         );
       },
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "viewaction",
+      text: "View",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="view-icon"
+            onClick={handleEdit}
+            rowid={row.breachLogID}
+            mode={"view"}
+          ></div>
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "70px",
           textAlign: "center",
         };
       },
@@ -271,7 +474,7 @@ function Breachlog({ ...props }) {
       text: "Entry Number",
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "120px" };
+        return { width: "150px" };
       },
     },
     {
@@ -318,13 +521,12 @@ function Breachlog({ ...props }) {
         return { width: "250px" };
       },
     },
-
     {
-      dataField: "creatorName",
-      text: "Created By",
-      sort: false,
+      dataField: "regionName",
+      text: "Region",
+      sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "200px" };
+        return { width: "150px" };
       },
     },
     {
@@ -336,14 +538,6 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "regionName",
-      text: "Region",
-      sort: true,
-      headerStyle: (colum, colIndex) => {
-        return { width: "150px" };
-      },
-    },
-    {
       dataField: "lobName",
       text: "LoB",
       sort: true,
@@ -351,7 +545,6 @@ function Breachlog({ ...props }) {
         return { width: "200px" };
       },
     },
-
     {
       dataField: "classificationValue",
       text: "Classification",
@@ -361,8 +554,8 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "customerSegmentName",
-      text: "Customer Segment",
+      dataField: "typeOfBreachValue",
+      text: "Type of Breach",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -377,14 +570,112 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "dueDate",
-      text: "Due Date",
+      dataField: "materialBreach",
+      text: "Material breach",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
       },
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{cell ? formatDate(cell) : ""}</span>;
+        return <span>{row.materialBreach ? "Yes" : "No"}</span>;
+      },
+    },
+    {
+      dataField: "howDetectedValue",
+      text: "How detected",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "originalDueDate",
+      text: "Original Due Date",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <span>
+            {row.originalDueDate
+              ? formatDate(row.originalDueDate)
+              : row.dueDate
+              ? formatDate(row.dueDate)
+              : ""}
+          </span>
+        );
+      },
+    },
+    {
+      dataField: "customerSegmentName",
+      text: "Customer Segment",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "subLOBName",
+      text: "Sub-LoB",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "rootCauseOfTheBreachValue",
+      text: "Root Cause of the Breach",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "dateBreachOccurred",
+      text: "Date Breach Occurred",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <span>
+            {row.dateBreachOccurred ? formatDate(row.dateBreachOccurred) : ""}
+          </span>
+        );
+      },
+    },
+    {
+      dataField: "rangeOfFinancialImpactValue",
+      text: "Range of financial impact",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "creatorName",
+      text: "Created By",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "actionResponsibleName",
+      text: "Action Responsible",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "breachStatusValue",
+      text: "Status",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "120px" };
       },
     },
     {
@@ -399,32 +690,131 @@ function Breachlog({ ...props }) {
       },
     },
     {
-      dataField: "breachStatusValue",
-      text: "Status",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "120px" };
-      },
-    },
-    {
-      dataField: "actionResponsibleName",
-      text: "Action Responsible",
+      dataField: "modifiedDate",
+      text: "Modified Date",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{cell ? formatDate(cell) : ""}</span>;
       },
     },
   ];
 
   const defaultSorted = [
     {
-      dataField: "createdDate",
+      dataField: "modifiedDate",
       order: "desc",
     },
   ];
 
+  //load logs data in recurrsive
+  const [logItmes, setlogItmes] = useState([]);
+  const [pagesize, setpagesize] = useState(500);
+  const [alllogsloaded, setalllogsloaded] = useState(false);
+  const [isLoadingStarted, setisLoadingStarted] = useState(false);
+  const getAllLogsInRecurssion = async () => {
+    let tempItems = await getallLogs({
+      RequesterUserId: userProfile.userId,
+      isSubmit: true,
+      PageIndex: pageIndex,
+      PageSize: pagesize,
+    });
+    totalLogCount = tempItems.length && tempItems[0].totalCount;
+    setisLoadingStarted(true);
+    setlogItmes([...logItmes, ...tempItems]);
+  };
+
+  useEffect(() => {
+    if (isLoadingStarted) {
+      //setdata(logItmes);
+      setpaginationdata(logItmes);
+      setlogstate({
+        ...logstate,
+        loading: false,
+        data: [...logItmes],
+      });
+      console.log("logs loaded -" + logItmes);
+      let chunkPercentage = Math.round((logItmes.length / totalLogCount) * 100);
+      const progressbar = document.querySelector(".progress-color");
+      const progressbarcontainer = document.querySelector(
+        ".progress-bar-container"
+      );
+      if (progressbar) {
+        progressbar.style.width = chunkPercentage + "%";
+      }
+
+      if (totalLogCount > logItmes.length) {
+        pageIndex++;
+        getAllLogsInRecurssion();
+      } else {
+        pageIndex = 1;
+        totalLogCount = 0;
+        setalllogsloaded(true);
+      }
+    }
+  }, [logItmes]);
+
+  useEffect(() => {
+    pageIndex = 1;
+    totalLogCount = 0;
+    getallDraftItems();
+    getAllLogsInRecurssion();
+  }, []);
+
+  const [showDraft, setshowDraft] = useState(false);
+  const [logTypes, setlogTypes] = useState([]);
+  const [sellogTabType, setsellogTabType] = useState("");
+  useEffect(() => {
+    if (showDraft) {
+      let tempStatus = [
+        { label: "All", value: "all" },
+        {
+          label: "Draft",
+          value: "draft",
+        },
+      ];
+      setlogTypes(tempStatus);
+      if (!sellogTabType) {
+        setsellogTabType(tempStatus[0].value);
+      }
+    } else {
+      let tempStatus = [{ label: "All", value: "all" }];
+      setlogTypes(tempStatus);
+      setsellogTabType(tempStatus[0].value);
+    }
+  }, [showDraft]);
+
+  const getallDraftItems = async () => {
+    let tempdraftItems = await getallLogs({
+      RequesterUserId: userProfile.userId,
+      isSubmit: false,
+    });
+    if (tempdraftItems.length) {
+      setshowDraft(true);
+      setlogsDraftData([...tempdraftItems]);
+    } else {
+      setlogsDraftData([]);
+      setshowDraft(false);
+    }
+  };
+
+  const openBreachlogTab = (type) => {
+    setsellogTabType(type);
+  };
+  useEffect(() => {
+    // getAllRfeItems();
+    setselfilter(intialFilterState);
+    if (sellogTabType === "draft") {
+      setpaginationdata(logsDraftData);
+    } else {
+      setpaginationdata(logstate.data);
+    }
+  }, [sellogTabType, logsDraftData, logstate.data]);
+
   const getAllBreachItems = async (filters) => {
-    let requestParam = {
+    /* let requestParam = {
       RequesterUserId: userProfile.userId,
       isSubmit: true,
     };
@@ -433,7 +823,7 @@ function Breachlog({ ...props }) {
         requestParam[key] = filters[key];
       }
     }
-    if (sellogType === "draft") {
+    if (sellogTabType === "draft") {
       requestParam.isSubmit = false;
     }
     getAll(requestParam);
@@ -447,8 +837,8 @@ function Breachlog({ ...props }) {
       setshowDraft(true);
     } else {
       setshowDraft(false);
-    }
-    /*let tempseltype = logTypes.filter((item) => item.value === sellogType);
+    }*/
+    /*let tempseltype = logTypes.filter((item) => item.value === sellogTabType);
     if (tempseltype.length) {
       requestParam["breachStatus"] = tempseltype[0]["value"];
       requestParam["isSubmit"] = tempseltype[0]["isSubmit"];
@@ -462,14 +852,14 @@ function Breachlog({ ...props }) {
     getAlllob({ isActive: true });
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     let tempdata = [];
 
     tempdata = breachlogState.items;
 
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-  }, [breachlogState.items]);
+  }, [breachlogState.items]);*/
 
   useEffect(async () => {
     let tempActionResponsible = await getActionResponsible();
@@ -638,6 +1028,7 @@ function Breachlog({ ...props }) {
     createdByID: "",
     createdDate: "",
     breachAttachmentList: [],
+    fullFilePath: "",
     isSubmit: false,
     UWRinvolved: "",
     BusinessDivision: "",
@@ -645,24 +1036,43 @@ function Breachlog({ ...props }) {
     PolicyName: "",
     PolicyNumber: "",
     turNumber: "",
+    BreachLogEmailLink: window.location.href,
+    marketBasketId: "",
+    marketBasketName: "",
+    znaSegmentId: "",
+    znaSegmentName: "",
+    znasbuId: "",
+    sbuName: "",
+    BreachLogEmailLink: window.location.href,
   };
   const [formIntialState, setformIntialState] = useState(formInitialValue);
 
-  const handleEdit = async (e) => {
-    let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ breachLogID: itemid });
-    if (response.isSubmit) {
+  const handleEdit = async (e, hasqueryparam) => {
+    let itemid;
+    let mode;
+    if (hasqueryparam) {
+      itemid = queryparam.id;
+      if (queryparam.status) {
+        mode = "edit";
+      } else {
+        mode = "view";
+      }
+    } else {
+      itemid = e.target.getAttribute("rowid");
+      mode = e.target.getAttribute("mode");
+    }
+    const response = await getById({
+      breachLogID: itemid,
+    });
+    if (mode === "edit" && response.isSubmit) {
       setisEditMode(true);
     }
-    setformIntialState({
-      ...response,
-    });
-    showAddPopup();
-  };
-  const handleView = async (e) => {
-    let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ breachLogID: itemid });
-    setisReadMode(true);
+    if (mode === "view") {
+      setisReadMode(true);
+    }
+    if (queryparam.status) {
+      response.breachStatus = queryparam.status;
+    }
     setformIntialState({
       ...response,
     });
@@ -674,15 +1084,41 @@ function Breachlog({ ...props }) {
     );
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
+
     let response = await postItem({
       ...item,
       modifiedByID: userProfile.userId,
     });
     if (response) {
-      setselfilter(intialFilterState);
-      getAllBreachItems();
-      hideAddPopup();
       alert(alertMessage.breachlog.update);
+      if (queryparam.id) {
+        window.location = "/breachlogs";
+      } else {
+        setselfilter(intialFilterState);
+        //if item is submitted and in edit mode
+        let tempostItem = await getallLogs({
+          breachLogID: item.breachLogID,
+          isSubmit: item.isSubmit,
+        });
+        if (item.isSubmit) {
+          let isfound = false;
+          for (let i = 0; i < logstate.data.length; i++) {
+            let listitem = logstate.data[i];
+            if (listitem.breachLogID === item.breachLogID) {
+              listitem = { ...listitem, ...tempostItem[0] };
+              logstate.data[i] = listitem;
+              isfound = true;
+            }
+          }
+          if (!isfound) {
+            logstate.data.unshift(tempostItem[0]);
+          }
+        } else {
+          //if item is saved and in draft mode
+        }
+        getallDraftItems();
+        hideAddPopup();
+      }
     }
     setisEditMode(false);
   };
@@ -692,19 +1128,53 @@ function Breachlog({ ...props }) {
     );
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
-    let response = await postItem({
+    let response;
+    response = await postItem({
       ...item,
       createdByID: userProfile.userId,
+      modifiedByID: userProfile.userId,
     });
+    /*if (item.breachLogID) {
+      response = await postItem({
+        ...item,
+        modifiedByID: userProfile.userId,
+      });
+    } else {
+      response = await postItem({
+        ...item,
+        createdByID: userProfile.userId,
+      });
+    }*/
 
     if (response) {
-      setselfilter(intialFilterState);
-      getAllBreachItems();
-      hideAddPopup();
-      if (item.isSubmit) {
-        alert(alertMessage.breachlog.add);
+      if (queryparam.id) {
+        window.location = "/breachlogs";
       } else {
-        alert(alertMessage.breachlog.draft);
+        let logid = item.breachLogID ? item.breachLogID : response;
+        setselfilter(intialFilterState);
+        let tempostItem = await getallLogs({
+          breachLogID: logid,
+          isSubmit: item.isSubmit,
+        });
+        if (item.isSubmit) {
+          alert(alertMessage.breachlog.add);
+          let isfound = false;
+          for (let i = 0; i < logstate.data.length; i++) {
+            let listitem = logstate.data[i];
+            if (listitem.breachLogID === item.breachLogID) {
+              listitem = { ...listitem, ...tempostItem[0] };
+              logstate.data[i] = listitem;
+              isfound = true;
+            }
+          }
+          if (!isfound) {
+            logstate.data.unshift(tempostItem[0]);
+          }
+        } else {
+          alert(alertMessage.breachlog.draft);
+        }
+        getallDraftItems();
+        hideAddPopup();
       }
     }
   };
@@ -713,11 +1183,17 @@ function Breachlog({ ...props }) {
     if (!window.confirm(alertMessage.breachlog.deleteConfirm)) {
       return;
     }
-    let resonse = await checkIsInUse({ UserId: itemid });
+    let resonse = await checkIsInUse({
+      UserId: itemid,
+    });
     if (!resonse) {
-      resonse = await deleteItem({ UserId: itemid });
+      resonse = await deleteItem({
+        UserId: itemid,
+      });
       if (resonse) {
-        getAll({ RequesterUserId: userProfile.userId });
+        getAll({
+          RequesterUserId: userProfile.userId,
+        });
         alert(alertMessage.breachlog.delete);
       }
     } else {
@@ -735,51 +1211,25 @@ function Breachlog({ ...props }) {
   const handleFilterBoxState = () => {
     setfilterbox(!filterbox);
   };
-  const [showDraft, setshowDraft] = useState(false);
-  const [logTypes, setlogTypes] = useState([]);
-  const [sellogType, setsellogType] = useState("");
-  useEffect(async () => {
-    /* let tempBreachStatus = await getLookupByType({
-      LookupType: "BreachStatus",
-    });
-    tempBreachStatus = tempBreachStatus.map((item) => {
-      if (openStatusValue === item.lookupID) {
-        openstatus = {
-          label: item.lookUpValue,
-          value: item.lookupID,
-          isSubmit: true,
-        };
-      }
-      return {
-        label: item.lookUpName,
-        value: item.lookupID,
-        isSubmit: true,
-      };
-    });*/
-    let tempStatus = [{ label: "All", value: "all" }];
-    setlogTypes(tempStatus);
-    setsellogType(tempStatus[0].value);
-  }, []);
+
+  //set query parameters
+
+  const [queryparam, setqueryparam] = useState({ id: "", status: "" });
+  const [queryparamloaded, setqueryparamloaded] = useState(false);
   useEffect(() => {
-    if (showDraft) {
-      let tempStatus = [
-        { label: "All", value: "all" },
-        { label: "Draft", value: "draft", isSubmit: false },
-      ];
-      setlogTypes(tempStatus);
-    } else {
-      let tempStatus = [{ label: "All", value: "all" }];
-      setlogTypes(tempStatus);
-      setsellogType(tempStatus[0].value);
+    setqueryparamloaded(true);
+    if (queryparam.id) {
+      handleEdit(this, true);
     }
-  }, [showDraft]);
-  const openBreachlogTab = (type) => {
-    setsellogType(type);
-  };
+  }, [queryparam]);
   useEffect(() => {
-    getAllBreachItems();
-    setselfilter(intialFilterState);
-  }, [sellogType]);
+    let itemid = getUrlParameter("id");
+    let status = getUrlParameter("status");
+    setqueryparam({
+      id: itemid,
+      status: status,
+    });
+  }, []);
 
   return (
     <>
@@ -797,6 +1247,7 @@ function Breachlog({ ...props }) {
           frmCountrySelectOpts={frmCountrySelectOpts}
           countrymapping={countrymapping}
           userProfile={userProfile}
+          queryparam={queryparam}
         ></AddEditForm>
       ) : (
         <>
@@ -870,10 +1321,10 @@ function Breachlog({ ...props }) {
                 <div className="frm-filter no-margin">
                   <FrmSelect
                     title={"Action Responsible"}
-                    name={"actionResponsibleName"}
+                    name={"actionResponsible"}
                     selectopts={commonfilterOpts.actionResponsibleFilterOpts}
                     handleChange={onSearchFilterSelect}
-                    value={selfilter.actionResponsibleName}
+                    value={selfilter.actionResponsible}
                   />
                 </div>
                 <div className="frm-filter">
@@ -953,12 +1404,27 @@ function Breachlog({ ...props }) {
               Filters
             </div>
           </div>
+          <div
+            className="btn-blue"
+            style={{ width: "300px" }}
+            onClick={() => sendLogNotification()}
+          >
+            Trigger Breachlog Email
+          </div>
+          {!alllogsloaded && (
+            <div className="progress-bar-container">
+              <div className="progress-bar">
+                <div className="progress-color"></div>
+              </div>
+              <div className="progress-completion">Loading logs...</div>
+            </div>
+          )}
           <div className="tabs-container">
             {logTypes.map((item) => (
               <div
                 key={item.label}
                 className={`tab-btn ${
-                  sellogType === item.value ? "selected" : "normal"
+                  sellogTabType === item.value ? "selected" : "normal"
                 }`}
                 onClick={() => openBreachlogTab(item.value)}
               >
@@ -967,25 +1433,30 @@ function Breachlog({ ...props }) {
             ))}
           </div>
           <div>
-            {breachlogState.loading ? (
+            {logstate.loading ? (
               <Loading />
-            ) : breachlogState.error ? (
-              <div>{breachlogState.error}</div>
+            ) : logstate.error ? (
+              <div>{logstate.error}</div>
             ) : (
-              <PaginationData
-                id={"userId"}
-                column={columns}
-                data={paginationdata}
-                showAddPopup={showAddPopup}
-                defaultSorted={defaultSorted}
-                isExportReport={true}
-                exportReportTitle={"Export"}
-                exportFileName={"BreachLogReport"}
-                buttonTitle={"New Breach"}
-                hidesearch={true}
-                exportExcludeFields={exportExcludeFields}
-                exportHtmlFields={exportHtmlFields}
-              />
+              queryparamloaded &&
+              !queryparam.id && (
+                <PaginationData
+                  id={"userId"}
+                  column={columns}
+                  data={paginationdata}
+                  showAddPopup={showAddPopup}
+                  defaultSorted={defaultSorted}
+                  isExportReport={true}
+                  exportReportTitle={"Export"}
+                  exportFileName={"BreachLogReport"}
+                  buttonTitle={"New Breach"}
+                  hidesearch={true}
+                  exportExcludeFields={exportExcludeFields}
+                  exportFieldTitles={exportFieldTitles}
+                  exportHtmlFields={exportHtmlFields}
+                  exportDateFields={exportDateFields}
+                />
+              )
             )}
           </div>
         </>
@@ -1001,6 +1472,7 @@ const mapStateToProp = (state) => {
 const mapActions = {
   getAll: breachlogActions.getAll,
   getAllCount: breachlogActions.getAllCount,
+  getallLogs: breachlogActions.getallLogs,
   getActionResponsible: breachlogActions.getActionResponsible,
   getAllUsers: userActions.getAllUsers,
   getAllCountry: countryActions.getAllCountry,
@@ -1013,6 +1485,7 @@ const mapActions = {
   postItem: breachlogActions.postItem,
   deleteItem: breachlogActions.deleteItem,
   getLookupByType: lookupActions.getLookupByType,
+  sendLogNotification: commonActions.sendLogNotification,
 };
 
 export default connect(mapStateToProp, mapActions)(Breachlog);

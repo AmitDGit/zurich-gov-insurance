@@ -19,7 +19,7 @@ function Login({ ...props }) {
     try {
       let account;
       const currentAccounts = myMsal.getAllAccounts();
-      if (currentAccounts.length != 0) {
+      if (currentAccounts.length !== 0) {
         account = currentAccounts[0];
       } else {
         const response = await myMsal.loginPopup(loginRequest);

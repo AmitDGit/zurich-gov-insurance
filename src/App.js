@@ -17,9 +17,13 @@ import Navbar from "./components/navbar/Navbar";
 import User from "./components/manage/user/User";
 import Lookup from "./components/manage/lookup/Lookup";
 import Lobchapter from "./components/manage/lobchapter/Lobchapter";
-
+import ZNAOrgnization1 from "./components/manage/znaorgnization1/ZNAOrgnization1";
+import ZNAOrgnization2 from "./components/manage/znaorgnization2/ZNAOrgnization2";
+import ZNAOrgnization3 from "./components/manage/znaorgnization3/ZNAOrgnization3";
 import Breachlog from "./components/breachlog/Breachlog";
 import Rfelog from "./components/rfelog/Rfelog";
+import Exemptionlog from "./components/exemptionlog/Exemptionlog";
+import Unauthorized from "./components/unauthorized/Unauthorized";
 import { PrivateRoute } from "./components/privateroute/PrivateRoute";
 import { connect } from "react-redux";
 import { appmenuActions } from "./actions/appmenu.action";
@@ -109,8 +113,18 @@ function App({ state, menuClick }) {
                   menuClick={menuClick}
                 />
                 <PrivateRoute
-                  path="/lookup"
-                  component={Lookup}
+                  path="/znaorganization1"
+                  component={ZNAOrgnization1}
+                  menuClick={menuClick}
+                />
+                <PrivateRoute
+                  path="/znaorganization2"
+                  component={ZNAOrgnization2}
+                  menuClick={menuClick}
+                />
+                <PrivateRoute
+                  path="/znaorganization3"
+                  component={ZNAOrgnization3}
                   menuClick={menuClick}
                 />
                 <PrivateRoute
@@ -118,6 +132,12 @@ function App({ state, menuClick }) {
                   component={User}
                   menuClick={menuClick}
                 />
+                <PrivateRoute
+                  path="/lookup"
+                  component={Lookup}
+                  menuClick={menuClick}
+                />
+
                 <PrivateRoute
                   path="/breachlogs"
                   component={Breachlog}
@@ -130,12 +150,18 @@ function App({ state, menuClick }) {
                 />
                 <PrivateRoute
                   path="/exemptionlogs"
-                  component={Dashboard}
+                  component={Exemptionlog}
                   menuClick={menuClick}
                 />
                 <Route
                   path="/login"
                   component={Loginpage}
+                  state={state}
+                  menuClick={menuClick}
+                />
+                <Route
+                  path="/unauthorized"
+                  component={Unauthorized}
                   state={state}
                   menuClick={menuClick}
                 />

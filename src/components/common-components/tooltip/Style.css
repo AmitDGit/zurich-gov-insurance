@@ -67,7 +67,7 @@
 .Tooltip-Tip.right {
   left: calc(100% + var(--tooltip-margin));
   top: 50%;
-  transform: translateX(0) translateY(-40%);
+  transform: translateX(0) translateY(-35%);
 }
 /* CSS border triangles */
 .Tooltip-Tip.right::before {

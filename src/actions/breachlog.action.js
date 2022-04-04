@@ -102,9 +102,20 @@ const getAllCount = (requestParam) => {
     }
   };
 };
+const getallLogs = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await breachlogService.getallLogsService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const breachlogActions = {
   getAll,
   getAllCount,
+  getallLogs,
   getAllStatus,
   getById,
   checkIsInUse,
@@ -151,9 +162,15 @@ const getAllCountService = async (requestParam) => {
   const response = await Axios.get(`breachlog/getallbreachlogs`, param);
   return response;
 };
+const getallLogsService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`breachlog/getallbreachlogs`, param);
+  return response;
+};
 const breachlogService = {
   getAllService,
   getAllCountService,
+  getallLogsService,
   getAllStatusService,
   getByIdService,
   checkIsInUseService,

@@ -9,6 +9,7 @@ function PaginationData(props) {
   const {
     column,
     data,
+    datatotalcount,
     showAddPopup,
     defaultSorted,
     buttonTitle,
@@ -18,31 +19,32 @@ function PaginationData(props) {
     exportReportTitle,
     exportFileName,
     exportExcludeFields,
+    exportFieldTitles,
     exportHtmlFields,
+    exportDateFields,
   } = props;
-  //console.log(data);
   const { SearchBar, ClearSearchButton } = Search;
+
+  const sizeperpageoptions = [
+    {
+      text: "10",
+      value: 10,
+    },
+    {
+      text: "25",
+      value: 25,
+    },
+    {
+      text: "50",
+      value: 50,
+    },
+  ];
+  const [totalcount, settotalcount] = useState(0);
+  const [totalmsg, settotalmsg] = useState("");
   const pagination = paginationFactory({
     page: 1,
     paginationSize: 1,
-    sizePerPageList: [
-      {
-        text: "5",
-        value: 5,
-      },
-      {
-        text: "10",
-        value: 10,
-      },
-      {
-        text: "25",
-        value: 25,
-      },
-      /* {
-        text: "All",
-        value: data.length,
-      },*/
-    ],
+    sizePerPageList: sizeperpageoptions,
     lastPageText: ">>",
     firstPageText: "<<",
     nextPageText: "Next",
@@ -52,10 +54,26 @@ function PaginationData(props) {
     withFirstAndLast: false,
     alwaysShowAllBtns: true,
     disablePageTitle: true,
-    onPageChange: function(page, sizePerPage) {},
-    onSizePerPageChange: function(page, sizePerPage) {},
+    onPageChange: function(page, sizePerPage) {
+      onpageloadchange(page, sizePerPage);
+    },
+    onSizePerPageChange: function(sizePerPage, page) {
+      onpageloadchange(page, sizePerPage);
+    },
   });
+  useEffect(() => {
+    let totalcount = datatotalcount ? datatotalcount : data.length;
+    settotalcount(totalcount);
+  }, [data]);
+  useEffect(() => {
+    onpageloadchange(1, sizeperpageoptions[0].value);
+  }, [totalcount]);
 
+  const onpageloadchange = (page, sizePerPage) => {
+    let startindex = sizePerPage * (page - 1) + 1;
+    let endindex = sizePerPage * page;
+    settotalmsg(`Showing ${startindex} to ${endindex} of ${totalcount}`);
+  };
   //const pagination = paginationFactory();
   return (
     <div>
@@ -86,7 +104,9 @@ function PaginationData(props) {
                       exportFileName={exportFileName}
                       exportData={data}
                       exportExcludeFields={exportExcludeFields}
+                      exportFieldTitles={exportFieldTitles}
                       exportHtmlFields={exportHtmlFields}
+                      exportDateFields={exportDateFields}
                     />
                   ) : (
                     ""
@@ -104,6 +124,7 @@ function PaginationData(props) {
                 pagination={pagination}
                 {...props.baseProps}
               />
+              <div className="showtotalmsg">{totalmsg}</div>
             </>
           )}
         </ToolkitProvider>
