@@ -20,6 +20,7 @@ function Rfelocallog(props) {
                 <a
                   href="https://zurichinsurance.sharepoint.com/sites/001295/Lists/Malaysia%20Referral%20Log/Default%20View.aspx"
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Malaysia
                 </a>

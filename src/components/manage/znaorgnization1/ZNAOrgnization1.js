@@ -177,7 +177,7 @@ function ZNAOrgnization1({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.znaSegmentName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.znaSegmentName.toLowerCase()) {
       response = await checkNameExist({
         ZNAFieldName: item.znaSegmentName,
         organisationtype: "org1",

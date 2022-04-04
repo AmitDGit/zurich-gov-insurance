@@ -188,7 +188,7 @@ function Region({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeRegionName.toLowerCase() != item.regionName.toLowerCase()) {
+    if (editmodeRegionName.toLowerCase() !== item.regionName.toLowerCase()) {
       response = await checkRegionExist({ RegionName: item.regionName });
     }
     if (!response) {

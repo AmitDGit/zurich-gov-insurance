@@ -210,7 +210,7 @@ function Exemptionlog({ ...props }) {
           isShow &&
           selectedExemptionLog !== "zug" &&
           selfilter.section !== "" &&
-          item.section != selfilter.section
+          item.section !== selfilter.section
         ) {
           isShow = false;
         }

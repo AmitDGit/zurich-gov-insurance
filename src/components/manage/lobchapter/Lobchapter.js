@@ -232,7 +232,7 @@ function Lobchapter({ ...props }) {
     let selectedlobList = response.lobDataList.map((item) => {
       return { label: item.lobName, value: item.lobid };
     });
-    if (selectedlobList.length == frmLobSelectOpts.length - 1) {
+    if (selectedlobList.length === frmLobSelectOpts.length - 1) {
       selectedlobList = [...frmLobSelectOpts];
     }
     setisEditMode(true);
@@ -251,7 +251,7 @@ function Lobchapter({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.lobChapterName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.lobChapterName.toLowerCase()) {
       response = await checkNameExist({
         lobChapterName: item.lobChapterName,
       });

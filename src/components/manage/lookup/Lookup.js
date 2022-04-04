@@ -110,7 +110,7 @@ function Lookup({ ...props }) {
     let item = {};
     let response;
     if (param.lookupID) {
-      item = data.filter((item) => item.lookupID == param.lookupID);
+      item = data.filter((item) => item.lookupID === param.lookupID);
     } else {
       response = await checkNameExist({
         lookUpType: param.lookUpType,

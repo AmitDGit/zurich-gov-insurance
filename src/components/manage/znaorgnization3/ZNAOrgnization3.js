@@ -271,7 +271,6 @@ function ZNAOrgnization3({ ...props }) {
 
   const [frmOrg2SelectOpts, setfrmOrg2SelectOpts] = useState([]);
   useEffect(() => {
-    debugger;
     let tempOpts = [];
     tempOpts = znaorgnization2State.org2Items.map((item) => {
       return {

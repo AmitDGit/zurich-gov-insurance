@@ -6,7 +6,6 @@ function FrmFileUpload(props) {
     name,
     value,
     uploadedfiles,
-    type,
     isReadMode,
     handleFileUpload,
     handleFileDelete,
@@ -27,7 +26,7 @@ function FrmFileUpload(props) {
       tempfiles = [...uploadedfiles];
       tempfiles = tempfiles.map((item) => {
         let filename = "";
-        if (item.filePath.indexOf("\\") != -1) {
+        if (item.filePath.indexOf("\\") !== -1) {
           filename = item.filePath.split("\\")[
             item.filePath.split("\\").length - 1
           ];

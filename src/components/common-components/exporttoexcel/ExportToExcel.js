@@ -24,7 +24,7 @@ function ExportToExcel(props) {
     let dataitem = [];
     for (let key in item) {
       if (!exportExcludeFields.includes(key)) {
-        if (i == 0) {
+        if (i === 0) {
           if (exportFieldTitles && exportFieldTitles[key]) {
             column.push(exportFieldTitles[key]);
           } else {

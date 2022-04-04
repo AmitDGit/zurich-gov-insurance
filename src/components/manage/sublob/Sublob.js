@@ -64,7 +64,7 @@ function Sublob({ ...props }) {
   useEffect(() => {
     if (selfilter.lob !== "") {
       let tempsublobFilterOpts = lobmapping.filter((item) => {
-        if (item.lob == selfilter.lob) {
+        if (item.lob === selfilter.lob) {
           return item;
         }
       });
@@ -269,7 +269,7 @@ function Sublob({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.subLOBName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.subLOBName.toLowerCase()) {
       response = await checkNameExist({
         subLOBName: item.subLOBName,
       });

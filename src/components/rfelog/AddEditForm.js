@@ -45,6 +45,7 @@ function AddEditForm(props) {
     getAlllob,
     uploadFile,
     deleteFile,
+    downloadFile,
     userProfile,
     queryparam,
   } = props;
@@ -74,6 +75,7 @@ function AddEditForm(props) {
     Empowerment_not_granted: RFE_LOG_STATUS.Empowerment_not_granted,
     Withdrawn: RFE_LOG_STATUS.Withdrawn,
   };
+  const FileDownload = require("js-file-download");
   const [userroles, setuserroles] = useState({
     isunderwriter: false,
     isapprover: false,
@@ -504,6 +506,14 @@ function AddEditForm(props) {
   const hidelogPopup = () => {
     setisshowlocallink(false);
   };
+  const downloadfile = async (fileurl) => {
+    const responsedata = await downloadFile({
+      uploadedFile: fileurl,
+    });
+
+    const filename = fileurl.split("/")[fileurl.split("/").length - 1];
+    FileDownload(responsedata, filename);
+  };
   return loading ? (
     <Loading />
   ) : (
@@ -801,6 +811,7 @@ function AddEditForm(props) {
                     issubmitted={issubmitted}
                     isshowloading={fileuploadloader ? fileuploadloader : false}
                     isdisabled={isfrmdisabled}
+                    downloadfile={downloadfile}
                   />
                 </div>
               </div>
@@ -941,6 +952,7 @@ const mapActions = {
   getAllSublob: sublobActions.getAllSublob,
   uploadFile: commonActions.uploadFile,
   deleteFile: commonActions.deleteFile,
+  downloadFile: commonActions.downloadFile,
   getAllUsers: userActions.getAllUsers,
 };
 export default connect(mapStateToProp, mapActions)(AddEditForm);

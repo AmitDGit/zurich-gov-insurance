@@ -294,7 +294,7 @@ function Lob({ ...props }) {
     let selectedCountryList = response.lobCountryList.map((item) => {
       return { label: item.countryName, value: item.countryID };
     });
-    if (selectedCountryList.length == frmCountrySelectOpts.length - 1) {
+    if (selectedCountryList.length === frmCountrySelectOpts.length - 1) {
       selectedCountryList = [
         { label: "All", value: "*" },
         ...selectedCountryList,
@@ -315,7 +315,7 @@ function Lob({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.lobName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.lobName.toLowerCase()) {
       response = await checkNameExist({
         lobName: item.lobName,
       });

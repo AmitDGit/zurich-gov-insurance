@@ -124,7 +124,7 @@ function Rfelog({ ...props }) {
     if (name === "role" && value === "underwriter") {
       setselfilter({
         ...selfilter,
-        ["underwriter"]: "",
+        underwriter: "",
         [name]: value,
       });
     }
@@ -464,6 +464,17 @@ function Rfelog({ ...props }) {
         return { width: "200px" };
       },
     },
+    {
+      dataField: "modifiedDate",
+      text: "Modified Date",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{cell ? formatDate(cell) : ""}</span>;
+      },
+    },
   ];
 
   const defaultSorted = [
@@ -501,9 +512,7 @@ function Rfelog({ ...props }) {
 
       let chunkPercentage = Math.round((logItmes.length / totalLogCount) * 100);
       const progressbar = document.querySelector(".progress-color");
-      const progressbarcontainer = document.querySelector(
-        ".progress-bar-container"
-      );
+
       if (progressbar) {
         progressbar.style.width = chunkPercentage + "%";
       }
@@ -593,13 +602,6 @@ function Rfelog({ ...props }) {
     getAllCountry({ IsLog: true });
     getAlllob({ isActive: true });
   }, []);
-
-  useEffect(() => {
-    let tempdata = [];
-    tempdata = rfelogState.items;
-    //setdata([...tempdata]);
-    // setpaginationdata([...tempdata]);
-  }, [rfelogState.items]);
 
   useEffect(async () => {
     let tempStatus = await getLookupByType({
@@ -797,19 +799,23 @@ function Rfelog({ ...props }) {
         window.location = "/rfelogs";
       } else {
         setselfilter(intialFilterState);
+        let tempostItem = await getallLogs({
+          rfeLogId: item.rfeLogId,
+          isSubmit: item.isSubmit,
+        });
         //if item is submitted and in edit mode
         if (item.isSubmit) {
           let isfound = false;
           for (let i = 0; i < logstate.data.length; i++) {
             let listitem = logstate.data[i];
             if (listitem.rfeLogId === item.rfeLogId) {
-              listitem = { ...listitem, ...item };
+              listitem = { ...listitem, ...tempostItem[0] };
               logstate.data[i] = listitem;
               isfound = true;
             }
           }
           if (!isfound) {
-            logstate.data.unshift(item);
+            logstate.data.unshift(tempostItem[0]);
           }
         } else {
           //if item is saved and in draft mode
@@ -843,19 +849,24 @@ function Rfelog({ ...props }) {
       if (queryparam.id) {
         window.location = "/rfelogs";
       } else {
+        let logid = item.rfeLogId ? item.rfeLogId : response;
+        let tempostItem = await getallLogs({
+          rfeLogId: logid,
+          isSubmit: item.isSubmit,
+        });
         if (item.isSubmit) {
           alert(alertMessage.rfelog.add);
           let isfound = false;
           for (let i = 0; i < logstate.data.length; i++) {
             let listitem = logstate.data[i];
             if (listitem.rfeLogId === item.rfeLogId) {
-              listitem = { ...listitem, ...item };
+              listitem = { ...listitem, ...tempostItem[0] };
               logstate.data[i] = listitem;
               isfound = true;
             }
           }
           if (!isfound) {
-            logstate.data.unshift(item);
+            logstate.data.unshift(tempostItem[0]);
           }
         } else {
           alert(alertMessage.rfelog.draft);

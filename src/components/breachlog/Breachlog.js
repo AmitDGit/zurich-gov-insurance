@@ -689,11 +689,22 @@ function Breachlog({ ...props }) {
         return <span>{cell ? formatDate(cell) : ""}</span>;
       },
     },
+    {
+      dataField: "modifiedDate",
+      text: "Modified Date",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{cell ? formatDate(cell) : ""}</span>;
+      },
+    },
   ];
 
   const defaultSorted = [
     {
-      dataField: "createdDate",
+      dataField: "modifiedDate",
       order: "desc",
     },
   ];
@@ -1117,20 +1128,32 @@ function Breachlog({ ...props }) {
     );
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
-
-    let response = await postItem({
+    let response;
+    response = await postItem({
       ...item,
       createdByID: userProfile.userId,
+      modifiedByID: userProfile.userId,
     });
+    /*if (item.breachLogID) {
+      response = await postItem({
+        ...item,
+        modifiedByID: userProfile.userId,
+      });
+    } else {
+      response = await postItem({
+        ...item,
+        createdByID: userProfile.userId,
+      });
+    }*/
 
     if (response) {
       if (queryparam.id) {
         window.location = "/breachlogs";
       } else {
-        let breachid = item.breachLogID ? item.breachLogID : response;
+        let logid = item.breachLogID ? item.breachLogID : response;
         setselfilter(intialFilterState);
         let tempostItem = await getallLogs({
-          breachLogID: breachid,
+          breachLogID: logid,
           isSubmit: item.isSubmit,
         });
         if (item.isSubmit) {
@@ -1386,7 +1409,7 @@ function Breachlog({ ...props }) {
             style={{ width: "300px" }}
             onClick={() => sendLogNotification()}
           >
-            Trigger Breachlog Email - for testing
+            Trigger Breachlog Email
           </div>
           {!alllogsloaded && (
             <div className="progress-bar-container">

@@ -241,7 +241,7 @@ function ZNAOrgnization2({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.sbuName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.sbuName.toLowerCase()) {
       response = await checkNameExist({
         ZNAFieldName: item.sbuName,
         organisationtype: "org2",

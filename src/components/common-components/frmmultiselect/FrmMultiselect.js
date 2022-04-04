@@ -21,7 +21,7 @@ function FrmMultiselect(props) {
     let tempSelectedList = [...selectedList];
     if (
       selectedItem.value === "*" ||
-      selectedList.length == selectopts.length - 1
+      selectedList.length === selectopts.length - 1
     ) {
       tempSelectedList = [...selectopts];
     }
