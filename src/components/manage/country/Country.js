@@ -68,7 +68,7 @@ function Country({ ...props }) {
   useEffect(() => {
     if (selfilter.region !== "") {
       let tempFilterOpts = countrymapping.filter((item) => {
-        if (item.region == selfilter.region) {
+        if (item.region === selfilter.region) {
           return item;
         }
       });
@@ -123,7 +123,7 @@ function Country({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },
@@ -266,7 +266,7 @@ function Country({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.countryName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.countryName.toLowerCase()) {
       response = await checkNameExist({
         countryName: item.countryName,
       });

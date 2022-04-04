@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
+import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import FrmInput from "../common-components/frminput/FrmInput";
 import FrmDatePicker from "../common-components/frmdatepicker/FrmDatePicker";
@@ -24,7 +25,7 @@ import FrmRadio from "../common-components/frmradio/FrmRadio";
 import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTextEditor";
 import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import PeoplePickerPopup from "./PeoplePickerPopup";
-
+import Rfelocallog from "./Rfelocallog";
 function AddEditForm(props) {
   const { lobState, userState, countryState } = props.state;
   const {
@@ -44,7 +45,9 @@ function AddEditForm(props) {
     getAlllob,
     uploadFile,
     deleteFile,
+    downloadFile,
     userProfile,
+    queryparam,
   } = props;
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
@@ -72,6 +75,7 @@ function AddEditForm(props) {
     Empowerment_not_granted: RFE_LOG_STATUS.Empowerment_not_granted,
     Withdrawn: RFE_LOG_STATUS.Withdrawn,
   };
+  const FileDownload = require("js-file-download");
   const [userroles, setuserroles] = useState({
     isunderwriter: false,
     isapprover: false,
@@ -265,14 +269,14 @@ function AddEditForm(props) {
       value === organizationalAlignmentCountry
     ) {
       setisfrmdisabled(true);
-      setisshowlocallink(true);
+      showlogPopup();
       alert(alertMessage.rfelog.orgalignmetmsg);
     } else if (
       name === "organizationalAlignment" &&
       value !== organizationalAlignmentCountry
     ) {
       setisfrmdisabled(false);
-      setisshowlocallink(false);
+      hidelogPopup();
     }
     setformfield({ ...formfield, [name]: value });
   };
@@ -340,6 +344,7 @@ function AddEditForm(props) {
           tempattachementfiles.push({
             filePath: item,
             logAttachmentId: "",
+            isNew: true,
           });
         }
       });
@@ -488,7 +493,27 @@ function AddEditForm(props) {
     // }
     // hideAddPopup();
   };
+  const hidePopup = () => {
+    if (queryparam.id) {
+      window.location = "/rfelogs";
+    } else {
+      hideAddPopup();
+    }
+  };
+  const showlogPopup = () => {
+    setisshowlocallink(true);
+  };
+  const hidelogPopup = () => {
+    setisshowlocallink(false);
+  };
+  const downloadfile = async (fileurl) => {
+    const responsedata = await downloadFile({
+      uploadedFile: fileurl,
+    });
 
+    const filename = fileurl.split("/")[fileurl.split("/").length - 1];
+    FileDownload(responsedata, filename);
+  };
   return loading ? (
     <Loading />
   ) : (
@@ -505,10 +530,7 @@ function AddEditForm(props) {
               Edit
             </div>
           )}
-          <div
-            className="addedit-close btn-blue"
-            onClick={() => hideAddPopup()}
-          >
+          <div className="addedit-close btn-blue" onClick={() => hidePopup()}>
             Back
           </div>
         </div>
@@ -546,21 +568,16 @@ function AddEditForm(props) {
                     tooltipmsg={tooltip["Classification"]}
                     issubmitted={issubmitted}
                     selectopts={frmorgnizationalalignment}
-                    isdisabled={isfrmdisabled && !isshowlocallink}
+                    isdisabled={isfrmdisabled && isshowlocallink}
                   />
                 </div>
-                <div className="col-md-3">
-                  {isshowlocallink ? (
-                    <>
-                      <a
-                        href="https://zurichinsurance.sharepoint.com/sites/grfel/SitePages/Home.aspx"
-                        className="underline"
-                        target="_blank"
-                      >
-                        Link for local log
-                      </a>
-                    </>
-                  ) : (
+                {formfield.organizationalAlignment ===
+                organizationalAlignmentCountry ? (
+                  <div className="col-md-3 link" onClick={showlogPopup}>
+                    <ul> Local country log</ul>
+                  </div>
+                ) : (
+                  <div className="col-md-3">
                     <FrmSelect
                       title={"Country"}
                       name={"countryId"}
@@ -573,8 +590,8 @@ function AddEditForm(props) {
                       selectopts={countryopts}
                       isdisabled={isfrmdisabled}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="col-md-3">
                   <FrmInput
@@ -789,10 +806,12 @@ function AddEditForm(props) {
                     handleFileDelete={handleFileDelete}
                     isRequired={false}
                     isReadMode={isReadMode}
+                    isShowDelete={!isReadMode && !formfield.isSubmit}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isshowloading={fileuploadloader ? fileuploadloader : false}
                     isdisabled={isfrmdisabled}
+                    downloadfile={downloadfile}
                   />
                 </div>
               </div>
@@ -852,7 +871,7 @@ function AddEditForm(props) {
             >
               Submit
             </button>
-            <div className={`btn-blue`} onClick={() => hideAddPopup()}>
+            <div className={`btn-blue`} onClick={() => hidePopup()}>
               Cancel
             </div>
           </div>
@@ -860,7 +879,14 @@ function AddEditForm(props) {
       ) : (
         ""
       )}
-
+      {isshowlocallink ? (
+        <Rfelocallog
+          title={"My Country Quick Links"}
+          hidePopup={hidelogPopup}
+        />
+      ) : (
+        ""
+      )}
       {showApprover ? (
         <PeoplePickerPopup
           title={"Underwriter Granting Empowerment"}
@@ -926,6 +952,7 @@ const mapActions = {
   getAllSublob: sublobActions.getAllSublob,
   uploadFile: commonActions.uploadFile,
   deleteFile: commonActions.deleteFile,
+  downloadFile: commonActions.downloadFile,
   getAllUsers: userActions.getAllUsers,
 };
 export default connect(mapStateToProp, mapActions)(AddEditForm);

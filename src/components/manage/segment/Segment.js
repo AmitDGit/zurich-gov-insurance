@@ -105,7 +105,7 @@ function Segment({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return {
-          width: "50px",
+          width: "70px",
           textAlign: "center",
         };
       },
@@ -239,7 +239,7 @@ function Segment({ ...props }) {
     }
     if (
       selectedCountryList.length &&
-      selectedCountryList.length == frmCountrySelectOpts.length - 1
+      selectedCountryList.length === frmCountrySelectOpts.length - 1
     ) {
       selectedCountryList = [
         { label: "All", value: "*" },
@@ -262,7 +262,7 @@ function Segment({ ...props }) {
   };
   const putItemHandler = async (item) => {
     let response = false;
-    if (editmodeName.toLowerCase() != item.segmentName.toLowerCase()) {
+    if (editmodeName.toLowerCase() !== item.segmentName.toLowerCase()) {
       response = await checkNameExist({
         segmentName: item.segmentName,
       });

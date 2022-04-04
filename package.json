@@ -15,6 +15,7 @@
     "formic": "^0.0.10",
     "history": "^5.2.0",
     "html-react-parser": "^1.4.8",
+    "js-file-download": "^0.4.12",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "multiselect-react-dropdown": "^2.0.17",

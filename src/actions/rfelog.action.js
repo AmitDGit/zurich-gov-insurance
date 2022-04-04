@@ -57,6 +57,17 @@ const getallCount = (requestParam) => {
   return async (dispatch) => {
     try {
       const response = await rfelogService.getallCountService(requestParam);
+
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
+const getallLogs = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await rfelogService.getallLogsService(requestParam);
       return response.data;
     } catch (err) {
       return false;
@@ -78,6 +89,7 @@ const getallunderwriter = (requestParam) => {
 export const rfelogActions = {
   getAll,
   getallCount,
+  getallLogs,
   getallunderwriter,
   getById,
   postItem,
@@ -114,9 +126,15 @@ const getallCountService = async (requestParam) => {
   const response = await Axios.get(`rfelog/getallrfelogs`, param);
   return response;
 };
+const getallLogsService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`rfelog/getallrfelogs`, param);
+  return response;
+};
 const rfelogService = {
   getAllService,
   getallCountService,
+  getallLogsService,
   getByIdService,
   postItemService,
   deleteItemService,

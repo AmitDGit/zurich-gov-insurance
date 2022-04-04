@@ -6,7 +6,6 @@ function FrmFileUpload(props) {
     name,
     value,
     uploadedfiles,
-    type,
     isReadMode,
     handleFileUpload,
     handleFileDelete,
@@ -15,23 +14,33 @@ function FrmFileUpload(props) {
     issubmitted,
     isshowloading,
     isdisabled,
+    isShowDelete,
+    downloadfile,
   } = props;
   const [selectedfile, setselectedfile] = useState();
   const [filename, setfilename] = useState("");
   const [files, setfiles] = useState([]);
   useEffect(() => {
     let tempfiles = [];
-    if (uploadedfiles.length) {
+    if (uploadedfiles && uploadedfiles.length) {
       tempfiles = [...uploadedfiles];
       tempfiles = tempfiles.map((item) => {
-        let filename = item.filePath.split("\\")[
-          item.filePath.split("\\").length - 1
-        ];
+        let filename = "";
+        if (item.filePath.indexOf("\\") !== -1) {
+          filename = item.filePath.split("\\")[
+            item.filePath.split("\\").length - 1
+          ];
+        } else {
+          filename = item.filePath.split("/")[
+            item.filePath.split("/").length - 1
+          ];
+        }
         let fileurl = item.filePath;
         return {
           id: item.logAttachmentId,
           filename: filename,
           fileurl: fileurl,
+          isNew: item.isNew,
         };
       });
     }
@@ -120,23 +129,30 @@ function FrmFileUpload(props) {
 
       {files.length ? (
         <div className="attached-files-container">
-          {files.map((item) => (
-            <div key={item.filename} className="file-name-container">
-              <div className="file-name">
-                <a href={item.fileurl} target="_blank">
-                  {item.filename}
-                </a>
-              </div>
-              {!isReadMode && !isdisabled ? (
+          {files
+            .slice(0)
+            .reverse()
+            .map((item) => (
+              <div key={item.filename} className="file-name-container">
                 <div
-                  className="delete-icon"
-                  onClick={() => deleteAttachment(item.id, item.fileurl)}
-                ></div>
-              ) : (
-                ""
-              )}
-            </div>
-          ))}
+                  className="file-name link"
+                  onClick={() => downloadfile(item.fileurl)}
+                >
+                  {item.filename}
+                  {/*<a href={item.fileurl} target="_blank">
+                    {item.filename}
+            </a>*/}
+                </div>
+                {isShowDelete || item.isNew ? (
+                  <div
+                    className="delete-icon"
+                    onClick={() => deleteAttachment(item.id, item.fileurl)}
+                  ></div>
+                ) : (
+                  ""
+                )}
+              </div>
+            ))}
         </div>
       ) : (
         ""

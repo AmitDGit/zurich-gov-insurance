@@ -47,7 +47,7 @@ const getAlllob = () => {
   };
   const requestParams = {
     PageIndex: 1,
-    PageSize: 50,
+    PageSize: 500,
   };
 
   return async (dispatch) => {
