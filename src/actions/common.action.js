@@ -74,6 +74,7 @@ const downloadFileService = async (requestParam) => {
 const deleteFileService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.delete(`common/deletefile`, param);
+  console.log(response);
   return response;
 };
 const getToolTipService = async (requestParam) => {

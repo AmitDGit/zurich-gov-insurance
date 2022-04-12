@@ -951,6 +951,7 @@ function Exemptionlog({ ...props }) {
   const [isReadMode, setisReadMode] = useState(false);
   const formInitialValueZUG = {
     countryID: "",
+    countryList: [],
     typeOfExemption: "",
     typeOfBusiness: "",
     individualGrantedEmpowerment: "",
@@ -986,6 +987,7 @@ function Exemptionlog({ ...props }) {
   };
   const formInitialValueURPM = {
     countryID: "",
+    countryList: [],
     typeOfExemption: "",
     typeOfBusiness: "",
     individualGrantedEmpowerment: "",

@@ -70,6 +70,7 @@ function Breachlog({ ...props }) {
     loading: true,
     error: "",
     data: [],
+    loadedAll: false,
   });
   const [logsDraftData, setlogsDraftData] = useState([]);
   //initialize filter/search functionality
@@ -730,11 +731,7 @@ function Breachlog({ ...props }) {
     if (isLoadingStarted) {
       //setdata(logItmes);
       setpaginationdata(logItmes);
-      setlogstate({
-        ...logstate,
-        loading: false,
-        data: [...logItmes],
-      });
+
       console.log("logs loaded -" + logItmes);
       let chunkPercentage = Math.round((logItmes.length / totalLogCount) * 100);
       const progressbar = document.querySelector(".progress-color");
@@ -746,11 +743,22 @@ function Breachlog({ ...props }) {
       }
 
       if (totalLogCount > logItmes.length) {
+        setlogstate({
+          ...logstate,
+          loading: false,
+          data: [...logItmes],
+        });
         pageIndex++;
         getAllLogsInRecurssion();
       } else {
         pageIndex = 1;
         totalLogCount = 0;
+        setlogstate({
+          ...logstate,
+          loading: false,
+          data: [...logItmes],
+          loadedAll: true,
+        });
         setalllogsloaded(true);
       }
     }
@@ -1073,6 +1081,7 @@ function Breachlog({ ...props }) {
     if (queryparam.status) {
       response.breachStatus = queryparam.status;
     }
+    debugger;
     setformIntialState({
       ...response,
     });
@@ -1091,7 +1100,7 @@ function Breachlog({ ...props }) {
     });
     if (response) {
       alert(alertMessage.breachlog.update);
-      if (queryparam.id) {
+      if (queryparam.id || !logstate.loadedAll) {
         window.location = "/breachlogs";
       } else {
         setselfilter(intialFilterState);
@@ -1147,7 +1156,7 @@ function Breachlog({ ...props }) {
     }*/
 
     if (response) {
-      if (queryparam.id) {
+      if (queryparam.id || !logstate.loadedAll) {
         window.location = "/breachlogs";
       } else {
         let logid = item.breachLogID ? item.breachLogID : response;
@@ -1444,6 +1453,7 @@ function Breachlog({ ...props }) {
                   id={"userId"}
                   column={columns}
                   data={paginationdata}
+                  pageno={""}
                   showAddPopup={showAddPopup}
                   defaultSorted={defaultSorted}
                   isExportReport={true}
