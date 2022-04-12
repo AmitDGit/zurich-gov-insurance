@@ -47,8 +47,9 @@ Axios.interceptors.response.use(
       debugger;
 
       if (
-        err.response.data.value &&
-        err.response.data.value.msg === "UnauthorizedAccess"
+        (err.response.data && err.response.data.msg === "UnauthorizedAccess") ||
+        (err.response.data.value &&
+          err.response.data.value.msg === "UnauthorizedAccess")
       ) {
         window.location = "/unauthorized";
       } else {

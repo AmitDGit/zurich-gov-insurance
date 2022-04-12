@@ -22,6 +22,7 @@ function PaginationData(props) {
     exportFieldTitles,
     exportHtmlFields,
     exportDateFields,
+    pageno,
   } = props;
   const { SearchBar, ClearSearchButton } = Search;
 
@@ -42,7 +43,7 @@ function PaginationData(props) {
   const [totalcount, settotalcount] = useState(0);
   const [totalmsg, settotalmsg] = useState("");
   const pagination = paginationFactory({
-    page: 1,
+    page: pageno ? pageno : 1,
     paginationSize: 1,
     sizePerPageList: sizeperpageoptions,
     lastPageText: ">>",

@@ -7,6 +7,7 @@ import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
+import UserProfile from "../../common-components/UserProfile";
 function Lobchapter({ ...props }) {
   const { lobchapterState, lobState } = props.state;
   const {
@@ -23,7 +24,6 @@ function Lobchapter({ ...props }) {
     { currentMenu: "Lobchapter", isSubmenu: true },
     props.menuClick
   );
-  //console.log(lobchapterState);
   //initialize filter/search functionality
   const [lobFilterOpts, setlobFilterOpts] = useState([]);
   const [lobchapterFilterOpts, setlobchapterFilterOpts] = useState([]);
@@ -120,7 +120,30 @@ function Lobchapter({ ...props }) {
       text: "LoB Chapter",
       sort: true,
       headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "lobList",
+      text: "LoB",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "lobChapterApproverList",
+      text: "Approver",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
         return { width: "250px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div className="approver-container">
+            {getApproverBlock(cell, row)}
+          </div>
+        );
       },
     },
     {
@@ -128,15 +151,50 @@ function Lobchapter({ ...props }) {
       text: "Description",
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "350px" };
+        return { width: "250px" };
       },
     },
-    {
-      dataField: "lobList",
-      text: "LoB",
-      sort: false,
-    },
   ];
+  const getApproverBlock = (cell, row) => {
+    const approverList = row.lobChapterApproverList
+      ? row.lobChapterApproverList
+      : [];
+    if (approverList.length) {
+      const approverUser = approverList[0];
+      const username = approverUser.firstName + " " + approverUser.lastName;
+      const userEmail = approverUser.emailAddress;
+      const imagePath = approverUser.profileImagePath;
+      let otherapprovers = [];
+      if (approverList.length > 1) {
+        for (let i = 1; i < approverList.length; i++) {
+          let item = approverList[i];
+          otherapprovers.push(item.emailAddress);
+        }
+      }
+      return (
+        <>
+          <UserProfile
+            username={username}
+            userEmail={userEmail}
+            imagePath={imagePath}
+          ></UserProfile>
+          {approverList.length > 1 ? (
+            <div
+              className="approver-count"
+              alt={otherapprovers.join("\n")}
+              title={otherapprovers.join("\n")}
+            >
+              +{approverList.length - 1}
+            </div>
+          ) : (
+            ""
+          )}
+        </>
+      );
+    } else {
+      return "";
+    }
+  };
   const defaultSorted = [
     {
       dataField: "lobChapterName",
@@ -245,6 +303,7 @@ function Lobchapter({ ...props }) {
         : "",
       requesterUserId: response.requesterUserId ? response.requesterUserId : "",
       isActive: response.isActive,
+      lobChapterApproverList: response.lobChapterApproverList,
     });
     seteditmodeName(response.lobChapterName);
     showAddPopup();
@@ -259,6 +318,12 @@ function Lobchapter({ ...props }) {
     let templobList = item.lobList.map((item) => item.value);
     templobList = templobList.filter((value) => value !== "*");
     templobList = templobList.join(",");
+    let templobChapterApproverList = item.lobChapterApproverList.map(
+      (item) => item.emailAddress
+    );
+    templobChapterApproverList = templobChapterApproverList.length
+      ? templobChapterApproverList.join(",")
+      : "";
     if (!response) {
       response = await postItem({
         ...item,
@@ -266,6 +331,7 @@ function Lobchapter({ ...props }) {
         requesterUserId: item.requesterUserId
           ? item.requesterUserId
           : userProfile.userId,
+        approverList: templobChapterApproverList,
       });
       if (response) {
         setselfilter(intialfilterval);
@@ -285,11 +351,18 @@ function Lobchapter({ ...props }) {
     let templobList = item.lobList.map((item) => item.value);
     templobList = templobList.filter((value) => value !== "*");
     templobList = templobList.join(",");
+    let templobChapterApproverList = item.lobChapterApproverList.map(
+      (item) => item.emailAddress
+    );
+    templobChapterApproverList = templobChapterApproverList.length
+      ? templobChapterApproverList.join(",")
+      : "";
     if (!response) {
       response = await postItem({
         ...item,
         lobList: templobList,
         requesterUserId: userProfile.userId,
+        approverList: templobChapterApproverList,
         isActive: true,
       });
 

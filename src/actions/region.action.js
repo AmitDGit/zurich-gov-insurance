@@ -47,6 +47,16 @@ const getAllRegions = (requestParam) => {
     }
   };
 };
+const getUserRegions = (requestParams) => {
+  return async (dispatch) => {
+    try {
+      const response = await regionService.getAllRegionsService(requestParams);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 const getById = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -103,6 +113,7 @@ const deleteItem = (requestParam) => {
 export const regionActions = {
   getAll,
   getAllRegions,
+  getUserRegions,
   getById,
   postItem,
   deleteItem,

@@ -16,6 +16,7 @@ import {
 import {
   userActions,
   lookupActions,
+  rfelogActions,
   lobActions,
   sublobActions,
   commonActions,
@@ -40,6 +41,7 @@ function AddEditForm(props) {
     frmCountrySelectOpts,
     getAllUsers,
     getAllCountry,
+    getallLocalLinks,
     getLookupByType,
     getToolTip,
     getAlllob,
@@ -245,6 +247,18 @@ function AddEditForm(props) {
       // setisfrmdisabled(true);
     }
   }, [userroles, isEditMode]);
+  const [locallinks, setlocallinks] = useState([]);
+  useEffect(async () => {
+    let templinks = [];
+    templinks = await getallLocalLinks({});
+    if (templinks.length) {
+      templinks = templinks.map((item) => ({
+        country: item.country,
+        link: item.links,
+      }));
+      setlocallinks(templinks);
+    }
+  }, []);
 
   useEffect(() => {
     getAlllob({ isActive: true });
@@ -882,6 +896,7 @@ function AddEditForm(props) {
       {isshowlocallink ? (
         <Rfelocallog
           title={"My Country Quick Links"}
+          locallinks={locallinks}
           hidePopup={hidelogPopup}
         />
       ) : (
@@ -946,6 +961,7 @@ const mapStateToProp = (state) => {
 const mapActions = {
   getAllUsers: userActions.getAllUsers,
   getLookupByType: lookupActions.getLookupByType,
+  getallLocalLinks: rfelogActions.getallLocalLinks,
   getToolTip: commonActions.getToolTip,
   getAlllob: lobActions.getAlllob,
   getAllCountry: countryActions.getAllCountry,

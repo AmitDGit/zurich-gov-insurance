@@ -4,7 +4,9 @@ import {
   Switch,
   Route,
   Redirect,
+  useHistory,
 } from "react-router-dom";
+
 import Dashboard from "./components/dashboard/Dashboard";
 import Header from "./components/header/Header";
 import Login from "./components/login/Login";
@@ -29,11 +31,23 @@ import { connect } from "react-redux";
 import { appmenuActions } from "./actions/appmenu.action";
 import TokenService from "./services/Tokenservice";
 import Loginpage from "./components/loginpage/Loginpage";
+import { oktaAuthConfig, oktaSignInConfig } from "./oktaauth/Config";
+
 function ScrollToTop() {
   window.scrollTo(0, 0);
   return null;
 }
 function App({ state, menuClick }) {
+  //added below code for okta
+  /*const oktaAuth = new OktaAuth(oktaAuthConfig);
+  const history = useHistory();
+  const customAuthHandler = () => {
+    history.push("/login");
+  };
+  const restoreOriginalUri = async (_oktaAuth, originalUri) => {
+    history.replace(toRelativeUrl(originalUri, window.location.origin));
+  };*/
+
   let userProfile;
   if (window.location.pathname === "/login") {
     //TokenService.removeUser();

@@ -120,14 +120,6 @@ function Lob({ ...props }) {
       },
     },
     {
-      dataField: "lobDescription",
-      text: "Description",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "350px" };
-      },
-    },
-    {
       dataField: "countryList",
       text: "Country",
       sort: false,
@@ -151,6 +143,14 @@ function Lob({ ...props }) {
             {getApproverBlock(cell, row)}
           </div>
         );
+      },
+    },
+    {
+      dataField: "lobDescription",
+      text: "Description",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "350px" };
       },
     },
   ];

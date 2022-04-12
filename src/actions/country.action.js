@@ -46,6 +46,16 @@ const getAllCountry = (requestParam) => {
     }
   };
 };
+const getUserCountry = (requestParams) => {
+  return async (dispatch) => {
+    try {
+      const response = await countryService.getAllCountryService(requestParams);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 const getById = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -97,6 +107,7 @@ const deleteItem = (requestParam) => {
 export const countryActions = {
   getAll,
   getAllCountry,
+  getUserCountry,
   getById,
   checkNameExist,
   checkIsInUse,

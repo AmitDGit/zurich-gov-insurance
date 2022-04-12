@@ -14,8 +14,7 @@ function Navbar({ ...props }) {
     let roleadmin = false;
     if (
       loggeduserrole === USER_ROLE.globalAdmin ||
-      loggeduserrole === USER_ROLE.regionAdmin ||
-      loggeduserrole === USER_ROLE.countryAdmin
+      loggeduserrole === USER_ROLE.regionAdmin
     ) {
       roleadmin = true;
     }
@@ -39,11 +38,11 @@ function Navbar({ ...props }) {
                 <div className="menu-item">Manage</div>
               </Link>
             )}
-            {/*loggeduserrole !== superadminrole && roleadmin && (
+            {loggeduserrole !== superadminrole && roleadmin && (
               <Link to="/user">
                 <div className="menu-item">Manage</div>
               </Link>
-            )*/}
+            )}
             {appmenu.isSubmenu ? (
               <div className="submenu-container">
                 {loggeduserrole === superadminrole && (
@@ -122,7 +121,7 @@ function Navbar({ ...props }) {
                     </Link>
                   </>
                 )}
-                {loggeduserrole === superadminrole && (
+                {(loggeduserrole === superadminrole || roleadmin) && (
                   <Link to="/user">
                     <div
                       className={`menu-item ${location.pathname === "/user" &&

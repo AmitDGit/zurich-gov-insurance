@@ -86,11 +86,24 @@ const getallunderwriter = (requestParam) => {
     }
   };
 };
+const getallLocalLinks = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await rfelogService.getallLocalLinksService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const rfelogActions = {
   getAll,
   getallCount,
   getallLogs,
   getallunderwriter,
+  getallLocalLinks,
   getById,
   postItem,
   deleteItem,
@@ -131,6 +144,11 @@ const getallLogsService = async (requestParam) => {
   const response = await Axios.get(`rfelog/getallrfelogs`, param);
   return response;
 };
+const getallLocalLinksService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`rfelog/getalllocallinks`, param);
+  return response;
+};
 const rfelogService = {
   getAllService,
   getallCountService,
@@ -139,4 +157,5 @@ const rfelogService = {
   postItemService,
   deleteItemService,
   getallunderwriterService,
+  getallLocalLinksService,
 };
