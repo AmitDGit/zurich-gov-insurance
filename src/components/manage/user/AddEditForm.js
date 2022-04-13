@@ -9,6 +9,7 @@ import FrmInputSearch from "../../common-components/frmpeoplepicker/FrmInputSear
 import { userActions } from "../../../actions";
 import FrmRadio from "../../common-components/frmradio/FrmRadio";
 import FrmCheckbox from "../../common-components/frmcheckbox/FrmCheckbox";
+
 function AddEditForm(props) {
   const {
     title,
@@ -25,11 +26,13 @@ function AddEditForm(props) {
     countryAllOpts,
     userState,
     getAllUsers,
+    userroles,
   } = props;
 
+  const [countryopts, setcountryopts] = useState(frmCountrySelectOpts);
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
-  const [countryopts, setcountryopts] = useState(frmCountrySelectOpts);
+
   const [isdisabled, setisdisabled] = useState(false);
   const [accessBreachLogOpts, setaccessBreachLogOpts] = useState([
     {
@@ -68,6 +71,7 @@ function AddEditForm(props) {
       setisdisabled(false);
     }
   }, [formfield.isSuperAdmin]);
+
   useEffect(() => {
     const selectedrole = frmuserType.filter(
       (item) => item.value === formfield.userType
@@ -111,8 +115,8 @@ function AddEditForm(props) {
       }
       return isexist;
     });
-    setformfield({ ...formfield, countryList: [...selExistsCountry] });
     setcountryopts([...countryopts]);
+    setformfield({ ...formfield, countryList: [...selExistsCountry] });
   };
   const handleApproverChange = (name, value) => {
     setformfield({ ...formfield, [name]: value });
@@ -176,16 +180,19 @@ function AddEditForm(props) {
                 searchItems={userState.userItems ? userState.userItems : []}
               />
               <div className="frm-checkbox-container">
-                <FrmCheckbox
-                  title={"Super Admin"}
-                  name={"isSuperAdmin"}
-                  value={formfield.isSuperAdmin}
-                  handleChange={handleChange}
-                  isRequired={false}
-                  validationmsg={"Mandatory field"}
-                  issubmitted={issubmitted}
-                  selectopts={accessBreachLogOpts}
-                />
+                {userroles.issuperadmin && (
+                  <FrmCheckbox
+                    title={"Super Admin"}
+                    name={"isSuperAdmin"}
+                    value={formfield.isSuperAdmin}
+                    handleChange={handleChange}
+                    isRequired={false}
+                    validationmsg={"Mandatory field"}
+                    issubmitted={issubmitted}
+                    selectopts={accessBreachLogOpts}
+                  />
+                )}
+
                 <FrmCheckbox
                   title={"Can Access Breach Log"}
                   name={"isAccessBreachLog"}
@@ -207,7 +214,9 @@ function AddEditForm(props) {
                 validationmsg={"Mandatory field"}
                 issubmitted={issubmitted}
                 selectopts={frmuserType}
-                isdisabled={isdisabled}
+                isdisabled={
+                  isdisabled || (isEditMode && userroles.isregionadmin)
+                }
               />
               {frmuserTypeObj[formfield.userType] === "Region" ||
               frmuserTypeObj[formfield.userType] === "Country" ? (

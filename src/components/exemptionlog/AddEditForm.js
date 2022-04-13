@@ -5,6 +5,7 @@ import FrmDatePicker from "../common-components/frmdatepicker/FrmDatePicker";
 import FrmSelect from "../common-components/frmselect/FrmSelect";
 import FrmToggleSwitch from "../common-components/frmtoggelswitch/FrmToggleSwitch";
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
+import FrmMultiselectOptsShow from "../common-components/frmmultiselectoptsshow/FrmMultiselectOptsShow";
 import Loading from "../common-components/Loading";
 import moment from "moment";
 import "./Style.css";
@@ -644,11 +645,11 @@ function AddEditForm(props) {
             <div className="frm-field-bggray">
               <div className="row">
                 <div className="col-md-3">
-                  <FrmSelect
+                  <FrmMultiselectOptsShow
                     title={"Country"}
-                    name={"countryID"}
-                    value={formfield.countryID}
-                    handleChange={handleSelectChange}
+                    name={"countryList"}
+                    value={formfield.countryList}
+                    handleChange={handleMultiSelectChange}
                     isRequired={true}
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}

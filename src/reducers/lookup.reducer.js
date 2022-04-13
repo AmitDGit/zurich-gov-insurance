@@ -2,9 +2,7 @@ import { lookupConstants } from "../constants";
 const initialState = {
   loading: false,
   logtyps: [],
-  breachlogitems: [],
-  rfelogitems: [],
-  exemptionlogitems: [],
+  lookupitems: [],
   error: "",
 };
 export const lookupReducer = (state = initialState, action) => {
@@ -28,45 +26,26 @@ export const lookupReducer = (state = initialState, action) => {
         logtyps: [],
         error: action.payload,
       };
-    case lookupConstants.GETBREACHLOGTYPE_SUCCESS:
+    case lookupConstants.GETLOOKUPITEMS_REQUEST:
+      return {
+        ...state,
+        loading: true,
+        lookupitems: [],
+      };
+    case lookupConstants.GETLOOKUPITEMS_SUCCESS:
       return {
         ...state,
         loading: false,
-        breachlogitems: action.payload,
+        lookupitems: action.payload,
       };
-    case lookupConstants.GETBREACHLOGTYPE_FAILURE:
+    case lookupConstants.GETLOOKUPITEMS_FAILURE:
       return {
         ...state,
-        breachlogitems: [],
-        loading: false,
-        error: action.payload,
-      };
-    case lookupConstants.GETRFELOGTYPE_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        rfelogitems: action.payload,
-      };
-    case lookupConstants.GETRFELOGTYPE_FAILURE:
-      return {
-        ...state,
-        rfelogitems: [],
+        lookupitems: [],
         loading: false,
         error: action.payload,
       };
-    case lookupConstants.GETEXEMPTIONLOGTYPE_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        exemptionlogitems: action.payload,
-      };
-    case lookupConstants.GETEXEMPTIONLOGTYPE_FAILURE:
-      return {
-        ...state,
-        exemptionlogitems: [],
-        loading: false,
-        error: action.payload,
-      };
+
     default:
       return state;
   }

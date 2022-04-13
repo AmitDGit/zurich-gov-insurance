@@ -4,7 +4,9 @@ import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import FrmMultiselect from "../../common-components/frmmultiselect/FrmMultiselect";
 import Popup from "../../common-components/Popup";
-
+import { connect } from "react-redux";
+import FrmInputSearch from "../../common-components/frmpeoplepicker/FrmInputSearch";
+import { userActions } from "../../../actions";
 function AddEditForm(props) {
   const {
     title,
@@ -14,16 +16,21 @@ function AddEditForm(props) {
     isEditMode,
     formIntialState,
     frmLobSelectOpts,
+    userState,
+    getAllUsers,
   } = props;
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
-
+  const [selectedTab, setselectedTab] = useState("tab1");
   const handleChange = (e) => {
     const { name, value } = e.target;
     setformfield({ ...formfield, [name]: value });
   };
   const handleMultiSelectChange = (name, value) => {
     //const tempval = value.map((item) => item.value);
+    setformfield({ ...formfield, [name]: value });
+  };
+  const handleApproverChange = (name, value) => {
     setformfield({ ...formfield, [name]: value });
   };
   const handleSubmit = (e) => {
@@ -37,6 +44,10 @@ function AddEditForm(props) {
       }
     }
   };
+  const handleInputSearchChange = (e) => {
+    const searchval = e.target.value ? e.target.value : "#$%";
+    getAllUsers({ UserName: searchval });
+  };
   return (
     <Popup {...props}>
       <div className="popup-box">
@@ -46,37 +57,72 @@ function AddEditForm(props) {
             X
           </div>
         </div>
+        <div className="tabs-container">
+          <div
+            className={`tab-btn ${
+              selectedTab === "tab1" ? "selected" : "normal"
+            }`}
+            onClick={() => setselectedTab("tab1")}
+          >
+            Details
+          </div>
+          <div
+            className={`tab-btn ${
+              selectedTab === "tab2" ? "selected" : "normal"
+            }`}
+            onClick={() => setselectedTab("tab2")}
+          >
+            Approver
+          </div>
+        </div>
         <div className="popup-formitems">
           <form onSubmit={handleSubmit} id="myForm">
-            <FrmInput
-              title={"LoB Chapter"}
-              name={"lobChapterName"}
-              value={formfield.lobChapterName}
-              type={"text"}
-              handleChange={handleChange}
-              isRequired={true}
-              validationmsg={"Mandatory field"}
-              issubmitted={issubmitted}
-            />
-            <FrmMultiselect
-              title={"LoB"}
-              name={"lobList"}
-              value={formfield.lobList}
-              handleChange={handleMultiSelectChange}
-              isRequired={true}
-              validationmsg={"Mandatory field"}
-              issubmitted={issubmitted}
-              selectopts={frmLobSelectOpts}
-            />
-            <FrmTextArea
-              title={"Description"}
-              name={"lobChapterDescription"}
-              value={formfield.lobChapterDescription}
-              handleChange={handleChange}
-              isRequired={false}
-              validationmsg={""}
-              issubmitted={issubmitted}
-            />
+            {selectedTab === "tab1" ? (
+              <>
+                <FrmInput
+                  title={"LoB Chapter"}
+                  name={"lobChapterName"}
+                  value={formfield.lobChapterName}
+                  type={"text"}
+                  handleChange={handleChange}
+                  isRequired={true}
+                  validationmsg={"Mandatory field"}
+                  issubmitted={issubmitted}
+                />
+                <FrmMultiselect
+                  title={"LoB"}
+                  name={"lobList"}
+                  value={formfield.lobList}
+                  handleChange={handleMultiSelectChange}
+                  isRequired={true}
+                  validationmsg={"Mandatory field"}
+                  issubmitted={issubmitted}
+                  selectopts={frmLobSelectOpts}
+                />
+                <FrmTextArea
+                  title={"Description"}
+                  name={"lobChapterDescription"}
+                  value={formfield.lobChapterDescription}
+                  handleChange={handleChange}
+                  isRequired={false}
+                  validationmsg={""}
+                  issubmitted={issubmitted}
+                />
+              </>
+            ) : (
+              <FrmInputSearch
+                title={"Search Users"}
+                name={"lobChapterApproverList"}
+                value={formfield.lobChapterApproverList}
+                type={"text"}
+                handleChange={handleApproverChange}
+                isRequired={false}
+                validationmsg={""}
+                issubmitted={issubmitted}
+                handleInputSearchChange={handleInputSearchChange}
+                searchItems={userState.userItems ? userState.userItems : []}
+              />
+            )}
           </form>
         </div>
         <div className="popup-footer-container">
@@ -93,5 +139,12 @@ function AddEditForm(props) {
     </Popup>
   );
 }
-
-export default AddEditForm;
+const mapStateToProp = (state) => {
+  return {
+    userState: state.userState,
+  };
+};
+const mapActions = {
+  getAllUsers: userActions.getAllUsers,
+};
+export default connect(mapStateToProp, mapActions)(AddEditForm);

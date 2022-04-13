@@ -9,12 +9,12 @@ import FrmInlineInput from "../../common-components/frminlineinput/FrmInlineInpu
 function Lookup({ ...props }) {
   const { lookupState } = props.state;
   const {
-    getAllBreachLog,
+    getAllLookupByLogType,
     getLogTypes,
     getById,
     checkNameExist,
     checkIsInUse,
-    postBrachLogItem,
+    postLookupItem,
     deleteItem,
     userProfile,
   } = props;
@@ -34,18 +34,21 @@ function Lookup({ ...props }) {
   };
   const handleFilterSearch = async () => {
     if (selfilter.logtype !== "") {
-      if (selfilter.logtype === "1") {
-        getAllBreachLog({ RequesterUserId: userProfile.userId });
-      } else if (selfilter.logtype === "2") {
-        setdata(JSON.parse(JSON.stringify(rfelogData)));
-      } else if (selfilter.logtype === "3") {
-        setdata(JSON.parse(JSON.stringify(exemptionlogData)));
-      }
+      getAllLookupByLogType({ LogType: selfilter.logtype });
     } else {
       setdata([]);
       setlookuptypes([]);
     }
   };
+  useEffect(() => {
+    if (selfilter.logtype !== "") {
+      getAllLookupByLogType({ LogType: selfilter.logtype });
+    } else {
+      setdata([]);
+      setlookuptypes([]);
+    }
+  }, [selfilter.logtype]);
+
   const clearFilter = () => {
     setselfilter(intialfilterval);
     setdata([]);
@@ -64,33 +67,47 @@ function Lookup({ ...props }) {
   }, []);
 
   useEffect(() => {
+    let templottypefilterOpts = [];
+
+    if (lookupState.logtyps.length) {
+      lookupState.logtyps.forEach((item) => {
+        templottypefilterOpts.push({
+          label: item.lookUpName,
+          value: item.lookUpValue,
+        });
+      });
+      setlogtypeFilterOpts([...templottypefilterOpts]);
+      setselfilter({
+        logtype: templottypefilterOpts[0].value,
+      });
+    }
+  }, [lookupState.logtyps]);
+
+  useEffect(() => {
     let templookuptypes = [];
     let tempObj = {};
-    lookupState.breachlogitems.forEach((item) => {
-      if (!tempObj[item["lookUpType"]]) {
-        templookuptypes.push({ type: item["lookUpType"] });
+
+    lookupState.lookupitems.sort(dynamicSort("lookUpValue"));
+    lookupState.lookupitems.forEach((item) => {
+      if (
+        !tempObj[item["lookUpType"]] &&
+        item["lookUpType"] !== "BreachClassification"
+      ) {
+        templookuptypes.push({
+          type: item["lookUpType"],
+          name: item["lookUpTypeName"],
+        });
       }
       tempObj[item["lookUpType"]] = item["lookUpType"];
     });
+    templookuptypes.sort(dynamicSort("name"));
     setbreachlookupTypes(templookuptypes);
-    setbreachlogData(lookupState.breachlogitems);
-    if (selfilter.logtype === "1") {
-      setdata(lookupState.breachlogitems);
-      setlookuptypes(templookuptypes);
-    }
-  }, [lookupState.breachlogitems]);
-
-  useEffect(() => {
-    let templottypefilterOpts = [];
-    lookupState.logtyps.forEach((item) => {
-      templottypefilterOpts.push({
-        label: item.lookUpName,
-        value: item.lookupID,
-      });
-    });
-    setlogtypeFilterOpts([...templottypefilterOpts]);
-  }, [lookupState.logtyps]);
-
+    setbreachlogData(lookupState.lookupitems);
+    //if (selfilter.logtype === "1") {
+    setdata(lookupState.lookupitems);
+    setlookuptypes(templookuptypes);
+    // }
+  }, [lookupState.lookupitems]);
   const [isAddItem, setAddItem] = useState({ type: false, nature: false });
 
   const [formfield, setformfield] = useState({});
@@ -119,20 +136,20 @@ function Lookup({ ...props }) {
     }
     if (!response) {
       if (param.lookupID) {
-        response = await postBrachLogItem({
+        response = await postLookupItem({
           lookupID: param.lookupID,
           lookUpType: param.lookUpType,
           lookUpValue: item[0].lookUpValue,
         });
       } else {
-        response = await postBrachLogItem({
+        response = await postLookupItem({
           lookUpType: param.lookUpType,
           lookUpValue: formfield[param.lookUpType],
         });
       }
 
       if (response) {
-        getAllBreachLog({ RequesterUserId: userProfile.userId });
+        getAllLookupByLogType({ LogType: selfilter.logtype });
         if (param.lookupID) {
           alert(alertMessage.lookup.update);
         } else {
@@ -158,11 +175,11 @@ function Lookup({ ...props }) {
     if (!resonse) {
       resonse = await deleteItem({ lookupID: param.lookupID });
       if (resonse) {
-        getAllBreachLog();
+        getAllLookupByLogType({ LogType: selfilter.logtype });
         alert(alertMessage.lookup.delete);
       }
     } else {
-      alert(alertMessage.lob.isInUse);
+      alert(alertMessage.lookup.isInUse);
     }
   };
 
@@ -199,14 +216,14 @@ function Lookup({ ...props }) {
             />
           </div>
         </div>
-        <div className="btn-container">
+        {/*<div className="btn-container">
           <div
             className={`btn-blue ${selfilter.logtype === "" ? "disable" : ""}`}
             onClick={handleFilterSearch}
           >
             Search
           </div>
-        </div>
+        </div>*/}
       </div>
       <div>
         {lookupState.loading ? (
@@ -220,7 +237,7 @@ function Lookup({ ...props }) {
                 return (
                   <>
                     <div className="lookup-title-header">
-                      <div className="title">{lookuptype.type}</div>
+                      <div className="title">{lookuptype.name}</div>
                       <div
                         className={`btn-blue`}
                         onClick={() =>
@@ -280,7 +297,7 @@ function Lookup({ ...props }) {
                           ""
                         )}
                         {data.map((item) => {
-                          return lookuptype.type == item.lookUpType ? (
+                          return lookuptype.type === item.lookUpType ? (
                             <tr>
                               <td
                                 style={tableiconclmStyle}
@@ -352,12 +369,12 @@ const mapStateToProp = (state) => {
   };
 };
 const mapActions = {
-  getAllBreachLog: lookupActions.getAllBreachLog,
+  getAllLookupByLogType: lookupActions.getAllLookupByLogType,
   getLogTypes: lookupActions.getLogTypes,
   getById: lookupActions.getById,
   checkNameExist: lookupActions.checkNameExist,
   checkIsInUse: lookupActions.checkIsInUse,
-  postBrachLogItem: lookupActions.postBrachLogItem,
+  postLookupItem: lookupActions.postLookupItem,
   deleteItem: lookupActions.deleteItem,
 };
 export default connect(mapStateToProp, mapActions)(Lookup);

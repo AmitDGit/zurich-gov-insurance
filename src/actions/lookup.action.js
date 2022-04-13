@@ -1,21 +1,23 @@
 import { lookupConstants } from "../constants";
 import Axios from "../services/Axios";
 
-const getAllBreachLog = (requestParam) => {
+const getAllLookupByLogType = (requestParam) => {
   const request = () => {
-    return { type: lookupConstants.GETLOGTYPE_REQUEST };
+    return { type: lookupConstants.GETLOOKUPITEMS_REQUEST };
   };
   const success = (data) => {
-    return { type: lookupConstants.GETBREACHLOGTYPE_SUCCESS, payload: data };
+    return { type: lookupConstants.GETLOOKUPITEMS_SUCCESS, payload: data };
   };
   const failure = (error) => {
-    return { type: lookupConstants.GETBREACHLOGTYPE_FAILURE, payload: error };
+    return { type: lookupConstants.GETLOOKUPITEMS_FAILURE, payload: error };
   };
 
   return async (dispatch) => {
     dispatch(request());
     try {
-      const response = await lookupService.getAllBreachLogService(requestParam);
+      const response = await lookupService.getAllLookupByLogTypeService(
+        requestParam
+      );
       dispatch(success(response.data));
     } catch (err) {
       dispatch(failure(err));
@@ -82,10 +84,10 @@ const checkIsInUse = (requestParam) => {
     }
   };
 };
-const postBrachLogItem = (requestParam) => {
+const postLookupItem = (requestParam) => {
   return async (dispatch) => {
     try {
-      const response = await lookupService.postBrachLogService(requestParam);
+      const response = await lookupService.postLookupItemService(requestParam);
       return response.data;
     } catch (err) {
       return false;
@@ -104,17 +106,17 @@ const deleteItem = (requestParam) => {
 };
 export const lookupActions = {
   getLogTypes,
-  getAllBreachLog,
+  getAllLookupByLogType,
   getLookupByType,
   getById,
   checkNameExist,
   checkIsInUse,
-  postBrachLogItem,
+  postLookupItem,
   deleteItem,
 };
-const getAllBreachLogService = async (requestParam) => {
+const getAllLookupByLogTypeService = async (requestParam) => {
   const param = { params: requestParam };
-  const response = await Axios.get(`lookup/getallbreachloglookup`, param);
+  const response = await Axios.get(`lookup/getalllookupbylogtype`, param);
   return response;
 };
 
@@ -125,7 +127,7 @@ const getLookupByTypeService = async (requestParam) => {
 };
 const getByIdService = async (requestParam) => {
   const param = { params: requestParam };
-  const response = await Axios.get(`lookup/getbreachloglookup`, param);
+  const response = await Axios.get(`lookup/getloglookup`, param);
   return response;
 };
 const checkNameExistService = async (requestParam) => {
@@ -138,11 +140,8 @@ const checkIsInUseService = async (requestParam) => {
   const response = await Axios.get(`lookup/isinusecount`, param);
   return response;
 };
-const postBrachLogService = async (requestParam) => {
-  const response = await Axios.post(
-    `lookup/addeditbreachloglookup`,
-    requestParam
-  );
+const postLookupItemService = async (requestParam) => {
+  const response = await Axios.post(`lookup/addeditloglookup`, requestParam);
   return response;
 };
 const deleteItemService = async (requestParam) => {
@@ -151,11 +150,11 @@ const deleteItemService = async (requestParam) => {
   return response;
 };
 const lookupService = {
-  getAllBreachLogService,
+  getAllLookupByLogTypeService,
   getLookupByTypeService,
   getByIdService,
   checkNameExistService,
   checkIsInUseService,
-  postBrachLogService,
+  postLookupItemService,
   deleteItemService,
 };

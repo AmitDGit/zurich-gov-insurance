@@ -9,13 +9,15 @@ import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditForm";
 import UserProfile from "../../common-components/UserProfile";
 import FrmInput from "../../common-components/frminput/FrmInput";
-
+import { USER_ROLE } from "../../../constants";
 function User({ ...props }) {
   const { userState, countryState, regionState } = props.state;
   const {
     getAll,
     getAllUsers,
     getAllCountry,
+    getUserCountry,
+    getUserRegions,
     getAllRegion,
     getAllSpecialUsers,
     getAllUsersRoles,
@@ -33,6 +35,8 @@ function User({ ...props }) {
   const [countryAllOpts, setcountryAllOpts] = useState([]);
   const [regionFilterOpts, setregionFilterOpts] = useState([]);
   const [userTypeFilterOpts, setuserTypeFilterOpts] = useState([]);
+  const [unathorizedRegions, setunathorizedRegions] = useState([]);
+  const [unauthorizedCountries, setunauthorizedCountries] = useState([]);
   const intialFilterState = {
     username: "",
     email: "",
@@ -140,6 +144,35 @@ function User({ ...props }) {
     setselfilter(intialFilterState);
     setpaginationdata(data);
   };
+  //set user role
+  const [userroles, setuserroles] = useState({
+    issuperadmin: false,
+    isglobaladmin: false,
+    isregionadmin: false,
+    iscountryadmin: false,
+  });
+  useEffect(() => {
+    let loggeduserrole = userProfile ? userProfile.userRoles[0].roleId : "";
+    const tempuserroles = {
+      issuperadmin: false,
+      isglobaladmin: false,
+      isregionadmin: false,
+      iscountryadmin: false,
+    };
+    if (loggeduserrole === USER_ROLE.superAdmin) {
+      tempuserroles.issuperadmin = true;
+    }
+    if (loggeduserrole === USER_ROLE.globalAdmin) {
+      tempuserroles.isglobaladmin = true;
+    }
+    if (loggeduserrole === USER_ROLE.regionAdmin) {
+      tempuserroles.isregionadmin = true;
+    }
+    if (loggeduserrole === USER_ROLE.countryAdmin) {
+      tempuserroles.iscountryadmin = true;
+    }
+    setuserroles(tempuserroles);
+  }, [userProfile]);
   //set pagination data and functionality
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
@@ -249,59 +282,24 @@ function User({ ...props }) {
 
   useEffect(() => {
     getAll({ RequesterUserId: userProfile.userId });
-    getAllCountry();
-    getAllRegion();
+    getAllCountry({ IsLog: true });
+    getAllRegion({ IsLog: true });
     getAllUsersRoles({ RequesterUserId: userProfile.userId });
   }, []);
   useEffect(() => {
     let tempdata = [];
-    /* let tempregionFilterOpts = [];
-    let tempCountryFilterOpts = [];
-    let tempCountryObj = {};
-    let tempRegionObj = {};*/
-
     userState.items.forEach((item) => {
-      tempdata.push(item);
-      /*let regionlist = item.regionList ? item.regionList.split(",") : [];
-      regionlist.forEach((regionitem) => {
-        let tempItem = regionitem.trim();
-        if (!tempRegionObj[tempItem]) {
-          tempregionFilterOpts.push({
-            label: tempItem,
-            value: tempItem,
-          });
+      if (userroles.isglobaladmin) {
+        if (item.roleId !== USER_ROLE.superAdmin) {
+          tempdata.push(item);
         }
-        tempRegionObj[tempItem] = tempItem;
-      });
-      let coutrylist = item.countryList;
-      if (coutrylist) {
-        coutrylist = coutrylist.split(",");
-        coutrylist.forEach((countryItem) => {
-          let tempItem = countryItem.trim();
-          if (!tempCountryObj[tempItem]) {
-            tempCountryFilterOpts.push({
-              label: tempItem,
-              value: tempItem,
-            });
-          }
-          tempCountryObj[tempItem] = tempItem;
-        });
-      }*/
+      } else {
+        tempdata.push(item);
+      }
     });
 
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
-
-    /*tempregionFilterOpts.sort(dynamicSort("label"));
-    tempCountryFilterOpts.sort(dynamicSort("label"));
-    setregionFilterOpts([
-      { label: "Select", value: "" },
-      ...tempregionFilterOpts,
-    ]);
-    setcountryFilterOpts([
-      { label: "Select", value: "" },
-      ...tempCountryFilterOpts,
-    ]);*/
   }, [userState.items]);
   const [countrymapping, setcountrymapping] = useState([]);
   const [frmCountrySelectOpts, setfrmCountrySelectOpts] = useState([]);
@@ -346,10 +344,11 @@ function User({ ...props }) {
       tempRegionListObj[item.regionID] = item.countryName;
     });
     selectOpts.sort(dynamicSort("label"));
-    setfrmCountrySelectOpts([...selectOpts]);
+    if (selectOpts.length) {
+      setfrmCountrySelectOpts([...selectOpts]);
+    }
     setcountryAllOpts([...selectOpts]);
     setcountryFilterOpts([...selectFilterOpts]);
-
     setcountrymapping([...tempCountryMapping]);
   }, [countryState.countryItems]);
 
@@ -369,7 +368,9 @@ function User({ ...props }) {
     });
     selectOpts.sort(dynamicSort("label"));
     selectFilterOpts.sort(dynamicSort("label"));
-    setfrmRegionSelectOpts([...selectOpts]);
+    if (selectOpts.length) {
+      setfrmRegionSelectOpts([...selectOpts]);
+    }
     setregionFilterOpts([...selectFilterOpts]);
   }, [regionState.regionItems]);
 
@@ -378,25 +379,34 @@ function User({ ...props }) {
     let tempfilterroles = [];
     let tempObj = {};
     userState.userRoles.forEach((item) => {
-      //if (item.roleName !== "SuperAdmin") {
-      tempuserroles.push({
-        label: item.displayRole,
-        value: item.roleId,
-      });
-      // }
+      if (
+        (userroles.iscountryadmin && item.roleId === USER_ROLE.countryAdmin) ||
+        (USER_ROLE.regionAdmin &&
+          (item.roleId === USER_ROLE.countryAdmin ||
+            item.roleId === USER_ROLE.regionAdmin)) ||
+        (userroles.isglobaladmin &&
+          (item.roleId === USER_ROLE.countryAdmin ||
+            item.roleId === USER_ROLE.regionAdmin ||
+            item.roleId === USER_ROLE.globalAdmin)) ||
+        userroles.issuperadmin
+      ) {
+        tempuserroles.push({
+          label: item.displayRole,
+          value: item.roleId,
+        });
+        tempfilterroles.push({
+          label: item.displayRole,
+          value: item.displayRole,
+        });
+      }
       tempObj[item.roleId] = item.displayRole;
-      tempfilterroles.push({
-        label: item.displayRole,
-        value: item.displayRole,
-      });
     });
-
     setfrmuserType([...tempuserroles]);
     setfrmuserTypeObj(tempObj);
     setuserTypeFilterOpts([...tempfilterroles]);
   }, [userState.userRoles]);
   /* Add Edit Delete functionality & show popup*/
-
+  console.log(userState);
   const [isshowAddPopup, setshowAddPopup] = useState(false);
 
   const showAddPopup = () => {
@@ -423,8 +433,9 @@ function User({ ...props }) {
 
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    debugger;
     const response = await getById({ UserId: itemid });
+    let userCountry = await getUserCountry({ IsLog: true });
+    let userRegions = await getUserRegions({ IsLog: true });
     const user = [
       {
         userId: response.userId,
@@ -433,17 +444,48 @@ function User({ ...props }) {
         emailAddress: response.emailAddress,
       },
     ];
-    const regionList = response.regionDataList.map((item) => {
-      return {
-        label: item.regionName.trim(),
-        value: item.regionID.trim(),
-      };
+    let regionList = [];
+    let countryList = [];
+    let tempunauthorizedRegions = [];
+    let tempunauthorizedCountries = [];
+
+    response.regionDataList.forEach((item) => {
+      let isPresent = false;
+      userRegions.forEach((region) => {
+        if (region.regionID === item.regionID.trim()) {
+          isPresent = true;
+        }
+      });
+      if (isPresent) {
+        regionList.push({
+          label: item.regionName.trim(),
+          value: item.regionID.trim(),
+        });
+      } else {
+        tempunauthorizedRegions.push({
+          label: item.regionName.trim(),
+          value: item.regionID.trim(),
+        });
+      }
     });
-    const countryList = response.countryDataList.map((item) => {
-      return {
-        label: item.countryName.trim(),
-        value: item.countryID.trim(),
-      };
+    response.countryDataList.forEach((item) => {
+      let isPresent = false;
+      userCountry.forEach((country) => {
+        if (country.countryID === item.countryID.trim()) {
+          isPresent = true;
+        }
+      });
+      if (isPresent) {
+        countryList.push({
+          label: item.countryName.trim(),
+          value: item.countryID.trim(),
+        });
+      } else {
+        tempunauthorizedCountries.push({
+          label: item.countryName.trim(),
+          value: item.countryID.trim(),
+        });
+      }
     });
     setisEditMode(true);
     let isSuperAdmin = response.userType === "SuperAdmin" ? true : false;
@@ -457,14 +499,26 @@ function User({ ...props }) {
       isAccessBreachLog: response.isAccessBreachLog,
       isSuperAdmin: isSuperAdmin,
     });
+    setunathorizedRegions([...tempunauthorizedRegions]);
+    setunauthorizedCountries([...tempunauthorizedCountries]);
     showAddPopup();
   };
   const putItemHandler = async (item) => {
     const { userId, firstName, lastName, emailAddress } = item.user[0];
     let tempcountryList = item.countryList.map((item) => item.value);
-    tempcountryList = tempcountryList.join(",");
+    let tempunauthorizedCountryList = unauthorizedCountries.map(
+      (item) => item.value
+    );
+    tempcountryList = [...tempcountryList, ...tempunauthorizedCountryList].join(
+      ","
+    );
     let tempregionList = item.regionList.map((item) => item.value);
-    tempregionList = tempregionList.join(",");
+    let tempunauthorizedRegionList = unathorizedRegions.map(
+      (item) => item.value
+    );
+    tempregionList = [...tempregionList, ...tempunauthorizedRegionList].join(
+      ","
+    );
     if (item.isSuperAdmin) {
       item.isAccessBreachLog = true;
       for (let i = 0; i < frmuserType.length; i++) {
@@ -660,6 +714,7 @@ function User({ ...props }) {
           putItem={putItemHandler}
           isEditMode={isEditMode}
           formIntialState={formIntialState}
+          userroles={userroles}
         ></AddEditForm>
       ) : (
         ""
@@ -676,7 +731,9 @@ const mapActions = {
   getAll: userActions.getAll,
   getAllUsers: userActions.getAllUsers,
   getAllCountry: countryActions.getAllCountry,
+  getUserCountry: countryActions.getUserCountry,
   getAllRegion: regionActions.getAllRegions,
+  getUserRegions: regionActions.getUserRegions,
   getAllSpecialUsers: userActions.getAllSpecialUsers,
   getAllUsersRoles: userActions.getAllUsersRoles,
   getById: userActions.getById,

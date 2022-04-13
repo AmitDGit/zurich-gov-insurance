@@ -1,0 +1,109 @@
+.custom-multiselect {
+  color: #2167ad;
+  font-size: 14px;
+}
+.custom-multiselect .chip {
+ /* display: inline-block;*/
+}
+
+.custom-multiselect.multiSelectContainer ul {
+  border-radius: 0px;
+  border: 1px solid #add8ef;
+  max-height: 200px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  border-top: 0;
+  padding: 5px;
+}
+
+.multiSelectContainer li {
+  padding: 5px !important;
+  display: flex;
+  align-items: center;
+}
+.multiSelectContainer ul .custom-multiselect .optionContainer li {
+  padding: 0px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+}
+.multiSelectContainer::after {
+  content: "";
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  padding: 3px;
+  display: inline-block;
+  border: solid #1f66ab;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+.custom-multiselect.multiSelectContainer input {
+  margin-top: 0px;
+  height: 25px;
+}
+.searchWrapper {
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+.custom-multiselect .searchWrapper input {
+  border: 1px solid #add8ef;
+  height: 32px;
+  border-radius: 15px;
+  padding: 3px 10px;
+  background-color: #fff;
+}
+.custom-multiselect .searchWrapper input:focus {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 0;
+}
+.custom-multiselect .optionContainer input {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+}
+.optionListContainer{
+  z-index: 11;
+}
+.optionListContainer::before {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: -27px;
+  padding: 10px;
+  background-color: #fff;
+}
+.optionListContainer::after {
+  content: "";
+  position: absolute;
+  right: 15px;
+  top: -22px;
+  padding: 3px;
+  display: inline-block;
+  border: solid #1f66ab;
+  border-width: 0 2px 2px 0;
+  transform: rotate(225deg);
+  -webkit-transform: rotate(225deg);
+}
+.multi-selected-opts-container {
+  margin-top: 10px;
+  padding: 0 5px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.multi-selected-opts {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.multi-selected-opts-container .delete-icon {
+  width: 22px;
+}
+.optionListContainer {
+  margin-top: 0px !important;
+}
