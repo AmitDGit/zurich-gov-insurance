@@ -231,6 +231,9 @@ function AddEditForm(props) {
       if (userroles.isapprover && !userroles.issuperadmin && !isReadMode) {
         //setisapprovermode(true);
       }
+      setformfield({
+        ...formfield,
+      });
     } else {
       setformfield({
         ...formfield,
