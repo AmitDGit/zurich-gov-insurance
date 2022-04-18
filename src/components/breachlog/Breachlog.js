@@ -731,8 +731,6 @@ function Breachlog({ ...props }) {
     if (isLoadingStarted) {
       //setdata(logItmes);
       setpaginationdata(logItmes);
-
-      console.log("logs loaded -" + logItmes);
       let chunkPercentage = Math.round((logItmes.length / totalLogCount) * 100);
       const progressbar = document.querySelector(".progress-color");
       const progressbarcontainer = document.querySelector(
@@ -1044,7 +1042,6 @@ function Breachlog({ ...props }) {
     PolicyName: "",
     PolicyNumber: "",
     turNumber: "",
-    BreachLogEmailLink: window.location.href,
     marketBasketId: "",
     marketBasketName: "",
     znaSegmentId: "",
@@ -1081,7 +1078,6 @@ function Breachlog({ ...props }) {
     if (queryparam.status) {
       response.breachStatus = queryparam.status;
     }
-    debugger;
     setformIntialState({
       ...response,
     });

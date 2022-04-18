@@ -718,6 +718,7 @@ function Exemptionlog({ ...props }) {
 
   useEffect(() => {
     if (isLoadingStarted) {
+      debugger;
       //setdata(logItmes);
       let dataArrayName =
         selectedExemptionLog === "zug" ? "ZUGdata" : "URPMdata";
@@ -983,6 +984,7 @@ function Exemptionlog({ ...props }) {
     fullFilePath: "",
     ExemptionLogType: "",
     isSubmit: false,
+    ZUGChapter: "",
     exmpLogEmailLink: window.location.href,
   };
   const formInitialValueURPM = {
@@ -1034,8 +1036,19 @@ function Exemptionlog({ ...props }) {
         urpmExemptionLogId: itemid,
       });
     }
-    debugger;
+
     if (response) {
+      debugger;
+      let selectedcountry = response.countryID.split(",");
+      let selectedcountryList = [];
+      frmCountrySelectOpts.forEach((country) => {
+        selectedcountry.forEach((item) => {
+          if (item === country.value) {
+            selectedcountryList.push(country);
+          }
+        });
+      });
+      response["countryList"] = [...selectedcountryList];
       if (selectedExemptionLog === "zug") {
         response.approverName = response.approverAD
           ? response.approverAD.userName
@@ -1157,6 +1170,7 @@ function Exemptionlog({ ...props }) {
         ? "zugExemptionLogId"
         : "urpmExemptionLogId";
     let createmodfield = item[id] ? "modifiedByID" : "createdByID";
+
     if (selectedExemptionLog === "zug") {
       response = await postItemZUG({
         ...item,

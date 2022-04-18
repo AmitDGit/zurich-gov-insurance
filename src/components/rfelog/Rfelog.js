@@ -44,6 +44,7 @@ function Rfelog({ ...props }) {
     loading: true,
     error: "",
     data: [],
+    loadedAll: false,
   });
   const [logsDraftData, setlogsDraftData] = useState([]);
   useSetNavMenu({ currentMenu: "Rfelog", isSubmenu: false }, props.menuClick);
@@ -69,6 +70,7 @@ function Rfelog({ ...props }) {
     "underwriterGrantingEmpowerment",
     "roleData",
     "isActive",
+    "totalCount",
   ];
   const exportFieldTitles = {
     rfeLogDetails: "RfELogDetails",
@@ -262,27 +264,6 @@ function Rfelog({ ...props }) {
 
   const columns = [
     {
-      dataField: "viewaction",
-      text: "View",
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return (
-          <div
-            className="view-icon"
-            onClick={handleEdit}
-            rowid={row.rfeLogId}
-            mode={"view"}
-          ></div>
-        );
-      },
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return {
-          width: "70px",
-          textAlign: "center",
-        };
-      },
-    },
-    {
       dataField: "editaction",
       text: "Edit",
       formatter: (cell, row, rowIndex, formatExtraData) => {
@@ -305,6 +286,27 @@ function Rfelog({ ...props }) {
           ></div>
         ) : (
           ""
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "70px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "viewaction",
+      text: "View",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="view-icon"
+            onClick={handleEdit}
+            rowid={row.rfeLogId}
+            mode={"view"}
+          ></div>
         );
       },
       sort: false,
@@ -368,15 +370,6 @@ function Rfelog({ ...props }) {
         return { width: "250px" };
       },
     },
-
-    {
-      dataField: "organizationalAlignmentValue",
-      text: "Organizational Alignment",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "200px" };
-      },
-    },
     {
       dataField: "countryName",
       text: "Country",
@@ -386,20 +379,11 @@ function Rfelog({ ...props }) {
       },
     },
     {
-      dataField: "regionName",
-      text: "Region",
-      sort: true,
+      dataField: "organizationalAlignmentValue",
+      text: "Organizational Alignment",
+      sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "150px" };
-      },
-    },
-
-    {
-      dataField: "underwriterName",
-      text: "Underwriter",
-      sort: true,
-      headerStyle: (colum, colIndex) => {
-        return { width: "150px" };
+        return { width: "200px" };
       },
     },
     {
@@ -411,6 +395,22 @@ function Rfelog({ ...props }) {
       },
     },
     {
+      dataField: "underwriterName",
+      text: "Underwriter",
+      sort: true,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+    },
+    {
+      dataField: "requestForEmpowermentStatusValue",
+      text: "Request for empowerment status",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
+      },
+    },
+    {
       dataField: "requestForEmpowermentReasonValue",
       text: "Request for empowerment reason",
       sort: false,
@@ -419,14 +419,27 @@ function Rfelog({ ...props }) {
       },
     },
     {
-      dataField: "responseDate",
-      text: "Date of response",
-      sort: false,
+      dataField: "underwriterGrantingEmpowermentName",
+      text: "Underwriter granting empowerment",
+      sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{cell ? formatDate(cell) : ""}</span>;
+    },
+    /*{
+      dataField: "regionName",
+      text: "Region",
+      sort: true,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+    },*/
+    {
+      dataField: "chzValue",
+      text: "CHZ Sustainability Desk / CHZ Gi Credit Risk",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "200px" };
       },
     },
     {
@@ -441,29 +454,17 @@ function Rfelog({ ...props }) {
       },
     },
     {
-      dataField: "requestForEmpowermentStatusValue",
-      text: "Request for empowerment status",
+      dataField: "responseDate",
+      text: "Date of response",
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
       },
-    },
-    {
-      dataField: "underwriterGrantingEmpowermentName",
-      text: "Underwriter granting empowerment name",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "200px" };
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{cell ? formatDate(cell) : ""}</span>;
       },
     },
-    {
-      dataField: "chzValue",
-      text: "CHZ Sustainability Desk / CHZ Gi Credit Risk",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "200px" };
-      },
-    },
+
     {
       dataField: "modifiedDate",
       text: "Modified Date",
@@ -504,11 +505,6 @@ function Rfelog({ ...props }) {
     if (isLoadingStarted) {
       //setdata(logItmes);
       setpaginationdata(logItmes);
-      setlogstate({
-        ...logstate,
-        loading: false,
-        data: [...logItmes],
-      });
 
       let chunkPercentage = Math.round((logItmes.length / totalLogCount) * 100);
       const progressbar = document.querySelector(".progress-color");
@@ -518,9 +514,20 @@ function Rfelog({ ...props }) {
       }
 
       if (totalLogCount > logItmes.length) {
+        setlogstate({
+          ...logstate,
+          loading: false,
+          data: [...logItmes],
+        });
         pageIndex++;
         getAllLogsInRecurssion();
       } else {
+        setlogstate({
+          ...logstate,
+          loading: false,
+          data: [...logItmes],
+          loadedAll: true,
+        });
         pageIndex = 1;
         totalLogCount = 0;
         setalllogsloaded(true);
@@ -771,7 +778,8 @@ function Rfelog({ ...props }) {
         setisReadMode(true);
       }
       if (queryparam.status) {
-        response.requestForEmpowermentStatus = queryparam.status;
+        //uncomment below line if status need to set according to query param
+        //response.requestForEmpowermentStatus = queryparam.status;
       }
       setformIntialState({
         ...response,
@@ -795,7 +803,7 @@ function Rfelog({ ...props }) {
         RequesterUserId: userProfile.userId,
         rfeLogId: item.rfeLogId,
       });*/
-      if (queryparam.id) {
+      if (queryparam.id || !logstate.loadedAll) {
         window.location = "/rfelogs";
       } else {
         setselfilter(intialFilterState);
@@ -831,8 +839,12 @@ function Rfelog({ ...props }) {
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
     let response;
-
-    if (item.rfeLogId) {
+    response = await postItem({
+      ...item,
+      createdByID: userProfile.userId,
+      modifiedByID: userProfile.userId,
+    });
+    /* if (item.rfeLogId) {
       // item.RFELogEmailLink = window.location.href + "?id=" + item.rfeLogId;
 
       response = await postItem({
@@ -844,9 +856,9 @@ function Rfelog({ ...props }) {
         ...item,
         createdByID: userProfile.userId,
       });
-    }
+    }*/
     if (response) {
-      if (queryparam.id) {
+      if (queryparam.id || !logstate.loadedAll) {
         window.location = "/rfelogs";
       } else {
         let logid = item.rfeLogId ? item.rfeLogId : response;

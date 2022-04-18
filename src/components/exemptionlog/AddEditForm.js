@@ -82,6 +82,8 @@ function AddEditForm(props) {
     No_Relevant: EXEMPTION_URPM_LOG_STATUS.No_Relevant,
   };
   const exemptionType_Individual = EXEMPTION_CONSTANT.TypeExemption_Individual;
+  const fullTransitional_Transitional =
+    EXEMPTION_CONSTANT.FullTransitional_Transitional;
   const [userroles, setuserroles] = useState({
     issubmitter: false,
     isapprover: false,
@@ -203,7 +205,6 @@ function AddEditForm(props) {
       tooltipObj[item.toolTipField] = item.toolTipText;
     });
     settooltip(tooltipObj);
-
     tempTypeOfExemption = tempTypeOfExemption.map((item) => ({
       label: item.lookUpValue,
       value: item.lookupID,
@@ -411,6 +412,8 @@ function AddEditForm(props) {
       formData.append("TempId", folderID);
       if (formfield.zugExemptionLogId) {
         formData.append("LogType", "zugLogs");
+      } else {
+        formData.append("LogType", "urpmLogs");
       }
     }
     setfileuploadloader(true);
@@ -554,6 +557,8 @@ function AddEditForm(props) {
     }
     setissubmitted(true);
     debugger;
+    let selectedCountryItems = formfield.countryList.map((item) => item.value);
+    formfield.countryID = selectedCountryItems.join(",");
     if (validateform()) {
       /*formfield.underwriterAD = {
         userName: formfield.underwriterName,
@@ -586,7 +591,7 @@ function AddEditForm(props) {
     if (isfrmdisabled) {
       return;
     }
-    if (formfield.countryID) {
+    if (formfield.countryList.length) {
       //setissubmitted(true);
       postItem({ ...formfield, isSubmit: false });
     } else {
@@ -639,7 +644,7 @@ function AddEditForm(props) {
           ))}
         </div>
       )}
-      <div className="popup-formitems">
+      <div className="popup-formitems logs-form">
         <form onSubmit={handleSubmit} id="myForm">
           <>
             <div className="frm-field-bggray">
@@ -760,7 +765,11 @@ function AddEditForm(props) {
                   )}
                 </div>
 
-                <div className="col-md-6">
+                <div
+                  className={`${
+                    selectedExemptionLog === "zug" ? "col-md-3" : "col-md-6"
+                  }`}
+                >
                   <FrmInput
                     title={"Section Subject"}
                     name={"sectionSubject"}
@@ -773,6 +782,24 @@ function AddEditForm(props) {
                     issubmitted={issubmitted}
                   />
                 </div>
+                {selectedExemptionLog === "zug" ? (
+                  <div className="col-md-3">
+                    <FrmInput
+                      title={"ZUG Chapter Version"}
+                      name={"ZUGChapter"}
+                      value={formfield.ZUGChapter}
+                      type={"text"}
+                      handleChange={handleChange}
+                      isReadMode={isReadMode}
+                      isRequired={false}
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
+                    />
+                  </div>
+                ) : (
+                  ""
+                )}
+
                 {selectedExemptionLog !== "zug" && (
                   <div className="col-md-3">
                     <FrmDatePicker
@@ -857,21 +884,25 @@ function AddEditForm(props) {
                       isdisabled={isfrmdisabled}
                     />
                   </div>
-                  <div className="col-md-3">
-                    <FrmDatePicker
-                      title={"Transitional Expiring Date of Empowerment"}
-                      name={"transitionalExpireDate"}
-                      value={formfield.transitionalExpireDate}
-                      type={"date"}
-                      handleChange={handleDateSelectChange}
-                      isRequired={false}
-                      isReadMode={isReadMode}
-                      minDate={""}
-                      validationmsg={"Mandatory field"}
-                      issubmitted={issubmitted}
-                      isdisabled={isfrmdisabled}
-                    />
-                  </div>
+                  {formfield.fullTransitional ==
+                    fullTransitional_Transitional && (
+                    <div className="col-md-3">
+                      <FrmDatePicker
+                        title={"Transitional Expiring Date of Empowerment"}
+                        name={"transitionalExpireDate"}
+                        value={formfield.transitionalExpireDate}
+                        type={"date"}
+                        handleChange={handleDateSelectChange}
+                        isRequired={false}
+                        isReadMode={isReadMode}
+                        minDate={""}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                        isdisabled={isfrmdisabled}
+                      />
+                    </div>
+                  )}
+
                   <div className="col-md-3">
                     <FrmToggleSwitch
                       title={"P&C URPM exemption required"}
@@ -954,23 +985,24 @@ function AddEditForm(props) {
                     />
                   )}
                 </div>
-                {selectedExemptionLog === "zug" && (
-                  <div className="col-md-3">
-                    <FrmDatePicker
-                      title={"Expiring Date"}
-                      name={"expiringDate"}
-                      value={formfield.expiringDate}
-                      type={"date"}
-                      handleChange={handleDateSelectChange}
-                      isRequired={false}
-                      isReadMode={isReadMode}
-                      minDate={""}
-                      validationmsg={"Mandatory field"}
-                      issubmitted={issubmitted}
-                      isdisabled={isfrmdisabled}
-                    />
-                  </div>
-                )}
+                {selectedExemptionLog === "zug" &&
+                  formfield.status === zuglog_status.Expired_Not_Needed && (
+                    <div className="col-md-3">
+                      <FrmDatePicker
+                        title={"Expiring Date"}
+                        name={"expiringDate"}
+                        value={formfield.expiringDate}
+                        type={"date"}
+                        handleChange={handleDateSelectChange}
+                        isRequired={false}
+                        isReadMode={isReadMode}
+                        minDate={""}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                        isdisabled={isfrmdisabled}
+                      />
+                    </div>
+                  )}
               </div>
 
               <div className="row border-bottom">
