@@ -20,7 +20,6 @@ const getUser = () => {
 };
 
 const setUser = (user) => {
-  console.log(JSON.stringify(user));
   localStorage.setItem(localstorageId, JSON.stringify(user));
 };
 

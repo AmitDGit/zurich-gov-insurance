@@ -10,10 +10,7 @@ const getAll = () => {
   const failure = (error) => {
     return { type: countryConstants.GETALL_FAILURE, payload: error };
   };
-  const requestParams = {
-    PageIndex: 1,
-    PageSize: 50,
-  };
+  const requestParams = {};
 
   return async (dispatch) => {
     dispatch(request());
@@ -41,11 +38,14 @@ const getAllCountry = (requestParam) => {
     try {
       const response = await countryService.getAllCountryService(requestParams);
       dispatch(success(response.data));
+      return response.data;
     } catch (err) {
       dispatch(failure(err));
+      return false;
     }
   };
 };
+
 const getUserCountry = (requestParams) => {
   return async (dispatch) => {
     try {

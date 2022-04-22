@@ -196,10 +196,12 @@ const getByIdURPMService = async (requestParam) => {
   return response;
 };
 const postItemURPMService = async (requestParam) => {
+  debugger;
   const response = await Axios.post(
     `exemption/addediturpmexemptionlog`,
     requestParam
   );
+  console.log(response);
   return response;
 };
 const exemptionlogService = {
