@@ -345,13 +345,12 @@ function AddEditForm(props) {
         formfield.folderID = response.tempId;
       }
       let tempattachementfiles = [...formfield.rfeAttachmentList];
-
       response.attachmentFiles.forEach((item) => {
         let isExits = false;
         for (let j = 0; j < tempattachementfiles.length; j++) {
           let existfile = tempattachementfiles[j]["filePath"];
-          existfile = existfile.split("\\")[existfile.split("\\").length - 1];
-          let currentfile = item.split("\\")[item.split("\\").length - 1];
+          existfile = existfile.split("/")[existfile.split("/").length - 1];
+          let currentfile = item.split("/")[item.split("/").length - 1];
           if (existfile === currentfile) {
             isExits = true;
             break;

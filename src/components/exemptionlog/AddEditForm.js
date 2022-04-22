@@ -25,6 +25,7 @@ import {
 import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTextEditor";
 import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import PeoplePickerPopup from "./PeoplePickerPopup";
+
 function AddEditForm(props) {
   const { lobchapterState, userState, countryState } = props.state;
   const {
@@ -43,12 +44,16 @@ function AddEditForm(props) {
     getAlllobChapter,
     uploadFile,
     deleteFile,
+    downloadFile,
     userProfile,
     queryparam,
     selectedExemptionLog,
     setExemLogTypeFn,
     exemptionlogsType,
+    formInitialValueURPM,
+    formInitialValueZUG,
   } = props;
+  console.log(isEditMode);
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
@@ -68,18 +73,17 @@ function AddEditForm(props) {
     Pending: EXEMPTION_ZUG_LOG_STATUS.Pending,
     Empowerment_granted: EXEMPTION_ZUG_LOG_STATUS.Empowerment_granted,
     Empowerment_not_granted: EXEMPTION_ZUG_LOG_STATUS.Empowerment_not_granted,
+    More_Information_Needed: EXEMPTION_ZUG_LOG_STATUS.More_Information_Needed,
     Withdrawn: EXEMPTION_ZUG_LOG_STATUS.Withdrawn,
-    Expired_Not_Needed: EXEMPTION_ZUG_LOG_STATUS.Expired_Not_Needed,
+    No_longer_required: EXEMPTION_ZUG_LOG_STATUS.No_longer_required,
   };
   const urpmlog_status = {
     Pending: EXEMPTION_URPM_LOG_STATUS.Pending,
-    More_information_needed: EXEMPTION_URPM_LOG_STATUS.More_information_needed,
     Empowerment_granted: EXEMPTION_URPM_LOG_STATUS.Empowerment_granted,
-    Empowerment_granted_with_conditions:
-      EXEMPTION_URPM_LOG_STATUS.Empowerment_granted_with_conditions,
     Empowerment_not_granted: EXEMPTION_URPM_LOG_STATUS.Empowerment_not_granted,
+    More_Information_Needed: EXEMPTION_URPM_LOG_STATUS.More_Information_Needed,
     Withdrawn: EXEMPTION_URPM_LOG_STATUS.Withdrawn,
-    No_Relevant: EXEMPTION_URPM_LOG_STATUS.No_Relevant,
+    No_longer_required: EXEMPTION_URPM_LOG_STATUS.No_longer_required,
   };
   const exemptionType_Individual = EXEMPTION_CONSTANT.TypeExemption_Individual;
   const fullTransitional_Transitional =
@@ -91,7 +95,7 @@ function AddEditForm(props) {
     issuperadmin: false,
     isgrantedempowrment: false,
   });
-
+  const FileDownload = require("js-file-download");
   const ZUGMandatoryFields = [
     "countryID",
     "typeOfExemption",
@@ -154,22 +158,26 @@ function AddEditForm(props) {
         tempuserroles.isgrantedempowrment = true;
       }
       if (
-        formfield.approver &&
-        formfield.approver.indexOf(userProfile.emailAddress) !== -1
+        (formfield.approver &&
+          formfield.approver.indexOf(userProfile.emailAddress) !== -1) ||
+        (formfield.globalUWApprover &&
+          formfield.globalUWApprover.indexOf(userProfile.emailAddress) !== -1)
       ) {
         tempuserroles.isapprover = true;
       }
       if (
-        formfield.empowermentRequestedBy &&
-        formfield.empowermentRequestedBy.indexOf(userProfile.emailAddress) !==
-          -1
+        (formfield.empowermentRequestedBy &&
+          formfield.empowermentRequestedBy.indexOf(userProfile.emailAddress) !==
+            -1) ||
+        (formfield.submitter &&
+          formfield.submitter.indexOf(userProfile.emailAddress) !== -1)
       ) {
         tempuserroles.issubmitter = true;
       }
-      if (userProfile.isAdmin) {
+      if (userProfile.isAdminGroup) {
         tempuserroles.isadmin = true;
       }
-      if (userProfile.userRoles[0].roleName === "SuperAdmin") {
+      if (userProfile.isSuperAdmin) {
         tempuserroles.issuperadmin = true;
       }
     }
@@ -194,7 +202,7 @@ function AddEditForm(props) {
       LookupType: "EXMPZUGStatus",
     });
     let tempURPMStatus = await getLookupByType({
-      LookupType: "EXMPGlobalUWStatus",
+      LookupType: "EXMPZUGStatus",
     });
     let tempURPMSection = await getLookupByType({
       LookupType: "EXMPURPMSection",
@@ -268,7 +276,7 @@ function AddEditForm(props) {
       setfrmstatus([...frmstatus]);
     }
     setloading(false);
-    setDefaultLogStatus();
+    //setDefaultLogStatus();
   }, [userroles, isEditMode]);
 
   useEffect(() => {
@@ -282,7 +290,7 @@ function AddEditForm(props) {
     setlogStatus(logstatus);
   }, [selectedExemptionLog]);
 
-  useEffect(() => {
+  /*  useEffect(() => {
     const statusArray =
       selectedExemptionLog === "zug" ? [...frmZUGStatus] : [...frmURPMStatus];
     let tempstatus = [];
@@ -298,9 +306,6 @@ function AddEditForm(props) {
       //status more information needed
       if (item.lookupID !== logStatus.Pending && formfield.isSubmit) {
         isshow = true;
-        /* if (userroles.isapprover || userroles.issuperadmin) {
-          
-        }*/
       }
       if (isshow) {
         tempstatus.push({
@@ -313,7 +318,7 @@ function AddEditForm(props) {
       setfrmstatus([...tempstatus]);
     }
     //setDefaultLogStatus();
-  }, [logStatus]);
+  }, [logStatus]);*/
 
   useEffect(() => {
     if (frmstatus.length) {
@@ -335,6 +340,9 @@ function AddEditForm(props) {
       if (userroles.isapprover && !userroles.issuperadmin && !isReadMode) {
         //setisapprovermode(true);
       }
+      setformfield({
+        ...formfield,
+      });
     } else {
       if (selectedExemptionLog === "zug") {
         setformfield({
@@ -385,12 +393,12 @@ function AddEditForm(props) {
   };
   const handleDateSelectChange = (name, value) => {
     let dateval = moment(value).format("YYYY-MM-DD");
-    if (
-      name === "receptionInformationDate" &&
-      formfield.responseDate &&
-      moment(value).isAfter(formfield.responseDate)
-    ) {
-      setformfield({ ...formfield, [name]: dateval, responseDate: null });
+    if (selectedExemptionLog === "zug") {
+      setformfield({
+        ...formfield,
+        transitionalExpireDate: dateval,
+        expiringDate: dateval,
+      });
     } else {
       setformfield({ ...formfield, [name]: dateval });
     }
@@ -403,11 +411,18 @@ function AddEditForm(props) {
         let file = selectedfile[i];
         formData.append("files", file, file.name);
       }
-      let folderID = formfield.zugExemptionLogId
-        ? formfield.rfeLogId
-        : formfield.folderID
-        ? formfield.folderID
-        : "";
+      let folderID =
+        selectedExemptionLog === "zug"
+          ? formfield.zugExemptionLogId
+            ? formfield.zugExemptionLogId
+            : formfield.folderID
+            ? formfield.folderID
+            : ""
+          : formfield.urpmExemptionLogId
+          ? formfield.urpmExemptionLogId
+          : formfield.folderID
+          ? formfield.folderID
+          : "";
 
       formData.append("TempId", folderID);
       if (formfield.zugExemptionLogId) {
@@ -440,6 +455,7 @@ function AddEditForm(props) {
           tempattachementfiles.push({
             filePath: item,
             logAttachmentId: "",
+            isNew: true,
           });
         }
       });
@@ -453,7 +469,7 @@ function AddEditForm(props) {
     }
   };
   const handleFileDelete = async (id, url) => {
-    if (!window.confirm(alertMessage.rfelog.deleteAttachmentConfirm)) {
+    if (!window.confirm(alertMessage.exemptionlog.deleteAttachmentConfirm)) {
       return;
     }
     const requestParam = {
@@ -462,7 +478,7 @@ function AddEditForm(props) {
     };
     const response = await deleteFile(requestParam);
     if (response) {
-      alert(alertMessage.rfelog.deleteAttachment);
+      alert(alertMessage.exemptionlog.deleteAttachment);
       let tempattachementfiles = [...formfield.exmpAttachmentList];
       tempattachementfiles = tempattachementfiles.filter(
         (item) => item.filePath !== url
@@ -556,7 +572,6 @@ function AddEditForm(props) {
       return;
     }
     setissubmitted(true);
-    debugger;
     let selectedCountryItems = formfield.countryList.map((item) => item.value);
     formfield.countryID = selectedCountryItems.join(",");
     if (validateform()) {
@@ -583,7 +598,7 @@ function AddEditForm(props) {
           postItem({ ...formfield, isSubmit: true });
         }
       } else {
-        alert(alertMessage.rfelog.invalidapprovermsg);
+        alert(alertMessage.exemptionlog.invalidapprovermsg);
       }
     }
   };
@@ -592,10 +607,14 @@ function AddEditForm(props) {
       return;
     }
     if (formfield.countryList.length) {
+      let selectedCountryItems = formfield.countryList.map(
+        (item) => item.value
+      );
+      formfield.countryID = selectedCountryItems.join(",");
       //setissubmitted(true);
       postItem({ ...formfield, isSubmit: false });
     } else {
-      alert(alertMessage.rfelog.draftInvalid);
+      alert(alertMessage.exemptionlog.draftInvalid);
     }
     // }
     // hideAddPopup();
@@ -607,7 +626,26 @@ function AddEditForm(props) {
       hideAddPopup();
     }
   };
+  const downloadfile = async (fileurl) => {
+    const responsedata = await downloadFile({
+      uploadedFile: fileurl,
+    });
 
+    const filename = fileurl.split("/")[fileurl.split("/").length - 1];
+    FileDownload(responsedata, filename);
+  };
+  const setExemptionlogtype = (value) => {
+    setExemLogTypeFn(value);
+    if (value === "zug") {
+      setformfield({
+        ...formInitialValueZUG,
+      });
+    } else {
+      setformfield({
+        ...formInitialValueURPM,
+      });
+    }
+  };
   return loading ? (
     <Loading />
   ) : (
@@ -637,7 +675,7 @@ function AddEditForm(props) {
               className={`tab-btn ${
                 selectedExemptionLog === item.value ? "selected" : "normal"
               }`}
-              onClick={() => setExemLogTypeFn(item.value)}
+              onClick={() => setExemptionlogtype(item.value)}
             >
               {item.label}
             </div>
@@ -673,7 +711,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     isToolTip={true}
-                    tooltipmsg={tooltip["Classification"]}
+                    tooltipmsg={tooltip["TypeOfExemption"]}
                     issubmitted={issubmitted}
                     selectopts={frmTypeOfExemption}
                     isdisabled={isfrmdisabled}
@@ -786,8 +824,8 @@ function AddEditForm(props) {
                   <div className="col-md-3">
                     <FrmInput
                       title={"ZUG Chapter Version"}
-                      name={"ZUGChapter"}
-                      value={formfield.ZUGChapter}
+                      name={"zugChapterVersion"}
+                      value={formfield.zugChapterVersion}
                       type={"text"}
                       handleChange={handleChange}
                       isReadMode={isReadMode}
@@ -913,7 +951,7 @@ function AddEditForm(props) {
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       isToolTip={true}
-                      tooltipmsg={tooltip["MaterialBreach"]}
+                      tooltipmsg={tooltip["pC_URPMExemptionRequired"]}
                       issubmitted={issubmitted}
                       selectopts={pcurmpmopts}
                       isdisabled={isfrmdisabled}
@@ -963,7 +1001,7 @@ function AddEditForm(props) {
                       name={"status"}
                       value={formfield.status}
                       handleChange={handleSelectChange}
-                      isRequired={false}
+                      isRequired={true}
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
@@ -976,7 +1014,7 @@ function AddEditForm(props) {
                       name={"globalUWStatus"}
                       value={formfield.globalUWStatus}
                       handleChange={handleSelectChange}
-                      isRequired={false}
+                      isRequired={true}
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
@@ -986,7 +1024,7 @@ function AddEditForm(props) {
                   )}
                 </div>
                 {selectedExemptionLog === "zug" &&
-                  formfield.status === zuglog_status.Expired_Not_Needed && (
+                  formfield.status === zuglog_status.No_longer_required && (
                     <div className="col-md-3">
                       <FrmDatePicker
                         title={"Expiring Date"}
@@ -1049,10 +1087,15 @@ function AddEditForm(props) {
                     handleFileDelete={handleFileDelete}
                     isRequired={false}
                     isReadMode={isReadMode}
+                    isShowDelete={
+                      (!isReadMode && !formfield.isSubmit) ||
+                      (!isReadMode && userProfile.isAdminGroup)
+                    }
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isshowloading={fileuploadloader ? fileuploadloader : false}
                     isdisabled={isfrmdisabled}
+                    downloadfile={downloadfile}
                   />
                 </div>
               </div>
@@ -1195,6 +1238,7 @@ const mapActions = {
   getAllCountry: countryActions.getAllCountry,
   uploadFile: commonActions.uploadFile,
   deleteFile: commonActions.deleteFile,
+  downloadFile: commonActions.downloadFile,
   getAllUsers: userActions.getAllUsers,
 };
 export default connect(mapStateToProp, mapActions)(AddEditForm);

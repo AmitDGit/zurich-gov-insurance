@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { USER_ROLE } from "../../constants";
-
+import useUserProfile from "../../customhooks/useUserProfile";
 function Navbar({ ...props }) {
   const { appmenu } = props.state;
   const { location, userProfile } = props;
-  const superadminrole = USER_ROLE.superAdmin;
-  const [loggeduserrole, setloggeduserrole] = useState("");
-  const [roleadmin, setroleadmin] = useState(false);
 
-  useEffect(() => {
+  const [loggeduserrole, setloggeduserrole] = useState("");
+  // const [roleadmin, setroleadmin] = useState(false);
+  const userProfiles = useUserProfile();
+  /*useEffect(() => {
     let loggeduserrole = userProfile ? userProfile.userRoles[0].roleId : "";
     let roleadmin = false;
     if (
@@ -20,7 +20,7 @@ function Navbar({ ...props }) {
     }
     setloggeduserrole(loggeduserrole);
     setroleadmin(roleadmin);
-  }, [userProfile]);
+  }, [userProfile]);*/
 
   //console.log(userProfile);
   return (
@@ -33,19 +33,21 @@ function Navbar({ ...props }) {
         </Link>
         {userProfile && (
           <>
-            {loggeduserrole === superadminrole && (
+            {userProfiles && userProfiles.isSuperAdmin && (
               <Link to="/region">
                 <div className="menu-item">Manage</div>
               </Link>
             )}
-            {loggeduserrole !== superadminrole && roleadmin && (
-              <Link to="/user">
-                <div className="menu-item">Manage</div>
-              </Link>
-            )}
+            {userProfiles &&
+              !userProfiles.isSuperAdmin &&
+              (userProfiles.isGlobalAdmin || userProfiles.isRegionAdmin) && (
+                <Link to="/user">
+                  <div className="menu-item">Manage</div>
+                </Link>
+              )}
             {appmenu.isSubmenu ? (
               <div className="submenu-container">
-                {loggeduserrole === superadminrole && (
+                {userProfiles && userProfiles.isSuperAdmin && (
                   <>
                     <Link to="/region">
                       <div
@@ -121,17 +123,20 @@ function Navbar({ ...props }) {
                     </Link>
                   </>
                 )}
-                {(loggeduserrole === superadminrole || roleadmin) && (
-                  <Link to="/user">
-                    <div
-                      className={`menu-item ${location.pathname === "/user" &&
-                        "active"}`}
-                    >
-                      User
-                    </div>
-                  </Link>
-                )}
-                {loggeduserrole === superadminrole && (
+                {userProfiles &&
+                  (userProfiles.isSuperAdmin ||
+                    userProfiles.isGlobalAdmin ||
+                    userProfiles.isRegionAdmin) && (
+                    <Link to="/user">
+                      <div
+                        className={`menu-item ${location.pathname === "/user" &&
+                          "active"}`}
+                      >
+                        User
+                      </div>
+                    </Link>
+                  )}
+                {userProfiles && userProfiles.isSuperAdmin && (
                   <Link to="/lookup">
                     <div
                       className={`menu-item ${location.pathname === "/lookup" &&

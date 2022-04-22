@@ -21,6 +21,7 @@ import FrmInput from "../common-components/frminput/FrmInput";
 import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
+import useUserProfile from "../../customhooks/useUserProfile";
 let pageIndex = 1;
 let totalLogCount = 0;
 function Exemptionlog({ ...props }) {
@@ -38,7 +39,6 @@ function Exemptionlog({ ...props }) {
     getLookupByType,
     checkIsInUse,
     deleteItem,
-    userProfile,
   } = props;
 
   const [logstate, setlogstate] = useState({
@@ -49,6 +49,7 @@ function Exemptionlog({ ...props }) {
     ZUGdata: [],
     URPMdata: [],
   });
+  const userProfile = useUserProfile();
   const [logsDraftData, setlogsDraftData] = useState({
     ZUGdraftdata: [],
     URPMdraftdata: [],
@@ -187,7 +188,7 @@ function Exemptionlog({ ...props }) {
           isShow &&
           selfilter.countryID !== "" &&
           item.countryID &&
-          selfilter.countryID !== item.countryID
+          !item.countryID.split(",").includes(selfilter.countryID)
         ) {
           isShow = false;
         }
@@ -199,10 +200,15 @@ function Exemptionlog({ ...props }) {
           isShow = false;
         }
         if (
-          isShow &&
-          selectedExemptionLog === "zug" &&
-          selfilter.section.trim() !== "" &&
-          !item.section.toLowerCase().includes(selfilter.section.toLowerCase())
+          (isShow &&
+            selectedExemptionLog === "zug" &&
+            selfilter.section.trim() !== "" &&
+            !item.section
+              .toLowerCase()
+              .includes(selfilter.section.toLowerCase())) ||
+          (isShow &&
+            selectedExemptionLog === "urpm" &&
+            selfilter.section !== item.section)
         ) {
           isShow = false;
         }
@@ -217,12 +223,18 @@ function Exemptionlog({ ...props }) {
         if (isShow && selfilter.role !== "") {
           if (
             selfilter.role === "approver" &&
-            item.approver !== userProfile.emailAddress
+            ((selectedExemptionLog === "zug" &&
+              item.approver !== userProfile.emailAddress) ||
+              (selectedExemptionLog === "urpm" &&
+                item.globalUWApprover !== userProfile.emailAddress))
           ) {
             isShow = false;
           } else if (
             selfilter.role === "initiator" &&
-            item.empowermentRequestedBy !== userProfile.emailAddress
+            ((selectedExemptionLog === "zug" &&
+              item.empowermentRequestedBy !== userProfile.emailAddress) ||
+              (selectedExemptionLog === "urmp" &&
+                item.submitter !== userProfile.emailAddress))
           ) {
             isShow = false;
           }
@@ -356,7 +368,7 @@ function Exemptionlog({ ...props }) {
       },
     },
     {
-      dataField: "countryName",
+      dataField: "countryNames",
       text: "Country",
       sort: true,
       headerStyle: (colum, colIndex) => {
@@ -401,7 +413,7 @@ function Exemptionlog({ ...props }) {
       text: "Type of Business",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "160px" };
+        return { width: "200px" };
       },
     },
     {
@@ -417,7 +429,10 @@ function Exemptionlog({ ...props }) {
       text: "P&C URPM exemption required",
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "150px" };
+        return { width: "200px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.pC_URPMExemptionRequired ? "Yes" : "No"}</span>;
       },
     },
     {
@@ -437,7 +452,7 @@ function Exemptionlog({ ...props }) {
       },
     },
     {
-      dataField: "individualGrantedEmpowerment",
+      dataField: "individualGrantedEmpowermentName",
       text: "Individual Granted Empowerment",
       sort: false,
       headerStyle: (colum, colIndex) => {
@@ -489,27 +504,6 @@ function Exemptionlog({ ...props }) {
   ];
   const columnsURPM = [
     {
-      dataField: "viewaction",
-      text: "View",
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return (
-          <div
-            className="view-icon"
-            onClick={handleEdit}
-            rowid={row.urpmExemptionLogId}
-            mode={"view"}
-          ></div>
-        );
-      },
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return {
-          width: "70px",
-          textAlign: "center",
-        };
-      },
-    },
-    {
       dataField: "editaction",
       text: "Edit",
       formatter: (cell, row, rowIndex, formatExtraData) => {
@@ -532,6 +526,27 @@ function Exemptionlog({ ...props }) {
           ></div>
         ) : (
           ""
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "70px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "viewaction",
+      text: "View",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="view-icon"
+            onClick={handleEdit}
+            rowid={row.urpmExemptionLogId}
+            mode={"view"}
+          ></div>
         );
       },
       sort: false,
@@ -612,7 +627,7 @@ function Exemptionlog({ ...props }) {
       },
     },
     {
-      dataField: "countryName",
+      dataField: "countryNames",
       text: "Country Granted Exemption",
       sort: true,
       headerStyle: (colum, colIndex) => {
@@ -637,7 +652,7 @@ function Exemptionlog({ ...props }) {
       },
     },
     {
-      dataField: "individualGrantedEmpowerment",
+      dataField: "individualGrantedEmpowermentName",
       text: "Individual Granted Empowerment",
       sort: false,
       headerStyle: (colum, colIndex) => {
@@ -718,7 +733,6 @@ function Exemptionlog({ ...props }) {
 
   useEffect(() => {
     if (isLoadingStarted) {
-      debugger;
       //setdata(logItmes);
       let dataArrayName =
         selectedExemptionLog === "zug" ? "ZUGdata" : "URPMdata";
@@ -982,10 +996,11 @@ function Exemptionlog({ ...props }) {
     status: "",
     exmpAttachmentList: [],
     fullFilePath: "",
-    ExemptionLogType: "",
+    exemptionLogType: "",
     isSubmit: false,
-    ZUGChapter: "",
-    exmpLogEmailLink: window.location.href,
+    zugChapterVersion: "",
+    isActive: true,
+    exemptionLogEmailLink: window.location.href,
   };
   const formInitialValueURPM = {
     countryID: "",
@@ -999,16 +1014,19 @@ function Exemptionlog({ ...props }) {
     globalUWApproverAD: {},
     globalUWApproverName: "",
     CC: "test@test.com",
+    submitter: userProfile.emailAddress,
     section: "",
     sectionSubject: "",
     requestDetails: "",
     temporaryRequestEndDate: null,
     globalUWApproverComments: "",
     globalUWStatus: "",
+    exemptionLogType: "",
     exmpAttachmentList: [],
     fullFilePath: "",
     isSubmit: false,
-    exmpLogEmailLink: window.location.href,
+    isActive: true,
+    exemptionLogEmailLink: window.location.href,
   };
   const [formIntialState, setformIntialState] = useState(formInitialValueZUG);
 
@@ -1036,15 +1054,17 @@ function Exemptionlog({ ...props }) {
         urpmExemptionLogId: itemid,
       });
     }
-
     if (response) {
-      debugger;
       let selectedcountry = response.countryID.split(",");
       let selectedcountryList = [];
-      frmCountrySelectOpts.forEach((country) => {
+      let countrylist = await getAllCountry({ IsLog: true });
+      countrylist.forEach((country) => {
         selectedcountry.forEach((item) => {
-          if (item === country.value) {
-            selectedcountryList.push(country);
+          if (item === country.countryID) {
+            selectedcountryList.push({
+              label: country.countryName,
+              value: country.countryID,
+            });
           }
         });
       });
@@ -1117,7 +1137,9 @@ function Exemptionlog({ ...props }) {
         RequesterUserId: userProfile.userId,
         rfeLogId: item.rfeLogId,
       });*/
-      if (queryparam.id) {
+      let compeletedfieldname =
+        selectedExemptionLog === "zug" ? "ZUGLoadedAll" : "URPMLoadedAll";
+      if (queryparam.id || !logstate[compeletedfieldname]) {
         window.location = "/exemptionlogs";
       } else {
         setselfilter(intialFilterState);
@@ -1163,13 +1185,12 @@ function Exemptionlog({ ...props }) {
     item.fullFilePath = fullFilePath;
     item.exemptionLogType = selectedExemptionLog;
     let response;
-    debugger;
     let datafieldname = selectedExemptionLog === "zug" ? "ZUGdata" : "URPMdata";
     let id =
       selectedExemptionLog === "zug"
         ? "zugExemptionLogId"
         : "urpmExemptionLogId";
-    let createmodfield = item[id] ? "modifiedByID" : "createdByID";
+    /*let createmodfield = item[id] ? "modifiedByID" : "createdByID";
 
     if (selectedExemptionLog === "zug") {
       response = await postItemZUG({
@@ -1181,10 +1202,24 @@ function Exemptionlog({ ...props }) {
         ...item,
         [createmodfield]: userProfile.userId,
       });
+    }*/
+    if (selectedExemptionLog === "zug") {
+      response = await postItemZUG({
+        ...item,
+        createdByID: userProfile.userId,
+        modifiedByID: userProfile.userId,
+      });
+    } else {
+      response = await postItemURPM({
+        ...item,
+        createdByID: userProfile.userId,
+        modifiedByID: userProfile.userId,
+      });
     }
-
     if (response) {
-      if (queryparam.id) {
+      let compeletedfieldname =
+        selectedExemptionLog === "zug" ? "ZUGLoadedAll" : "URPMLoadedAll";
+      if (queryparam.id || !logstate[compeletedfieldname]) {
         window.location = "/exemptionlogs";
       } else {
         let logid = item[id] ? item[id] : response;
@@ -1272,6 +1307,8 @@ function Exemptionlog({ ...props }) {
           selectedExemptionLog={selectedExemptionLog}
           setExemLogTypeFn={setExemLogTypeFn}
           exemptionlogsType={exemptionlogsType}
+          formInitialValueZUG={formInitialValueZUG}
+          formInitialValueURPM={formInitialValueURPM}
         ></AddEditForm>
       ) : (
         <>
@@ -1279,15 +1316,6 @@ function Exemptionlog({ ...props }) {
           {filterbox ? (
             <div className="page-filter collapsable">
               <div className="filter-container">
-                <div className="frm-filter">
-                  <FrmSelect
-                    title={"Exemption Log Type"}
-                    name={"exemptionLogType"}
-                    selectopts={exemptionlogsType}
-                    handleChange={onSearchFilterSelect}
-                    value={selectedExemptionLog}
-                  />
-                </div>
                 <div className="frm-filter">
                   <FrmSelect
                     title={"Country"}
@@ -1379,7 +1407,17 @@ function Exemptionlog({ ...props }) {
               <div className="progress-completion">Loading logs...</div>
             </div>
           )}
-
+          <div style={{ paddingLeft: "20px" }}>
+            <div className="frm-filter">
+              <FrmSelect
+                title={"Exemption Log Type"}
+                name={"exemptionLogType"}
+                selectopts={exemptionlogsType}
+                handleChange={onSearchFilterSelect}
+                value={selectedExemptionLog}
+              />
+            </div>
+          </div>
           <div className="tabs-container">
             {logTypes.map((item) => (
               <div
