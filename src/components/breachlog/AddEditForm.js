@@ -479,8 +479,8 @@ function AddEditForm(props) {
         let isExits = false;
         for (let j = 0; j < tempattachementfiles.length; j++) {
           let existfile = tempattachementfiles[j]["filePath"];
-          existfile = existfile.split("\\")[existfile.split("\\").length - 1];
-          let currentfile = item.split("\\")[item.split("\\").length - 1];
+          existfile = existfile.split("/")[existfile.split("/").length - 1];
+          let currentfile = item.split("/")[item.split("/").length - 1];
           if (existfile === currentfile) {
             isExits = true;
             break;
@@ -572,8 +572,10 @@ function AddEditForm(props) {
     window.scrollTo({ top: scrollPosition, behavior: "smooth" });
   };
   const assignPeoplepikerUser = (name, value) => {
-    let displayname = value[0].firstName + " " + value[0].lastName;
-    let email = value[0]["emailAddress"];
+    let displayname = value.length
+      ? value[0].firstName + " " + value[0].lastName
+      : "";
+    let email = value.length ? value[0]["emailAddress"] : "";
     setformfield({
       ...formfield,
       [name]: email,
@@ -1211,9 +1213,7 @@ function AddEditForm(props) {
                     handleFileDelete={handleFileDelete}
                     isRequired={false}
                     isReadMode={isReadMode}
-                    isShowDelete={
-                      !isReadMode && !isdisabled && !formfield.isSubmit
-                    }
+                    isShowDelete={!isReadMode && !isdisabled}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isshowloading={fileuploadloader ? fileuploadloader : false}

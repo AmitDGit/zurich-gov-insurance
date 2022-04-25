@@ -23,7 +23,7 @@ function PeoplePickerPopup(props) {
     e.preventDefault();
     setissubmitted(true);
     if (!formfield[name].length) {
-      return;
+      // return;
     }
     assignPeoplepikerUser(name, formfield[name]);
     hideAddPopup();
@@ -51,7 +51,7 @@ function PeoplePickerPopup(props) {
                 type={"text"}
                 handleChange={handleApproverChange}
                 singleSelection={true}
-                isRequired={true}
+                isRequired={false}
                 validationmsg={"Mandatory field"}
                 issubmitted={issubmitted}
                 handleInputSearchChange={handleInputSearchChange}
