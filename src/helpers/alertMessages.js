@@ -115,6 +115,7 @@ export const alertMessage = {
   commonmsg: {
     fileuploaderror:
       "Error in file upload! Please check internet connectivity and try reuploading.",
-    servererror: "Internal server error - 500",
+    servererror:
+      "Internal server error - 500! Please check internet connectivity and try again.",
   },
 };

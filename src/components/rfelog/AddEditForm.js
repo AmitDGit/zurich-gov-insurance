@@ -27,6 +27,7 @@ import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTex
 import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import PeoplePickerPopup from "./PeoplePickerPopup";
 import Rfelocallog from "./Rfelocallog";
+import useUserProfile from "../../customhooks/useUserProfile";
 function AddEditForm(props) {
   const { lobState, userState, countryState } = props.state;
   const {
@@ -51,6 +52,7 @@ function AddEditForm(props) {
     userProfile,
     queryparam,
   } = props;
+  const userProfiles = useUserProfile();
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
@@ -822,7 +824,10 @@ function AddEditForm(props) {
                     handleFileDelete={handleFileDelete}
                     isRequired={false}
                     isReadMode={isReadMode}
-                    isShowDelete={!isReadMode && !formfield.isSubmit}
+                    isShowDelete={
+                      (!isReadMode && !formfield.isSubmit) ||
+                      (!isReadMode && userProfiles.isAdminGroup)
+                    }
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
                     isshowloading={fileuploadloader ? fileuploadloader : false}

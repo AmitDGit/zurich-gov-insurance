@@ -130,10 +130,12 @@ function FrmInputSearch(props) {
     let tempApprover = [...approvers];
     tempApprover = tempApprover.filter((user) => user.emailAddress !== userId);
     setapprovers([...tempApprover]);
-    let tempsuggestedappr = suggestedapprovers.filter(
-      (user) => user.emailAddress === userId
-    );
-    setsuggestedOptions([...suggestedOptions, ...tempsuggestedappr]);
+    if (suggestedapprovers) {
+      let tempsuggestedappr = suggestedapprovers.filter(
+        (user) => user.emailAddress === userId
+      );
+      setsuggestedOptions([...suggestedOptions, ...tempsuggestedappr]);
+    }
   };
   const closesearchBox = () => {
     setshowsearchResultBox(false);
