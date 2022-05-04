@@ -81,6 +81,7 @@ function Rfelog({ ...props }) {
     "rfeLogDetails",
     "underwriterGrantingEmpowermentComments",
   ];
+  const exportCapitalField = {};
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     underwriterFilterOpts: [],
     statusFilterOpts: [],

@@ -253,7 +253,7 @@ a {
   max-width: 350px;
   border-radius: 17px;
 }
-
+.logs-form .frm-field input{max-width: 100%;}
 .frm-field input::placeholder {
   color: #2167ad;
   font-style: italic;

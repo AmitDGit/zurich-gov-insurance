@@ -22,6 +22,7 @@ function PaginationData(props) {
     exportFieldTitles,
     exportHtmlFields,
     exportDateFields,
+    exportCapitalField,
     pageno,
   } = props;
   const { SearchBar, ClearSearchButton } = Search;
@@ -108,6 +109,7 @@ function PaginationData(props) {
                       exportFieldTitles={exportFieldTitles}
                       exportHtmlFields={exportHtmlFields}
                       exportDateFields={exportDateFields}
+                      exportCapitalField={exportCapitalField}
                     />
                   ) : (
                     ""

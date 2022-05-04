@@ -151,6 +151,7 @@ function Breachlog({ ...props }) {
     marketBasketName: "ZNA Market Basket",
   };
   const exportHtmlFields = ["breachDetails", "actionPlan", "actionUpdate"];
+  const exportCapitalField = {};
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     classificationFilterOpts: [],
     groupFilterOpts: [],

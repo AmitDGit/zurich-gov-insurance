@@ -108,6 +108,18 @@ const getallURPMLogs = (requestParam) => {
     }
   };
 };
+const getURPMApprover = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await exemptionlogService.getURPMApproverService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 const getByIdURPM = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -141,7 +153,7 @@ export const exemptionlogActions = {
   getByIdZUG,
   postItemZUG,
   deleteItemZUG,
-
+  getURPMApprover,
   getallURPMLogs,
   getByIdURPM,
   postItemURPM,
@@ -195,6 +207,11 @@ const getByIdURPMService = async (requestParam) => {
   const response = await Axios.get(`exemption/geturpmexemptionlog`, param);
   return response;
 };
+const getURPMApproverService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`exemption/geturpmapproverusers`, param);
+  return response;
+};
 const postItemURPMService = async (requestParam) => {
   debugger;
   const response = await Axios.post(
@@ -212,7 +229,7 @@ const exemptionlogService = {
   postItemZUGService,
   deleteItemZUGService,
   getallZUGunderwriterService,
-
+  getURPMApproverService,
   getallURPMLogsService,
   getByIdURPMService,
   postItemURPMService,
