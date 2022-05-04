@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Popup from "../common-components/Popup";
 import FrmInputSearch from "../common-components/frmpeoplepicker/FrmInputSearch";
-import { userActions, lobActions } from "../../actions";
+import {
+  userActions,
+  lobchapterActions,
+  exemptionlogActions,
+} from "../../actions";
 import { connect } from "react-redux";
 function PeoplePickerPopup(props) {
   const {
@@ -13,9 +17,11 @@ function PeoplePickerPopup(props) {
     assignPeoplepikerUser,
     userState,
     getAllUsers,
-    lobId,
-    getallLobApprovers,
+    lobChapter,
+    getLOBChapterApprover,
+    getURPMApprover,
     singleSelection,
+    selectedExemptionLog,
   } = props;
   const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
@@ -28,7 +34,7 @@ function PeoplePickerPopup(props) {
     e.preventDefault();
     setissubmitted(true);
     if (!formfield[name].length) {
-      return;
+      //return;
     }
     assignPeoplepikerUser(name, formfield[name], usertype);
     hideAddPopup();
@@ -38,8 +44,11 @@ function PeoplePickerPopup(props) {
   };
   useEffect(async () => {
     let tempapprover = [];
-    if (lobId) {
-      tempapprover = await getallLobApprovers({ lobid: lobId });
+    if (selectedExemptionLog === "zug" && lobChapter) {
+      tempapprover = await getLOBChapterApprover({ LOBChapterID: lobChapter });
+      setsuggestedapprovers([...tempapprover]);
+    } else if (selectedExemptionLog === "urpm") {
+      tempapprover = await getURPMApprover({});
       setsuggestedapprovers([...tempapprover]);
     }
   }, []);
@@ -64,7 +73,7 @@ function PeoplePickerPopup(props) {
                 type={"text"}
                 handleChange={handleApproverChange}
                 singleSelection={singleSelection ? singleSelection : false}
-                isRequired={true}
+                isRequired={false}
                 validationmsg={"Mandatory field"}
                 issubmitted={issubmitted}
                 handleInputSearchChange={handleInputSearchChange}
@@ -95,6 +104,7 @@ const mapStateToProp = (state) => {
 };
 const mapActions = {
   getAllUsers: userActions.getAllUsers,
-  getallLobApprovers: lobActions.getallLobApprovers,
+  getLOBChapterApprover: lobchapterActions.getLOBChapterApprover,
+  getURPMApprover: exemptionlogActions.getURPMApprover,
 };
 export default connect(mapStateToProp, mapActions)(PeoplePickerPopup);

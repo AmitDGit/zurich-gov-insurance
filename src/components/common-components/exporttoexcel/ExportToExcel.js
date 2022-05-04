@@ -16,6 +16,7 @@ function ExportToExcel(props) {
     exportFieldTitles,
     exportHtmlFields,
     exportDateFields,
+    exportCapitalField,
   } = props;
   let column = [];
   let data = [];
@@ -35,6 +36,8 @@ function ExportToExcel(props) {
           dataitem.push(item[key].replace(/<\/?[^>]+(>|$)/g, ""));
         } else if (exportDateFields[key] && item[key]) {
           dataitem.push(formatDate(item[key]));
+        } else if (exportCapitalField && exportCapitalField[key] && item[key]) {
+          dataitem.push(item[key].toUpperCase());
         } else {
           dataitem.push(item[key]);
         }

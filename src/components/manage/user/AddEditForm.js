@@ -47,6 +47,7 @@ function AddEditForm(props) {
     },
   ]);
   const handleChange = (e) => {
+    debugger;
     let { name, value } = e.target;
     if (e.target.type === "checkbox") {
       value = e.target.checked;

@@ -95,7 +95,7 @@ function FrmInputSearch(props) {
     if (isSingleSelect) {
       setapprovers([...tempApprover]);
       if (issuggested) {
-        searchListApprovers = suggestedOptions.filter(
+        searchListApprovers = suggestedapprovers.filter(
           (approver) => approver.emailAddress !== tempApprover[0].emailAddress
         );
       } else {

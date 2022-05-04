@@ -11,6 +11,7 @@ function FrmMultiselect(props) {
     validationmsg,
     issubmitted,
     selectopts,
+    isReadMode,
   } = props;
 
   const [selectedItems, setselectedItems] = useState(value);
@@ -52,18 +53,21 @@ function FrmMultiselect(props) {
       <label htmlFor={name}>
         <div className="label">{title}</div>
       </label>
-      <Multiselect
-        className="custom-multiselect"
-        options={selectopts}
-        displayValue="label"
-        hidePlaceholder={false}
-        showCheckbox={true}
-        placeholder="Select"
-        selectedValues={selectedItems}
-        onClick={onClickHandle}
-        onSelect={onSelect}
-        onRemove={onRemove}
-      ></Multiselect>
+      {!isReadMode && (
+        <Multiselect
+          className="custom-multiselect"
+          options={selectopts}
+          displayValue="label"
+          hidePlaceholder={false}
+          showCheckbox={true}
+          placeholder="Select"
+          selectedValues={selectedItems}
+          onClick={onClickHandle}
+          onSelect={onSelect}
+          onRemove={onRemove}
+        ></Multiselect>
+      )}
+
       {isRequired && issubmitted && !selectedItems.length ? (
         <div className="validationError">{validationmsg}</div>
       ) : (
@@ -73,19 +77,23 @@ function FrmMultiselect(props) {
         {selectopts.length && selectedItems.length === selectopts.length ? (
           <div className="multi-selected-opts" key={selectopts[0].value}>
             <div>{selectopts[0].label}</div>
-            <div
-              className="delete-icon"
-              onClick={() => removeSelectedItem(selectopts[0].value)}
-            ></div>
+            {!isReadMode && (
+              <div
+                className="delete-icon"
+                onClick={() => removeSelectedItem(selectopts[0].value)}
+              ></div>
+            )}
           </div>
         ) : (
           selectedItems.map((item) => (
             <div className="multi-selected-opts" key={item.value}>
               <div>{item.label}</div>
-              <div
-                className="delete-icon"
-                onClick={() => removeSelectedItem(item.value)}
-              ></div>
+              {!isReadMode && (
+                <div
+                  className="delete-icon"
+                  onClick={() => removeSelectedItem(item.value)}
+                ></div>
+              )}
             </div>
           ))
         )}

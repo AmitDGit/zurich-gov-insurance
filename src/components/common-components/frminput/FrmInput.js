@@ -33,7 +33,7 @@ function FrmInput(props) {
             disabled={isdisabled ? isdisabled : false}
             onChange={handleChange}
             onClick={handleClick}
-            maxLength="60"
+            maxLength="80"
             autoComplete="off"
           ></input>
           {isRequired && issubmitted && !value ? (

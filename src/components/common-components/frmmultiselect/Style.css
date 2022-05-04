@@ -103,4 +103,5 @@
 }
 .optionListContainer {
   margin-top: 0px !important;
+  z-index: 11 !important;
 }
