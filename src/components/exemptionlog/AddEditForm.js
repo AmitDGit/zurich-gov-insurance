@@ -5,7 +5,7 @@ import FrmDatePicker from "../common-components/frmdatepicker/FrmDatePicker";
 import FrmSelect from "../common-components/frmselect/FrmSelect";
 import FrmToggleSwitch from "../common-components/frmtoggelswitch/FrmToggleSwitch";
 import FrmFileUpload from "../common-components/frmfileupload/FrmFileUpload";
-import FrmMultiselectOptsShow from "../common-components/frmmultiselectoptsshow/FrmMultiselectOptsShow";
+import FrmMultiselect from "../common-components/frmmultiselect/FrmMultiselect";
 import Loading from "../common-components/Loading";
 import moment from "moment";
 import "./Style.css";
@@ -53,7 +53,6 @@ function AddEditForm(props) {
     formInitialValueURPM,
     formInitialValueZUG,
   } = props;
-  console.log(isEditMode);
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
@@ -69,7 +68,7 @@ function AddEditForm(props) {
   const [frmURPMStatus, setfrmURPMStatus] = useState([]);
   const [frmstatus, setfrmstatus] = useState([]);
   const [tooltip, settooltip] = useState({});
-  const zuglog_status = {
+  const exemption_status = {
     Pending: EXEMPTION_ZUG_LOG_STATUS.Pending,
     Empowerment_granted: EXEMPTION_ZUG_LOG_STATUS.Empowerment_granted,
     Empowerment_not_granted: EXEMPTION_ZUG_LOG_STATUS.Empowerment_not_granted,
@@ -77,14 +76,7 @@ function AddEditForm(props) {
     Withdrawn: EXEMPTION_ZUG_LOG_STATUS.Withdrawn,
     No_longer_required: EXEMPTION_ZUG_LOG_STATUS.No_longer_required,
   };
-  const urpmlog_status = {
-    Pending: EXEMPTION_URPM_LOG_STATUS.Pending,
-    Empowerment_granted: EXEMPTION_URPM_LOG_STATUS.Empowerment_granted,
-    Empowerment_not_granted: EXEMPTION_URPM_LOG_STATUS.Empowerment_not_granted,
-    More_Information_Needed: EXEMPTION_URPM_LOG_STATUS.More_Information_Needed,
-    Withdrawn: EXEMPTION_URPM_LOG_STATUS.Withdrawn,
-    No_longer_required: EXEMPTION_URPM_LOG_STATUS.No_longer_required,
-  };
+
   const exemptionType_Individual = EXEMPTION_CONSTANT.TypeExemption_Individual;
   const fullTransitional_Transitional =
     EXEMPTION_CONSTANT.FullTransitional_Transitional;
@@ -94,6 +86,7 @@ function AddEditForm(props) {
     isadmin: false,
     issuperadmin: false,
     isgrantedempowrment: false,
+    isroleloaded: false,
   });
   const FileDownload = require("js-file-download");
   const ZUGMandatoryFields = [
@@ -110,6 +103,7 @@ function AddEditForm(props) {
     "typeOfBusiness",
     "globalUWApprover",
     "globalUWStatus",
+    "temporaryRequestEndDate",
   ];
   const [mandatoryFields, setmandatoryFields] = useState([]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
@@ -123,7 +117,7 @@ function AddEditForm(props) {
       });
     });
     selectOpts.sort(dynamicSort("label"));
-    setcountryopts([selectInitiVal, ...selectOpts]);
+    setcountryopts([...selectOpts]);
   }, [countryState.countryItems]);
 
   const [logStatus, setlogStatus] = useState({});
@@ -147,6 +141,7 @@ function AddEditForm(props) {
       isadmin: false,
       issuperadmin: false,
       isgrantedempowrment: false,
+      isroleloaded: true,
     };
     if (formfield.isSubmit) {
       if (
@@ -184,10 +179,23 @@ function AddEditForm(props) {
     setuserroles({ ...userroles, ...tempuserroles });
   }, []);
   useEffect(async () => {
+    if (!userroles.isroleloaded) {
+      return;
+    }
     if (userroles.isapprover || userroles.isgrantedempowrment) {
       getAllCountry();
     } else {
-      getAllCountry({ IsLog: true });
+      let countrylist = await getAllCountry({ IsLog: true });
+      if (userProfile.isCountryAdmin && !formfield.isSubmit) {
+        countrylist = countrylist.map((item) => ({
+          label: item.countryName,
+          value: item.countryID,
+        }));
+        setformfield({
+          ...formfield,
+          countryList: countrylist,
+        });
+      }
     }
     let tempTypeOfExemption = await getLookupByType({
       LookupType: "EXMPTypeOfExemption",
@@ -201,9 +209,8 @@ function AddEditForm(props) {
     let tempZUGStatus = await getLookupByType({
       LookupType: "EXMPZUGStatus",
     });
-    let tempURPMStatus = await getLookupByType({
-      LookupType: "EXMPZUGStatus",
-    });
+    let tempURPMStatus = tempZUGStatus;
+
     let tempURPMSection = await getLookupByType({
       LookupType: "EXMPURPMSection",
     });
@@ -241,13 +248,17 @@ function AddEditForm(props) {
     statusArray.forEach((item) => {
       let isshow = false;
       //status pending
-      if (item.lookupID === logStatus.Pending) {
-        if (!formfield.isSubmit || formfield.status === logStatus.Pending) {
+      if (item.lookupID === exemption_status.Pending) {
+        if (
+          !formfield.isSubmit ||
+          formfield.status === exemption_status.Pending ||
+          formfield.globalUWStatus === exemption_status.Pending
+        ) {
           isshow = true;
         }
       }
       //status more information needed
-      if (item.lookupID !== logStatus.Pending && formfield.isSubmit) {
+      if (item.lookupID !== exemption_status.Pending && formfield.isSubmit) {
         isshow = true;
         /* if (userroles.isapprover || userroles.issuperadmin) {
           
@@ -272,23 +283,39 @@ function AddEditForm(props) {
     setfrmURPMSection([selectInitiVal, ...tempURPMSection]);
     setfrmZUGStatus([selectInitiVal, ...tempZUGStatus]);
     setfrmURPMStatus([selectInitiVal, ...tempURPMStatus]);
+
     if (frmstatus.length) {
       setfrmstatus([...frmstatus]);
     }
+
     setloading(false);
     //setDefaultLogStatus();
   }, [userroles, isEditMode]);
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (selectedExemptionLog === "zug") {
       setmandatoryFields([...ZUGMandatoryFields]);
     } else {
       setmandatoryFields([...URPMMandatoryFields]);
     }
     let logstatus =
-      selectedExemptionLog === "zug" ? zuglog_status : urpmlog_status;
+      selectedExemptionLog === "zug" ? exemption_status : urpmlog_status;
     setlogStatus(logstatus);
-  }, [selectedExemptionLog]);
+  }, [selectedExemptionLog]);*/
+
+  useEffect(() => {
+    if (!formfield.status) {
+      return;
+    }
+    let tempmandatoryfields = [];
+    if (formfield.status === exemption_status.No_longer_required) {
+      tempmandatoryfields.push("expiringDate");
+    }
+    if (formfield.fullTransitional == fullTransitional_Transitional) {
+      tempmandatoryfields.push("transitionalExpireDate");
+    }
+    setmandatoryFields([...ZUGMandatoryFields, ...tempmandatoryfields]);
+  }, [formfield.status, formfield.fullTransitional]);
 
   /*  useEffect(() => {
     const statusArray =
@@ -347,14 +374,14 @@ function AddEditForm(props) {
       if (selectedExemptionLog === "zug") {
         setformfield({
           ...formfield,
-          status: logStatus.Pending,
+          status: exemption_status.Pending,
           globalUWStatus: "",
         });
       } else {
         setformfield({
           ...formfield,
           status: "",
-          globalUWStatus: logStatus.Pending,
+          globalUWStatus: exemption_status.Pending,
         });
       }
     }
@@ -394,11 +421,27 @@ function AddEditForm(props) {
   const handleDateSelectChange = (name, value) => {
     let dateval = moment(value).format("YYYY-MM-DD");
     if (selectedExemptionLog === "zug") {
-      setformfield({
-        ...formfield,
-        transitionalExpireDate: dateval,
-        expiringDate: dateval,
-      });
+      let fieldname = "";
+
+      fieldname =
+        name == "expiringDate" &&
+        formfield.fullTransitional == fullTransitional_Transitional
+          ? "transitionalExpireDate"
+          : fieldname;
+      fieldname =
+        name == "transitionalExpireDate" &&
+        formfield.status === exemption_status.No_longer_required
+          ? "expiringDate"
+          : fieldname;
+      if (fieldname) {
+        setformfield({
+          ...formfield,
+          [name]: dateval,
+          [fieldname]: dateval,
+        });
+      } else {
+        setformfield({ ...formfield, [name]: dateval });
+      }
     } else {
       setformfield({ ...formfield, [name]: dateval });
     }
@@ -444,8 +487,8 @@ function AddEditForm(props) {
         let isExits = false;
         for (let j = 0; j < tempattachementfiles.length; j++) {
           let existfile = tempattachementfiles[j]["filePath"];
-          existfile = existfile.split("\\")[existfile.split("\\").length - 1];
-          let currentfile = item.split("\\")[item.split("\\").length - 1];
+          existfile = existfile.split("/")[existfile.split("/").length - 1];
+          let currentfile = item.split("/")[item.split("/").length - 1];
           if (existfile === currentfile) {
             isExits = true;
             break;
@@ -574,11 +617,44 @@ function AddEditForm(props) {
     setissubmitted(true);
     let selectedCountryItems = formfield.countryList.map((item) => item.value);
     formfield.countryID = selectedCountryItems.join(",");
+    debugger;
+
     if (validateform()) {
       /*formfield.underwriterAD = {
         userName: formfield.underwriterName,
         emailAddress: formfield.underwriter,
       };*/
+      if (selectedExemptionLog === "zug") {
+        let empowermentAndFeedbackRequest = formfield.empowermentAndFeedbackRequest
+          ? formfield.empowermentAndFeedbackRequest.replace(
+              /<\/?[^>]+(>|$)/g,
+              ""
+            )
+          : "";
+        var additionalApprovalComments = formfield.additionalApprovalComments
+          ? formfield.additionalApprovalComments.replace(/<\/?[^>]+(>|$)/g, "")
+          : "";
+        if (!additionalApprovalComments.trim()) {
+          formfield.additionalApprovalComments = "";
+        }
+        if (!empowermentAndFeedbackRequest.trim()) {
+          formfield.empowermentAndFeedbackRequest = "";
+        }
+      } else {
+        var globalUWApproverComments = formfield.globalUWApproverComments
+          ? formfield.globalUWApproverComments.replace(/<\/?[^>]+(>|$)/g, "")
+          : "";
+        var requestDetails = formfield.requestDetails
+          ? formfield.requestDetails.replace(/<\/?[^>]+(>|$)/g, "")
+          : "";
+        if (!globalUWApproverComments.trim()) {
+          formfield.globalUWApproverComments = "";
+        }
+        if (!requestDetails.trim()) {
+          formfield.requestDetails = "";
+        }
+      }
+
       let approverfieldname =
         selectedExemptionLog === "zug" ? "approver" : "globalUWApprover";
       if (
@@ -589,9 +665,9 @@ function AddEditForm(props) {
           if (
             (userroles.isadmin || userroles.issubmitter) &&
             formfield.requestForEmpowermentStatus ===
-              logStatus.More_information_needed
+              exemption_status.More_information_needed
           ) {
-            formfield.requestForEmpowermentStatus = logStatus.Pending;
+            formfield.requestForEmpowermentStatus = exemption_status.Pending;
           }
           putItem(formfield);
         } else {
@@ -621,7 +697,7 @@ function AddEditForm(props) {
   };
   const hidePopup = () => {
     if (queryparam.id) {
-      window.location = "/rfelogs";
+      window.location = "/exemptionlogs";
     } else {
       hideAddPopup();
     }
@@ -688,7 +764,7 @@ function AddEditForm(props) {
             <div className="frm-field-bggray">
               <div className="row">
                 <div className="col-md-3">
-                  <FrmMultiselectOptsShow
+                  <FrmMultiselect
                     title={"Country"}
                     name={"countryList"}
                     value={formfield.countryList}
@@ -704,6 +780,7 @@ function AddEditForm(props) {
                 <div className="col-md-3">
                   <FrmSelect
                     title={"Type of Exemption"}
+                    titlelinespace={true}
                     name={"typeOfExemption"}
                     value={formfield.typeOfExemption}
                     handleChange={handleSelectChange}
@@ -720,6 +797,7 @@ function AddEditForm(props) {
                 <div className="col-md-3">
                   <FrmSelect
                     title={"Type of Business"}
+                    titlelinespace={true}
                     name={"typeOfBusiness"}
                     value={formfield.typeOfBusiness}
                     handleChange={handleSelectChange}
@@ -734,7 +812,11 @@ function AddEditForm(props) {
                 {formfield.typeOfExemption !== exemptionType_Individual && (
                   <div className="col-md-3">
                     <FrmInput
-                      title={<>Individual Granted Empowerment</>}
+                      title={
+                        <>
+                          Individual Granted<br></br> Empowerment
+                        </>
+                      }
                       name={"individualGrantedEmpowermentName"}
                       value={formfield.individualGrantedEmpowermentName}
                       type={"text"}
@@ -758,7 +840,7 @@ function AddEditForm(props) {
                 {selectedExemptionLog === "zug" && (
                   <div className="col-md-3">
                     <FrmSelect
-                      title={<>LoB Chapter / Document</>}
+                      title={<>LoB Chapter/Document</>}
                       name={"lobChapter"}
                       value={formfield.lobChapter}
                       handleChange={handleSelectChange}
@@ -846,7 +928,7 @@ function AddEditForm(props) {
                       value={formfield.temporaryRequestEndDate}
                       type={"date"}
                       handleChange={handleDateSelectChange}
-                      isRequired={false}
+                      isRequired={true}
                       isReadMode={isReadMode}
                       minDate={""}
                       validationmsg={"Mandatory field"}
@@ -893,6 +975,7 @@ function AddEditForm(props) {
                   <div className="col-md-3">
                     <FrmInput
                       title={<>Empowerment Requested By</>}
+                      titlelinespace={true}
                       name={"empowermentRequestedByName"}
                       value={formfield.empowermentRequestedByName}
                       type={"text"}
@@ -910,6 +993,7 @@ function AddEditForm(props) {
                   <div className="col-md-3">
                     <FrmSelect
                       title={<>Full/Transitional</>}
+                      titlelinespace={true}
                       name={"fullTransitional"}
                       value={formfield.fullTransitional}
                       handleChange={handleSelectChange}
@@ -931,7 +1015,7 @@ function AddEditForm(props) {
                         value={formfield.transitionalExpireDate}
                         type={"date"}
                         handleChange={handleDateSelectChange}
-                        isRequired={false}
+                        isRequired={true}
                         isReadMode={isReadMode}
                         minDate={""}
                         validationmsg={"Mandatory field"}
@@ -943,7 +1027,11 @@ function AddEditForm(props) {
 
                   <div className="col-md-3">
                     <FrmToggleSwitch
-                      title={"P&C URPM exemption required"}
+                      title={
+                        <>
+                          P&C URPM exemption <br></br>required
+                        </>
+                      }
                       name={"pC_URPMExemptionRequired"}
                       value={formfield.pC_URPMExemptionRequired}
                       handleChange={handleSelectChange}
@@ -1024,7 +1112,7 @@ function AddEditForm(props) {
                   )}
                 </div>
                 {selectedExemptionLog === "zug" &&
-                  formfield.status === zuglog_status.No_longer_required && (
+                  formfield.status === exemption_status.No_longer_required && (
                     <div className="col-md-3">
                       <FrmDatePicker
                         title={"Expiring Date"}
@@ -1032,7 +1120,7 @@ function AddEditForm(props) {
                         value={formfield.expiringDate}
                         type={"date"}
                         handleChange={handleDateSelectChange}
-                        isRequired={false}
+                        isRequired={true}
                         isReadMode={isReadMode}
                         minDate={""}
                         validationmsg={"Mandatory field"}
@@ -1182,8 +1270,9 @@ function AddEditForm(props) {
           }
           assignPeoplepikerUser={assignPeoplepikerUser}
           hideAddPopup={hidePeoplePickerPopup}
-          lobId={formfield.lobId}
+          lobChapter={formfield.lobChapter}
           singleSelection={true}
+          selectedExemptionLog={selectedExemptionLog}
         />
       ) : (
         ""
@@ -1207,7 +1296,7 @@ function AddEditForm(props) {
       )}
       {showGrantedEmpowerment ? (
         <PeoplePickerPopup
-          title={"individualGrantedEmpowerment"}
+          title={"Individual Granted Empowerment"}
           name={"individualGrantedEmpowerment"}
           usertype="individualGrantedEmpowerment"
           actionResponsible={

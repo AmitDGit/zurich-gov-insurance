@@ -60,6 +60,18 @@ const getById = (requestParam) => {
     }
   };
 };
+const getLOBChapterApprover = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await lobchapterService.getLOBChapterApproverService(
+        requestParam
+      );
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 const checkNameExist = (requestParam) => {
   return async (dispatch) => {
     try {
@@ -106,6 +118,7 @@ export const lobchapterActions = {
   getAll,
   getAlllobChapter,
   getById,
+  getLOBChapterApprover,
   checkNameExist,
   checkIsInUse,
   postItem,
@@ -124,6 +137,14 @@ const getAlllobChapterService = async (requestParam) => {
 const getByIdService = async (requestParam) => {
   const param = { params: requestParam };
   const response = await Axios.get(`lobchapter/getlobchapter`, param);
+  return response;
+};
+const getLOBChapterApproverService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(
+    `lobchapter/getlobchapterapproverlist`,
+    param
+  );
   return response;
 };
 const checkNameExistService = async (requestParam) => {
@@ -152,6 +173,7 @@ const lobchapterService = {
   getAllService,
   getAlllobChapterService,
   getByIdService,
+  getLOBChapterApproverService,
   checkNameExistService,
   checkIsInUseService,
   postItemService,

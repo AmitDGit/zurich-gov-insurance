@@ -75,3 +75,16 @@
 .checkbox:checked + .switch-box .switch {
   right: 0px;
 }
+.frm-field .label,
+.frm-field .icon {
+  display: inline-block;
+}
+
+.frm-field .icon {
+  margin-left: 7px;
+}
+
+.frm-field .info-icon {
+  width: 15px;
+  height: 15px;
+}

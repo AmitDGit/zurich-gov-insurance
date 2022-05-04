@@ -9,6 +9,7 @@ import {
 import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
 import FrmSelect from "../common-components/frmselect/FrmSelect";
+import FrmRadio from "../common-components/frmradio/FrmRadio";
 import PaginationData from "../common-components/PaginationData";
 import {
   alertMessage,
@@ -79,6 +80,8 @@ function Exemptionlog({ ...props }) {
     "approver",
     "empowermentRequestedBy",
     "individualGrantedEmpowerment",
+    "countryName",
+    "lastModifiorName",
     "isActive",
   ];
   const exportExcludeFieldsURPM = [
@@ -97,15 +100,59 @@ function Exemptionlog({ ...props }) {
     "empowermentRequestedBy",
     "individualGrantedEmpowerment",
     "cc",
+    "countryName",
+    "lastModifiorName",
+    "submitter",
+    "zugChapterVersion",
   ];
-  const exportDateFields = {};
-  const exportFieldTitles = {};
+  const exportDateFields = {
+    expiringDate: "expiringDate",
+    temporaryRequestEndDate: "temporaryRequestEndDate",
+    transitionalExpireDate: "transitionalExpireDate",
+    modifiedDate: "modifiedDate",
+    createdDate: "createdDate",
+  };
+  const exportFieldTitles = {
+    entryNumber: "Entry Number",
+    exemptionLogType: "Exemption Log Type",
+    section: "Section",
+    sectionSubject: "Section Subject",
+    empowermentAndFeedbackRequest: "Empowerment & Feedback Request",
+    transitionalExpireDate: "Transitional Expiring Date of Empowerment",
+    pC_URPMExemptionRequired: " P&C URPM exemption required",
+    expiringDate: "Expiring Date",
+    additionalApprovalComments: "Additional Approval Comments",
+    modifiedDate: "Modified Date",
+    countryName: "Country",
+    typeOfExemptionValue: "Type of Exemption",
+    typeOfBusinessValue: "Type of Business",
+    fullTransitionalValue: "Full/Transitional",
+    creatorName: "Creator Name",
+    statusValue: "Status",
+    lastModifiorName: "Last Modifier",
+    empowermentRequestedByName: "Empowerment Requested By",
+    approverName: "Approver",
+    lobChapterName: "LoB Chapter/Document",
+    individualGrantedEmpowermentName: "Individual Granted Empowerment",
+    exemptionLogEmailLink: "Link",
+    countryNames: "Country",
+    createdDate: "Created Date",
+    zugChapterVersion: "ZUG Chapter Version",
+    temporaryRequestEndDate: "End Date of Temporary Request",
+    requestDetails: "Details of Request",
+    globalUWApproverComments: "Global UW Approver comments",
+    submitterName: "Submitter",
+    globalUWStatusValue: "Status",
+    globalUWApproverName: "Global UW Approver",
+    sectionValue: "Section Value",
+  };
   const exportHtmlFields = [
     "empowermentAndFeedbackRequest",
     "additionalApprovalComments",
     "globalUWApproverComments",
     "requestDetails",
   ];
+  const exportCapitalField = { exemptionLogType: "exemptionLogType" };
   const [commonfilterOpts, setcommonfilterOpts] = useState({
     ZUGstatusFilterOpts: [],
     URPMstatusFilterOpts: [],
@@ -129,7 +176,7 @@ function Exemptionlog({ ...props }) {
       value: "urpm",
     },
   ]);
-  const [selectedExemptionLog, setselectedExemptionLog] = useState("zug");
+  const [selectedExemptionLog, setselectedExemptionLog] = useState("");
   const [countryFilterOpts, setcountryFilterOpts] = useState([]);
 
   const intialFilterState = {
@@ -141,6 +188,21 @@ function Exemptionlog({ ...props }) {
   const [selfilter, setselfilter] = useState(intialFilterState);
   const onSearchFilterInput = (e) => {
     const { name, value } = e.target;
+    setselfilter({
+      ...selfilter,
+      [name]: value,
+    });
+  };
+  const onExemptionlogSelection = (e) => {
+    let { name, value } = e.target;
+    if (
+      (value === "zug" && !logstate.ZUGLoadedAll) ||
+      (value === "urpm" && !logstate.URPMLoadedAll)
+    ) {
+      setlogItmes([]);
+      setlogstate({ ...logstate, loading: true });
+    }
+    setExemLogTypeFn(value);
     setselfilter({
       ...selfilter,
       [name]: value,
@@ -164,6 +226,7 @@ function Exemptionlog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
+    debugger;
     if (
       selfilter.countryID !== "" ||
       selfilter.section !== "" ||
@@ -203,12 +266,16 @@ function Exemptionlog({ ...props }) {
           (isShow &&
             selectedExemptionLog === "zug" &&
             selfilter.section.trim() !== "" &&
+            item.section &&
             !item.section
+              .toString()
               .toLowerCase()
-              .includes(selfilter.section.toLowerCase())) ||
+              .includes(selfilter.section.toString().toLowerCase())) ||
           (isShow &&
             selectedExemptionLog === "urpm" &&
-            selfilter.section !== item.section)
+            selfilter.section &&
+            selfilter.section !== item.section) ||
+          !item.section
         ) {
           isShow = false;
         }
@@ -266,27 +333,6 @@ function Exemptionlog({ ...props }) {
 
   const columnsZUG = [
     {
-      dataField: "viewaction",
-      text: "View",
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return (
-          <div
-            className="view-icon"
-            onClick={handleEdit}
-            rowid={row.zugExemptionLogId}
-            mode={"view"}
-          ></div>
-        );
-      },
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return {
-          width: "70px",
-          textAlign: "center",
-        };
-      },
-    },
-    {
       dataField: "editaction",
       text: "Edit",
       formatter: (cell, row, rowIndex, formatExtraData) => {
@@ -309,6 +355,27 @@ function Exemptionlog({ ...props }) {
           ></div>
         ) : (
           ""
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "70px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "viewaction",
+      text: "View",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="view-icon"
+            onClick={handleEdit}
+            rowid={row.zugExemptionLogId}
+            mode={"view"}
+          ></div>
         );
       },
       sort: false,
@@ -377,7 +444,7 @@ function Exemptionlog({ ...props }) {
     },
     {
       dataField: "lobChapterName",
-      text: "LoB Chapter / Document",
+      text: "LoB Chapter/Document",
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "170px" };
@@ -386,7 +453,7 @@ function Exemptionlog({ ...props }) {
 
     {
       dataField: "section",
-      text: "P&C URPM Section",
+      text: "Section",
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -394,7 +461,7 @@ function Exemptionlog({ ...props }) {
     },
     {
       dataField: "fullTransitionalValue",
-      text: "Full / Transitional",
+      text: "Full/Transitional",
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
@@ -599,7 +666,7 @@ function Exemptionlog({ ...props }) {
         );
       },
       headerStyle: (colum, colIndex) => {
-        return { width: "200px" };
+        return { width: "170px" };
       },
     },
     {
@@ -620,7 +687,7 @@ function Exemptionlog({ ...props }) {
     },
     {
       dataField: "sectionValue",
-      text: "P&C URPM Section",
+      text: "Section",
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -636,7 +703,7 @@ function Exemptionlog({ ...props }) {
     },
     {
       dataField: "sectionSubject",
-      text: "Section Subject / Power Reserved",
+      text: "Section Subject/Power Reserved",
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
@@ -772,6 +839,10 @@ function Exemptionlog({ ...props }) {
 
   useEffect(() => {
     if (selectedExemptionLog) {
+      if (queryparam.id && queryparam.type) {
+        handleEdit(this, true, queryparam.type);
+        return;
+      }
       getallDraftItems();
       let isStartLoading = false;
       if (selectedExemptionLog === "zug") {
@@ -821,6 +892,7 @@ function Exemptionlog({ ...props }) {
   }, [showDraft]);
 
   const getallDraftItems = async () => {
+    debugger;
     let tempdraftItems = [];
     let requestParam = {
       RequesterUserId: userProfile.userId,
@@ -898,24 +970,35 @@ function Exemptionlog({ ...props }) {
       URPMSectionFilterOps: [selectInitiVal, ...tempURPMSection],
     });
 
-    setselectedExemptionLog(exemptionlogsType[0].value);
+    //setselectedExemptionLog(exemptionlogsType[0].value);
   }, []);
 
   const [queryparam, setqueryparam] = useState({
     id: "",
     status: "",
+    type: "",
+    loaded: false,
   });
   const [queryparamloaded, setqueryparamloaded] = useState(false);
   useEffect(() => {
     let itemid = getUrlParameter("id");
     let status = getUrlParameter("status");
-    setqueryparam({ id: itemid, status: status });
+    let type = getUrlParameter("type");
+    setqueryparam({ id: itemid, status: status, type: type, loaded: true });
   }, []);
 
-  useEffect(() => {
+  useEffect(async () => {
+    if (!queryparam.loaded) {
+      return;
+    }
     setqueryparamloaded(true);
     if (queryparam.id) {
-      handleEdit(this, true);
+      if (queryparam.type) {
+        setselectedExemptionLog(queryparam.type);
+      }
+      // handleEdit(this, true, queryparam.type);
+    } else {
+      setselectedExemptionLog("zug");
     }
   }, [queryparam]);
 
@@ -1030,7 +1113,7 @@ function Exemptionlog({ ...props }) {
   };
   const [formIntialState, setformIntialState] = useState(formInitialValueZUG);
 
-  const handleEdit = async (e, hasqueryparam) => {
+  const handleEdit = async (e, hasqueryparam, type) => {
     let itemid;
     let mode;
     if (hasqueryparam) {
@@ -1040,6 +1123,14 @@ function Exemptionlog({ ...props }) {
       } else {
         mode = "view";
       }
+      /*let tempresponse = await getByIdZUG({
+        zugExemptionLogId: itemid,
+      });
+      if (tempresponse.countryID) {
+        setselectedExemptionLog("zug");
+      } else {
+        setselectedExemptionLog("urpm");
+      }*/
     } else {
       itemid = e.target.getAttribute("rowid");
       mode = e.target.getAttribute("mode");
@@ -1054,10 +1145,10 @@ function Exemptionlog({ ...props }) {
         urpmExemptionLogId: itemid,
       });
     }
+
     if (response) {
-      let selectedcountry = response.countryID.split(",");
-      let selectedcountryList = [];
-      let countrylist = await getAllCountry({ IsLog: true });
+      /* let selectedcountryList = [];
+     let countrylist = await getAllCountry();
       countrylist.forEach((country) => {
         selectedcountry.forEach((item) => {
           if (item === country.countryID) {
@@ -1067,9 +1158,14 @@ function Exemptionlog({ ...props }) {
             });
           }
         });
-      });
-      response["countryList"] = [...selectedcountryList];
-      if (selectedExemptionLog === "zug") {
+      });*/
+      let countryList = response.countryList;
+      countryList = countryList.map((country) => ({
+        label: country.countryName,
+        value: country.countryID,
+      }));
+      response["countryList"] = [...countryList];
+      if (selectedExemptionLog === "zug" || type === "zug") {
         response.approverName = response.approverAD
           ? response.approverAD.userName
           : "";
@@ -1180,6 +1276,7 @@ function Exemptionlog({ ...props }) {
     setisEditMode(false);
   };
   const postItemHandler = async (item) => {
+    debugger;
     let tempfullPathArr = item.exmpAttachmentList.map((item) => item.filePath);
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;
@@ -1290,7 +1387,7 @@ function Exemptionlog({ ...props }) {
   };
 
   return (
-    <>
+    <div className="exemptionlog">
       {isshowAddPopup ? (
         <AddEditForm
           title={isReadMode ? "View Exemption Log" : "Add/Edit Exemption Log"}
@@ -1328,7 +1425,7 @@ function Exemptionlog({ ...props }) {
                 <div className="frm-filter">
                   {selectedExemptionLog === "zug" ? (
                     <FrmInput
-                      title={"P&C URPM Section"}
+                      title={"Section"}
                       name={"section"}
                       type={"input"}
                       handleChange={onSearchFilterInput}
@@ -1336,7 +1433,7 @@ function Exemptionlog({ ...props }) {
                     />
                   ) : (
                     <FrmSelect
-                      title={"P&C URPM Section"}
+                      title={"Section"}
                       name={"section"}
                       selectopts={commonfilterOpts.URPMSectionFilterOps}
                       handleChange={onSearchFilterSelect}
@@ -1409,11 +1506,11 @@ function Exemptionlog({ ...props }) {
           )}
           <div style={{ paddingLeft: "20px" }}>
             <div className="frm-filter">
-              <FrmSelect
+              <FrmRadio
                 title={"Exemption Log Type"}
                 name={"exemptionLogType"}
                 selectopts={exemptionlogsType}
-                handleChange={onSearchFilterSelect}
+                handleChange={onExemptionlogSelection}
                 value={selectedExemptionLog}
               />
             </div>
@@ -1469,13 +1566,14 @@ function Exemptionlog({ ...props }) {
                   exportDateFields={exportDateFields}
                   exportFieldTitles={exportFieldTitles}
                   exportHtmlFields={exportHtmlFields}
+                  exportCapitalField={exportCapitalField}
                 />
               )
             )}
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }
 const mapStateToProp = (state) => {

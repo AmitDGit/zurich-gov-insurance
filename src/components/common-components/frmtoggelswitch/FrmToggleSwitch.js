@@ -29,7 +29,7 @@ function FrmToggleSwitch(props) {
   };
   return (
     <div className={`frm-field ${isRequired ? "mandatory" : ""}`}>
-      <label htmlFor={name}>
+      <div>
         <div className="label">{title}</div>
         {isToolTip ? (
           <>
@@ -39,7 +39,8 @@ function FrmToggleSwitch(props) {
         ) : (
           ""
         )}
-      </label>
+      </div>
+      <label htmlFor={name}></label>
       {isReadMode ? (
         <div>{getSelectedOpt()}</div>
       ) : (
