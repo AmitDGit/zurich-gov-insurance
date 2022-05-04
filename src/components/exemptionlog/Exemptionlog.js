@@ -226,7 +226,6 @@ function Exemptionlog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
-    debugger;
     if (
       selfilter.countryID !== "" ||
       selfilter.section !== "" ||
@@ -892,7 +891,6 @@ function Exemptionlog({ ...props }) {
   }, [showDraft]);
 
   const getallDraftItems = async () => {
-    debugger;
     let tempdraftItems = [];
     let requestParam = {
       RequesterUserId: userProfile.userId,
@@ -1276,7 +1274,6 @@ function Exemptionlog({ ...props }) {
     setisEditMode(false);
   };
   const postItemHandler = async (item) => {
-    debugger;
     let tempfullPathArr = item.exmpAttachmentList.map((item) => item.filePath);
     let fullFilePath = tempfullPathArr.join(",");
     item.fullFilePath = fullFilePath;

@@ -617,7 +617,6 @@ function AddEditForm(props) {
     setissubmitted(true);
     let selectedCountryItems = formfield.countryList.map((item) => item.value);
     formfield.countryID = selectedCountryItems.join(",");
-    debugger;
 
     if (validateform()) {
       /*formfield.underwriterAD = {
