@@ -171,7 +171,8 @@ function AddEditForm(props) {
     let tempstatus = await getLookupByType({
       LookupType: "RFEEmpowermentStatusRequest",
     });
-    let tempToolTips = await getToolTip({ type: "BreachLogs" });
+    debugger;
+    let tempToolTips = await getToolTip({ type: "rfeLogs" });
     let tooltipObj = {};
     tempToolTips.forEach((item) => {
       tooltipObj[item.toolTipField] = item.toolTipText;

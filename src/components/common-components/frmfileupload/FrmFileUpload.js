@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Style.css";
+import { formatDate } from "../../../helpers";
 function FrmFileUpload(props) {
   const {
     title,
@@ -26,6 +27,7 @@ function FrmFileUpload(props) {
       tempfiles = [...uploadedfiles];
       tempfiles = tempfiles.map((item) => {
         let filename = "";
+
         if (item.filePath.indexOf("\\") !== -1) {
           filename = item.filePath.split("\\")[
             item.filePath.split("\\").length - 1
@@ -36,10 +38,12 @@ function FrmFileUpload(props) {
           ];
         }
         let fileurl = item.filePath;
+        let uploaddate = item.createdDate;
         return {
           id: item.logAttachmentId,
           filename: filename,
           fileurl: fileurl,
+          uploaddate: uploaddate,
           isNew: item.isNew,
         };
       });
@@ -134,11 +138,17 @@ function FrmFileUpload(props) {
             .reverse()
             .map((item) => (
               <div key={item.filename} className="file-name-container">
-                <div
-                  className="file-name link"
-                  onClick={() => downloadfile(item.fileurl)}
-                >
-                  {item.filename}
+                <div>
+                  <span
+                    className="file-name link"
+                    onClick={() => downloadfile(item.fileurl)}
+                  >
+                    {" "}
+                    {item.filename}
+                  </span>
+                  <span className="">
+                    {/*item.uploaddate && formatDate(item.uploaddate)*/}
+                  </span>
                   {/*<a href={item.fileurl} target="_blank">
                     {item.filename}
             </a>*/}
