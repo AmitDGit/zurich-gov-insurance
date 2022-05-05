@@ -88,3 +88,6 @@
   width: 15px;
   height: 15px;
 }
+.frm-field.frmtoggelswitch .label{
+  font-weight: bold;
+}
