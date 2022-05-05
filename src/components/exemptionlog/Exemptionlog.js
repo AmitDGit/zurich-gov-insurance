@@ -993,6 +993,8 @@ function Exemptionlog({ ...props }) {
     if (queryparam.id) {
       if (queryparam.type) {
         setselectedExemptionLog(queryparam.type);
+      } else {
+        setselectedExemptionLog("zug");
       }
       // handleEdit(this, true, queryparam.type);
     } else {
@@ -1143,7 +1145,6 @@ function Exemptionlog({ ...props }) {
         urpmExemptionLogId: itemid,
       });
     }
-
     if (response) {
       /* let selectedcountryList = [];
      let countrylist = await getAllCountry();
