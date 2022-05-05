@@ -274,7 +274,7 @@ function Exemptionlog({ ...props }) {
             selectedExemptionLog === "urpm" &&
             selfilter.section &&
             selfilter.section !== item.section) ||
-          !item.section
+          (selfilter.section.trim() !== "" && !item.section)
         ) {
           isShow = false;
         }
