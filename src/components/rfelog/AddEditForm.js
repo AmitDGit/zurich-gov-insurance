@@ -172,7 +172,7 @@ function AddEditForm(props) {
       LookupType: "RFEEmpowermentStatusRequest",
     });
     debugger;
-    let tempToolTips = await getToolTip({ type: "rfeLogs" });
+    let tempToolTips = await getToolTip({ type: "RFELogs" });
     let tooltipObj = {};
     tempToolTips.forEach((item) => {
       tooltipObj[item.toolTipField] = item.toolTipText;
@@ -584,7 +584,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     isToolTip={true}
-                    tooltipmsg={tooltip["Classification"]}
+                    tooltipmsg={tooltip["OrgnizationalAlignment"]}
                     issubmitted={issubmitted}
                     selectopts={frmorgnizationalalignment}
                     isdisabled={isfrmdisabled && isshowlocallink}
@@ -645,7 +645,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     isToolTip={true}
-                    tooltipmsg={tooltip["Classification"]}
+                    tooltipmsg={tooltip["CHZ"]}
                     issubmitted={issubmitted}
                     selectopts={frmrfechz}
                     isdisabled={isfrmdisabled}
