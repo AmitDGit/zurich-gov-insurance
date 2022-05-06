@@ -809,7 +809,7 @@ function AddEditForm(props) {
                     isdisabled={isfrmdisabled}
                   />
                 </div>
-                {formfield.typeOfExemption !== exemptionType_Individual && (
+                {formfield.typeOfExemption !== exemptionType_Portfolio && (
                   <div className="col-md-3">
                     <FrmInput
                       title={

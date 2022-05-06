@@ -1136,7 +1136,6 @@ function Exemptionlog({ ...props }) {
       mode = e.target.getAttribute("mode");
     }
     let response;
-    debugger;
     if (selectedExemptionLog === "zug") {
       response = await getByIdZUG({
         zugExemptionLogId: itemid,
