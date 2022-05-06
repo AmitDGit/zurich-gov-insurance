@@ -1136,6 +1136,7 @@ function Exemptionlog({ ...props }) {
       mode = e.target.getAttribute("mode");
     }
     let response;
+    debugger;
     if (selectedExemptionLog === "zug") {
       response = await getByIdZUG({
         zugExemptionLogId: itemid,
@@ -1465,7 +1466,7 @@ function Exemptionlog({ ...props }) {
               <div className="btn-container">
                 <div
                   className={`btn-blue ${
-                    selfilter.countryId !== "" ||
+                    selfilter.countryID !== "" ||
                     selfilter.section !== "" ||
                     selfilter.role !== "" ||
                     selfilter.status !== ""
