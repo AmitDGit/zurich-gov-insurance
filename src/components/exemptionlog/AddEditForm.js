@@ -78,6 +78,7 @@ function AddEditForm(props) {
   };
 
   const exemptionType_Individual = EXEMPTION_CONSTANT.TypeExemption_Individual;
+  const exemptionType_Portfolio = EXEMPTION_CONSTANT.TypeExemption_Portfolio;
   const fullTransitional_Transitional =
     EXEMPTION_CONSTANT.FullTransitional_Transitional;
   const [userroles, setuserroles] = useState({
@@ -210,7 +211,6 @@ function AddEditForm(props) {
       LookupType: "EXMPZUGStatus",
     });
     let tempURPMStatus = tempZUGStatus;
-
     let tempURPMSection = await getLookupByType({
       LookupType: "EXMPURPMSection",
     });
@@ -808,7 +808,7 @@ function AddEditForm(props) {
                     isdisabled={isfrmdisabled}
                   />
                 </div>
-                {formfield.typeOfExemption !== exemptionType_Individual && (
+                {formfield.typeOfExemption !== exemptionType_Portfolio && (
                   <div className="col-md-3">
                     <FrmInput
                       title={

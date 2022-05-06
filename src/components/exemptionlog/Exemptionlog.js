@@ -1465,7 +1465,7 @@ function Exemptionlog({ ...props }) {
               <div className="btn-container">
                 <div
                   className={`btn-blue ${
-                    selfilter.countryId !== "" ||
+                    selfilter.countryID !== "" ||
                     selfilter.section !== "" ||
                     selfilter.role !== "" ||
                     selfilter.status !== ""
