@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FrmInput from "../../common-components/frminput/FrmInput";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import Popup from "../../common-components/Popup";
 
 function AddEditForm(props) {
@@ -16,7 +17,10 @@ function AddEditForm(props) {
   const [issubmitted, setissubmitted] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
     setformfield({ ...formfield, [name]: value });
   };
   const handleSubmit = (e) => {
@@ -56,6 +60,16 @@ function AddEditForm(props) {
               name={"regionDescription"}
               value={formfield.regionDescription}
               handleChange={handleChange}
+              isRequired={false}
+              validationmsg={""}
+              issubmitted={issubmitted}
+            />
+            <FrmActiveCheckbox
+              title={"isActive"}
+              name={"isActive"}
+              value={formfield.isActive}
+              handleChange={handleChange}
+              isdisabled={false}
               isRequired={false}
               validationmsg={""}
               issubmitted={issubmitted}

@@ -4,6 +4,7 @@ import { regionActions } from "../../../actions";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import AddEditForm from "./AddEditForm";
 import Loading from "../../common-components/Loading";
 import PaginationData from "../../common-components/PaginationData";
@@ -43,9 +44,28 @@ function Region({ ...props }) {
   };
 
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.id}
+            value={dataActItems.id}
+            handleChange={handleItemSelect}
+            isdisabled={false}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -91,7 +111,19 @@ function Region({ ...props }) {
       text: "Region",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "180px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        debugger;
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
@@ -113,26 +145,25 @@ function Region({ ...props }) {
   useEffect(() => {
     let tempdata = [];
     let tempFilterOpts = [];
+    debugger;
+    let initalval = {};
     regionState.items.forEach((item) => {
-      if (item.isActive) {
-        let tempItem = {
-          id: item.regionID,
-          regionName: item.regionName,
-          regionDescription: item.regionDescription,
-          editaction: "",
-          deleteaction: "",
-        };
-        tempdata.push(tempItem);
-        tempFilterOpts.push({
-          label: item.regionName,
-          value: item.regionID,
-        });
-      }
+      //if (item.isActive) {
+      let tempItem = { ...item, id: item.regionID };
+
+      tempdata.push(tempItem);
+      tempFilterOpts.push({
+        label: item.regionName,
+        value: item.regionID,
+      });
+      initalval[tempItem.id] = false;
+      //}
     });
     tempFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
     setregionFilterOpts([...tempFilterOpts]);
+    setdataActItems(initalval);
   }, [regionState.items]);
 
   /* Add Edit Delete functionality & show popup*/
@@ -156,13 +187,11 @@ function Region({ ...props }) {
     const response = await getRegionById({ regionID: itemid });
     setisEditMode(true);
     setformIntialState({
-      regionID: response.regionID,
-      regionName: response.regionName,
+      ...response,
       regionDescription: response.regionDescription
         ? response.regionDescription
         : "",
       requesterUserId: response.requesterUserId ? response.requesterUserId : "",
-      isActive: response.isActive,
     });
     seteditmodeRegionName(response.regionName);
     showAddPopup();
@@ -227,6 +256,22 @@ function Region({ ...props }) {
       alert(alertMessage.region.isInUse);
     }
   };
+  const selectedItems = [];
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({ ...dataActItems, [name]: value });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    console.log(selectedItems);
+  };
+
   return (
     <>
       <div className="page-title">Manage Region</div>
