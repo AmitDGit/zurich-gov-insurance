@@ -13,7 +13,7 @@ function FrmActiveCheckbox(props) {
   } = props;
   return (
     <div className={`frm-active-checkbox ${isRequired ? "mandatory" : ""}`}>
-      <div className="active-checkbox">
+      <div className={`active-checkbox ${isdisabled ? "disabled" : ""}`}>
         <input
           type="checkbox"
           id={`opt${name}`}

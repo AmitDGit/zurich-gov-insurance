@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { countryActions, regionActions } from "../../../actions";
+import { countryActions, regionActions, commonActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -18,8 +19,12 @@ function Country({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu({ currentMenu: "Country", isSubmenu: true }, props.menuClick);
+
+  const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([]);
+  const [frmRegionSelectOptObj, setfrmRegionSelectOptObj] = useState({});
   //initialize filter/search functionality
   const [countryFilterOpts, setcountryFilterOpts] = useState([]);
   const [countryFilterAllOpts, setcountryFilterAllOpts] = useState([]);
@@ -84,10 +89,29 @@ function Country({ ...props }) {
     });
   }, [selfilter.region]);
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.countryID}
+            value={dataActItems.countryID}
+            handleChange={handleItemSelect}
+            isdisabled={!row.isActiveEnable}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -134,7 +158,7 @@ function Country({ ...props }) {
       text: "Country",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
       },
     },
     {
@@ -142,7 +166,18 @@ function Country({ ...props }) {
       text: "Region",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
@@ -158,51 +193,75 @@ function Country({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({ RequesterUserId: userProfile.userId });
-    getAllRegions();
+    fnOnInit();
   }, []);
+
+  const fnOnInit = async () => {
+    let regionselectOpts = await getAllRegions();
+    let tempObj = {};
+    let tempOpts = [];
+    regionselectOpts.forEach((item) => {
+      tempOpts.push({
+        ...item,
+        label: item.regionName,
+        value: item.regionID,
+      });
+      tempObj[item.regionID] = item;
+    });
+    setfrmRegionSelectOpts([...tempOpts]);
+    setfrmRegionSelectOptObj({ ...tempObj });
+    getAll({ RequesterUserId: userProfile.userId });
+  };
   useEffect(() => {
     let tempdata = [];
     let tempCountryFilterOpts = [];
     let tempRegionFilterOpts = [];
     let tempRegionListObj = {};
     let tempCountryMapping = [];
+    let initalval = {};
     countryState.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        tempCountryFilterOpts.push({
-          label: item.countryName,
-          value: item.countryID,
+      //if (item.isActive) {
+      tempdata.push({
+        ...item,
+        isActiveEnable: frmRegionSelectOptObj[item.regionID]
+          ? frmRegionSelectOptObj[item.regionID]["isActive"]
+          : true,
+      });
+      initalval[tempdata.countryID] = false;
+      tempCountryFilterOpts.push({
+        label: item.countryName,
+        value: item.countryID,
+      });
+      if (!tempRegionListObj[item.regionID]) {
+        tempRegionFilterOpts.push({
+          label: item.regionName,
+          value: item.regionID,
         });
-        if (!tempRegionListObj[item.regionID]) {
-          tempRegionFilterOpts.push({
-            label: item.regionName,
-            value: item.regionID,
-          });
-          tempCountryMapping.push({
-            region: item.regionID,
-            country: [
-              {
-                label: item.countryName,
-                value: item.countryID,
-              },
-            ],
-          });
-        } else {
-          tempCountryMapping.forEach((countryitem) => {
-            if (countryitem.region === item.regionID) {
-              countryitem.country.push({
-                label: item.countryName,
-                value: item.countryID,
-              });
-            }
-          });
-        }
-        tempRegionListObj[item.regionID] = item.regionName;
+        tempCountryMapping.push({
+          region: item.regionID,
+          country: [
+            {
+              label: item.countryName,
+              value: item.countryID,
+            },
+          ],
+        });
+      } else {
+        tempCountryMapping.forEach((countryitem) => {
+          if (countryitem.region === item.regionID) {
+            countryitem.country.push({
+              label: item.countryName,
+              value: item.countryID,
+            });
+          }
+        });
       }
+      tempRegionListObj[item.regionID] = item.regionName;
+      //}
     });
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
     tempCountryFilterOpts.sort(dynamicSort("label"));
     tempRegionFilterOpts.sort(dynamicSort("label"));
     setcountryFilterOpts([...tempCountryFilterOpts]);
@@ -210,18 +269,6 @@ function Country({ ...props }) {
     setregionFilterOpts([...tempRegionFilterOpts]);
     setcountrymapping([...tempCountryMapping]);
   }, [countryState.items]);
-
-  const [frmRegionSelectOpts, setfrmRegionSelectOpts] = useState([]);
-  useEffect(() => {
-    let regionselectOpts = [];
-    regionselectOpts = regionState.regionItems.map((item) => {
-      return {
-        label: item.regionName,
-        value: item.regionID,
-      };
-    });
-    setfrmRegionSelectOpts([...regionselectOpts]);
-  }, [regionState.regionItems]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -260,6 +307,9 @@ function Country({ ...props }) {
         : "",
       requesterUserId: response.requesterUserId ? response.requesterUserId : "",
       isActive: response.isActive,
+      isActiveEnable: frmRegionSelectOptObj[response.regionID]
+        ? frmRegionSelectOptObj[response.regionID]["isActive"]
+        : true,
     });
     seteditmodeName(response.countryName);
     showAddPopup();
@@ -330,6 +380,50 @@ function Country({ ...props }) {
       alert(alertMessage.country.isInUse);
     }
   };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({ ...dataActItems, [name]: value });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "country",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      getAll();
+      setselItemsList([]);
+      setisActiveEnable(false);
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
+
   return (
     <>
       <div className="page-title">Manage Country</div>
@@ -383,6 +477,9 @@ function Country({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New Country"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -415,5 +512,6 @@ const mapActions = {
   checkIsInUse: countryActions.checkIsInUse,
   postItem: countryActions.postItem,
   deleteItem: countryActions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Country);

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { sublobActions, lobActions } from "../../../actions";
+import { sublobActions, lobActions, commonActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -18,8 +19,11 @@ function Sublob({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu({ currentMenu: "Sublob", isSubmenu: true }, props.menuClick);
+  const [frmLobSelectOpts, setfrmLobSelectOpts] = useState([]);
+  const [frmLobSelectOptsObj, setfrmLobSelectOptsObj] = useState([]);
   //initialize filter/search functionality
   const [sublobFilterOpts, setsublobFilterOpts] = useState([]);
   const [sublobFilterAllOpts, setsublobFilterAllOpts] = useState([]);
@@ -76,6 +80,7 @@ function Sublob({ ...props }) {
     }
   }, [selfilter.lob]);
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [datapagesize, setdatapagesize] = useState(500);
   const [datapageindex, setdatapageindex] = useState(1);
   const [datatotalcount, setdatatotalcount] = useState(0);
@@ -83,6 +88,24 @@ function Sublob({ ...props }) {
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.subLOBID}
+            value={dataActItems.subLOBID}
+            handleChange={handleItemSelect}
+            isdisabled={!row.isActiveEnable}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -129,7 +152,7 @@ function Sublob({ ...props }) {
       text: "Sub-LoB",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
       },
     },
     {
@@ -138,6 +161,17 @@ function Sublob({ ...props }) {
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "250px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: true,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
@@ -153,71 +187,14 @@ function Sublob({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({
-      RequesterUserId: userProfile.userId,
-      //PageIndex: datapageindex,
-      //PageSize: datapagesize,
-    });
-    getAlllob();
+    fnOnInit();
   }, []);
-  useEffect(() => {
-    let tempdata = [];
-    let tempsublobFilterOpts = [];
-    let templobFilterOpts = [];
-    let tempLobListObj = {};
-    let tempLobMapping = [];
-    if (sublobState.items.length) {
-      setdatatotalcount(parseInt(sublobState.items[0].totalCount));
-    }
-    sublobState.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        tempsublobFilterOpts.push({
-          label: item.subLOBName,
-          value: item.subLOBID,
-        });
-        if (!tempLobListObj[item.lobid]) {
-          tempLobMapping.push({
-            lob: item.lobid,
-            sublob: [
-              {
-                label: item.subLOBName,
-                value: item.subLOBID,
-              },
-            ],
-          });
-          templobFilterOpts.push({
-            label: item.lobName,
-            value: item.lobid,
-          });
-        } else {
-          tempLobMapping.forEach((lobitem) => {
-            if (lobitem.lob === item.lobid) {
-              lobitem.sublob.push({
-                label: item.subLOBName,
-                value: item.subLOBID,
-              });
-            }
-          });
-        }
-        tempLobListObj[item.lobid] = item.lobName;
-      }
-    });
-    setdata([...tempdata]);
-    setpaginationdata([...tempdata]);
-    tempsublobFilterOpts.sort(dynamicSort("label"));
-    templobFilterOpts.sort(dynamicSort("label"));
-    setsublobFilterOpts([...tempsublobFilterOpts]);
-    setsublobFilterAllOpts([...tempsublobFilterOpts]);
-    setlobFilterOpts([...templobFilterOpts]);
-    setlobmapping([...tempLobMapping]);
-  }, [sublobState.items]);
 
-  const [frmLobSelectOpts, setfrmLobSelectOpts] = useState([]);
   useEffect(() => {
     let lobselectOpts = [];
     lobselectOpts = lobState.lobItems.map((item) => {
       return {
+        ...item,
         label: item.lobName,
         value: item.lobid,
       };
@@ -225,6 +202,83 @@ function Sublob({ ...props }) {
     lobselectOpts.sort(dynamicSort("label"));
     setfrmLobSelectOpts([...lobselectOpts]);
   }, [lobState.lobItems]);
+  const fnOnInit = async () => {
+    let tempselectedOpts = await getAlllob();
+    let tempObj = {};
+    let tempOpts = [];
+    tempselectedOpts.forEach((item) => {
+      tempOpts.push({
+        ...item,
+        label: item.lobName,
+        value: item.lobid,
+      });
+      tempObj[item.lobid] = item;
+    });
+    tempOpts.sort(dynamicSort("label"));
+    setfrmLobSelectOpts([...tempOpts]);
+    setfrmLobSelectOptsObj({ ...tempObj });
+    getAll({ RequesterUserId: userProfile.userId });
+  };
+  useEffect(() => {
+    let tempdata = [];
+    let tempsublobFilterOpts = [];
+    let templobFilterOpts = [];
+    let tempLobListObj = {};
+    let tempLobMapping = [];
+    let initalval = {};
+    if (sublobState.items.length) {
+      setdatatotalcount(parseInt(sublobState.items[0].totalCount));
+    }
+    sublobState.items.forEach((item) => {
+      // if (item.isActive) {
+      tempdata.push({
+        ...item,
+        isActiveEnable: frmLobSelectOptsObj[item.lobid]
+          ? frmLobSelectOptsObj[item.lobid]["isActive"]
+          : true,
+      });
+      initalval[tempdata.subLOBID] = false;
+      tempsublobFilterOpts.push({
+        label: item.subLOBName,
+        value: item.subLOBID,
+      });
+      if (!tempLobListObj[item.lobid]) {
+        tempLobMapping.push({
+          lob: item.lobid,
+          sublob: [
+            {
+              label: item.subLOBName,
+              value: item.subLOBID,
+            },
+          ],
+        });
+        templobFilterOpts.push({
+          label: item.lobName,
+          value: item.lobid,
+        });
+      } else {
+        tempLobMapping.forEach((lobitem) => {
+          if (lobitem.lob === item.lobid) {
+            lobitem.sublob.push({
+              label: item.subLOBName,
+              value: item.subLOBID,
+            });
+          }
+        });
+      }
+      tempLobListObj[item.lobid] = item.lobName;
+      //}
+    });
+    setdata([...tempdata]);
+    setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
+    tempsublobFilterOpts.sort(dynamicSort("label"));
+    templobFilterOpts.sort(dynamicSort("label"));
+    setsublobFilterOpts([...tempsublobFilterOpts]);
+    setsublobFilterAllOpts([...tempsublobFilterOpts]);
+    setlobFilterOpts([...templobFilterOpts]);
+    setlobmapping([...tempLobMapping]);
+  }, [sublobState.items]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -252,7 +306,9 @@ function Sublob({ ...props }) {
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ subLOBID: itemid });
+    const response = await getById({
+      subLOBID: itemid,
+    });
     setisEditMode(true);
     setformIntialState({
       subLOBID: response.subLOBID,
@@ -263,6 +319,9 @@ function Sublob({ ...props }) {
         : "",
       requesterUserId: response.requesterUserId ? response.requesterUserId : "",
       isActive: response.isActive,
+      isActiveEnable: frmLobSelectOptsObj[response.lobid]
+        ? frmLobSelectOptsObj[response.lobid]["isActive"]
+        : true,
     });
     seteditmodeName(response.subLOBName);
     showAddPopup();
@@ -322,15 +381,65 @@ function Sublob({ ...props }) {
     if (!window.confirm(alertMessage.sublob.deleteConfirm)) {
       return;
     }
-    let resonse = await checkIsInUse({ subLOBID: itemid });
+    let resonse = await checkIsInUse({
+      subLOBID: itemid,
+    });
     if (!resonse) {
-      resonse = await deleteItem({ subLOBID: itemid });
+      resonse = await deleteItem({
+        subLOBID: itemid,
+      });
       if (resonse) {
         getAll();
         alert(alertMessage.sublob.delete);
       }
     } else {
       alert(alertMessage.sublob.isInUse);
+    }
+  };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "sublob",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      getAll();
+      setselItemsList([]);
+      setisActiveEnable(false);
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
     }
   };
   return (
@@ -385,6 +494,9 @@ function Sublob({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New Sub-LoB"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -417,5 +529,6 @@ const mapActions = {
   checkIsInUse: sublobActions.checkIsInUse,
   postItem: sublobActions.postItem,
   deleteItem: sublobActions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Sublob);

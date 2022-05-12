@@ -4,10 +4,12 @@ import {
   znaorgnization1Actions,
   znaorgnization2Actions,
   znaorgnization3Actions,
+  commonActions,
 } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -27,12 +29,17 @@ function ZNAOrgnization3({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu(
-    { currentMenu: "znaorganization3", isSubmenu: true },
+    {
+      currentMenu: "znaorganization3",
+      isSubmenu: true,
+    },
     props.menuClick
   );
-  console.log(znaorgnization3State);
+  const [frmOrg2SelectOpts, setfrmOrg2SelectOpts] = useState([]);
+  const [frmOrg2SelectOptsObj, setfrmOrg2SelectOptsObj] = useState([]);
   //initialize filter/search functionality
   const [org1FilterOpts, setorg1FilterOpts] = useState([]);
   const [org2FilterOpts, setorg2FilterOpts] = useState([]);
@@ -42,6 +49,7 @@ function ZNAOrgnization3({ ...props }) {
   const selectInitiVal = {
     label: "Select",
     value: "",
+    isActive: true,
   };
   const intialfilterval = {
     znasbuId: "",
@@ -127,10 +135,29 @@ function ZNAOrgnization3({ ...props }) {
     });
   }, [selfilter.znaSegmentId]);
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.marketBasketId}
+            value={dataActItems.marketBasketId}
+            handleChange={handleItemSelect}
+            isdisabled={!row.isActiveEnable}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -174,32 +201,46 @@ function ZNAOrgnization3({ ...props }) {
     },
     {
       dataField: "marketBasketName",
-      text: "Organization 3",
+      text: "ZNA Organization 3",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
       },
     },
     {
       dataField: "sbuName",
-      text: "Organization 2",
+      text: "ZNA Organization 2",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
       },
     },
     {
       dataField: "znaSegmentName",
-      text: "Organization 1",
+      text: "ZNA Organization 1",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
       dataField: "description",
       text: "Description",
       sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "300px" };
+      },
     },
   ];
   const defaultSorted = [
@@ -209,10 +250,35 @@ function ZNAOrgnization3({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({ createdById: userProfile.userId });
-    getAllOrgnization1({ createdById: userProfile.userId });
-    getAllOrgnization2({ createdById: userProfile.userId });
+    fnOnInit();
   }, []);
+  const fnOnInit = async () => {
+    let org2Items = [];
+    org2Items = await getAllOrgnization2({
+      createdById: userProfile.userId,
+    });
+    let tempObj = {};
+    let tempOpts = [];
+    org2Items.forEach((item) => {
+      tempOpts.push({
+        ...item,
+        label: item.sbuName,
+        value: item.znasbuId,
+        znaSegmentId: item.znaSegmentId,
+      });
+      tempObj[item.znasbuId] = item;
+    });
+    tempOpts.sort(dynamicSort("label"));
+    setfrmOrg2SelectOpts(tempOpts);
+    setfrmOrg2SelectOptsObj({ ...tempObj });
+    getAll({
+      createdById: userProfile.userId,
+    });
+    getAllOrgnization1({
+      createdById: userProfile.userId,
+    });
+  };
+
   useEffect(() => {
     let tempdata = [];
     let temporg3FilterOpts = [];
@@ -220,33 +286,41 @@ function ZNAOrgnization3({ ...props }) {
     let tempOrg2ListObj = {};
     let temporg1FilterOpts = [];
     let tempOrg1ListObj = {};
+    let initalval = {};
     znaorgnization3State.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        temporg3FilterOpts.push({
-          label: item.marketBasketName,
-          value: item.marketBasketId,
-          znasbuId: item.znasbuId,
+      // if (item.isActive) {
+      tempdata.push({
+        ...item,
+        isActiveEnable: frmOrg2SelectOptsObj[item.znasbuId]
+          ? frmOrg2SelectOptsObj[item.znasbuId]["isActive"]
+          : true,
+      });
+      initalval[item.marketBasketId] = false;
+      temporg3FilterOpts.push({
+        label: item.marketBasketName,
+        value: item.marketBasketId,
+        znasbuId: item.znasbuId,
+      });
+      if (!tempOrg2ListObj[item.znasbuId]) {
+        temporg2FilterOpts.push({
+          label: item.sbuName,
+          value: item.znasbuId,
+          znaSegmentId: item.znaSegmentId,
         });
-        if (!tempOrg2ListObj[item.znasbuId]) {
-          temporg2FilterOpts.push({
-            label: item.sbuName,
-            value: item.znasbuId,
-            znaSegmentId: item.znaSegmentId,
-          });
-        }
-        tempOrg2ListObj[item.znasbuId] = item.sbuName;
-        if (!tempOrg1ListObj[item.znaSegmentId]) {
-          temporg1FilterOpts.push({
-            label: item.znaSegmentName,
-            value: item.znaSegmentId,
-          });
-        }
-        tempOrg1ListObj[item.znaSegmentId] = item.znaSegmentName;
       }
+      tempOrg2ListObj[item.znasbuId] = item.sbuName;
+      if (!tempOrg1ListObj[item.znaSegmentId]) {
+        temporg1FilterOpts.push({
+          label: item.znaSegmentName,
+          value: item.znaSegmentId,
+        });
+      }
+      tempOrg1ListObj[item.znaSegmentId] = item.znaSegmentName;
+      //}
     });
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
     temporg3FilterOpts.sort(dynamicSort("label"));
     temporg2FilterOpts.sort(dynamicSort("label"));
     temporg1FilterOpts.sort(dynamicSort("label"));
@@ -262,25 +336,14 @@ function ZNAOrgnization3({ ...props }) {
     let tempOpts = [];
     tempOpts = znaorgnization1State.org1Items.map((item) => {
       return {
+        ...item,
         label: item.znaSegmentName,
         value: item.znaSegmentId,
       };
     });
+    tempOpts.sort(dynamicSort("label"));
     setfrmOrg1SelectOpts([selectInitiVal, ...tempOpts]);
   }, [znaorgnization1State.org1Items]);
-
-  const [frmOrg2SelectOpts, setfrmOrg2SelectOpts] = useState([]);
-  useEffect(() => {
-    let tempOpts = [];
-    tempOpts = znaorgnization2State.org2Items.map((item) => {
-      return {
-        label: item.sbuName,
-        value: item.znasbuId,
-        znaSegmentId: item.znaSegmentId,
-      };
-    });
-    setfrmOrg2SelectOpts([...tempOpts]);
-  }, [znaorgnization2State.org2Items]);
 
   /* Add Edit Delete functionality & show popup*/
 
@@ -304,10 +367,15 @@ function ZNAOrgnization3({ ...props }) {
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ marketBasketId: itemid });
+    const response = await getById({
+      marketBasketId: itemid,
+    });
     setisEditMode(true);
     setformIntialState({
       ...response,
+      isActiveEnable: frmOrg2SelectOptsObj[response.znasbuId]
+        ? frmOrg2SelectOptsObj[response.znasbuId]["isActive"]
+        : true,
     });
     seteditmodeName(response.marketBasketName);
     showAddPopup();
@@ -381,14 +449,60 @@ function ZNAOrgnization3({ ...props }) {
       alert(alertMessage.orgnization1.isInUse);
     }
   };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "znaorg3",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAll();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
   return (
     <>
-      <div className="page-title">Manage Organization 3</div>
+      <div className="page-title">Manage ZNA Organization 3</div>
       <div className="page-filter">
         <div className="filter-container">
           <div className="frm-filter">
             <FrmSelect
-              title={"Organization 1"}
+              title={"ZNA Organization 1"}
               name={"znaSegmentId"}
               selectopts={org1FilterOpts}
               handleChange={onSearchFilterSelect}
@@ -397,7 +511,7 @@ function ZNAOrgnization3({ ...props }) {
           </div>
           <div className="frm-filter">
             <FrmSelect
-              title={"Organization 2"}
+              title={"ZNA Organization 2"}
               name={"znasbuId"}
               selectopts={org2FilterOpts}
               handleChange={onSearchFilterSelect}
@@ -406,7 +520,7 @@ function ZNAOrgnization3({ ...props }) {
           </div>
           <div className="frm-filter">
             <FrmSelect
-              title={"Organization 3"}
+              title={"ZNA Organization 3"}
               name={"marketBasketId"}
               selectopts={org3FilterOpts}
               handleChange={onSearchFilterSelect}
@@ -445,6 +559,9 @@ function ZNAOrgnization3({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"ZNA Organization 3"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -479,5 +596,6 @@ const mapActions = {
   deleteItem: znaorgnization3Actions.deleteItem,
   getAllOrgnization1: znaorgnization1Actions.getAllOrgnization,
   getAllOrgnization2: znaorgnization2Actions.getAllOrgnization,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(ZNAOrgnization3);

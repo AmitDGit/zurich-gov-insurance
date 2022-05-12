@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { znaorgnization1Actions } from "../../../actions";
+import { znaorgnization1Actions, commonActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -17,9 +18,13 @@ function ZNAOrgnization1({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu(
-    { currentMenu: "znaorganization1", isSubmenu: true },
+    {
+      currentMenu: "znaorganization1",
+      isSubmenu: true,
+    },
     props.menuClick
   );
   //initialize filter/search functionality
@@ -60,10 +65,29 @@ function ZNAOrgnization1({ ...props }) {
   };
 
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.znaSegmentId}
+            value={dataActItems.znaSegmentId}
+            handleChange={handleItemSelect}
+            isdisabled={false}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -107,10 +131,21 @@ function ZNAOrgnization1({ ...props }) {
     },
     {
       dataField: "znaSegmentName",
-      text: "Organization 1",
+      text: "ZNA Organization 1",
       sort: true,
       headerStyle: (colum, colIndex) => {
         return { width: "250px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
@@ -126,22 +161,27 @@ function ZNAOrgnization1({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({ RequesterUserId: userProfile.userId });
+    getAll({
+      RequesterUserId: userProfile.userId,
+    });
   }, []);
   useEffect(() => {
     let tempdata = [];
     let tempOrg1FilterOpts = [];
+    let initalval = {};
     znaorgnization1State.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        tempOrg1FilterOpts.push({
-          label: item.znaSegmentName,
-          value: item.znaSegmentId,
-        });
-      }
+      // if (item.isActive) {
+      tempdata.push(item);
+      initalval[item.znaSegmentId] = false;
+      tempOrg1FilterOpts.push({
+        label: item.znaSegmentName,
+        value: item.znaSegmentId,
+      });
+      // }
     });
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
     tempOrg1FilterOpts.sort(dynamicSort("label"));
     setorg1FilterOpts([...tempOrg1FilterOpts]);
   }, [znaorgnization1State.items]);
@@ -167,7 +207,9 @@ function ZNAOrgnization1({ ...props }) {
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ znaSegmentId: itemid });
+    const response = await getById({
+      znaSegmentId: itemid,
+    });
     setisEditMode(true);
     setformIntialState({
       ...response,
@@ -244,14 +286,60 @@ function ZNAOrgnization1({ ...props }) {
       alert(alertMessage.orgnization1.isInUse);
     }
   };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "znaorg1",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAll();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
   return (
     <>
-      <div className="page-title">Manage Organization 1</div>
+      <div className="page-title">Manage ZNA Organization 1</div>
       <div className="page-filter">
         <div className="filter-container">
           <div className="frm-filter">
             <FrmSelect
-              title={"Organization 1"}
+              title={"ZNA Organization 1"}
               name={"znaSegmentId"}
               selectopts={org1FilterOpts}
               handleChange={onSearchFilterSelect}
@@ -286,6 +374,9 @@ function ZNAOrgnization1({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"ZNA Organization 1"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -316,5 +407,6 @@ const mapActions = {
   checkIsInUse: znaorgnization1Actions.checkIsInUse,
   postItem: znaorgnization1Actions.postItem,
   deleteItem: znaorgnization1Actions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(ZNAOrgnization1);

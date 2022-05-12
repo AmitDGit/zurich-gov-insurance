@@ -11,7 +11,7 @@ margin-left: 10px;
 .active-checkbox .regular-checkbox+label {
     -webkit-appearance: none;
     background-color: #fff;
-    border: 1px solid #add8ef;
+    border: 2px solid #add8ef;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
         inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
     padding: 0;
@@ -45,3 +45,8 @@ margin-left: 10px;
     left: 3px;
     color: #fff;
 }
+.active-checkbox.disabled{
+    opacity: 0.5;
+}
+.frmlabel.disabled .label{opacity: 0.5;}
+.active-checkbox label{margin-bottom: 0;}

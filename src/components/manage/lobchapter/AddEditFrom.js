@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import FrmInput from "../../common-components/frminput/FrmInput";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import FrmMultiselect from "../../common-components/frmmultiselect/FrmMultiselect";
 import Popup from "../../common-components/Popup";
 import { connect } from "react-redux";
 import FrmInputSearch from "../../common-components/frmpeoplepicker/FrmInputSearch";
 import { userActions } from "../../../actions";
+import { dynamicSort } from "../../../helpers";
 function AddEditForm(props) {
   const {
     title,
@@ -22,8 +24,36 @@ function AddEditForm(props) {
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [selectedTab, setselectedTab] = useState("tab1");
+  const [frmLobOpts, setfrmLobOpts] = useState([]);
+  useEffect(() => {
+    fnOnInit();
+  }, []);
+  const fnOnInit = () => {
+    let tempotps = [];
+    let selectedlist = formIntialState.lobList;
+    frmLobSelectOpts.forEach((item) => {
+      if (isEditMode) {
+        let isselected = false;
+        selectedlist.forEach((lob) => {
+          if (item.lobid === lob.value) {
+            isselected = true;
+          }
+        });
+        if (item.isActive || isselected) {
+          tempotps.push(item);
+        }
+      } else if (item.isActive) {
+        tempotps.push(item);
+      }
+    });
+    setfrmLobOpts(tempotps);
+    setformfield(formIntialState);
+  };
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
     setformfield({ ...formfield, [name]: value });
   };
   const handleMultiSelectChange = (name, value) => {
@@ -97,13 +127,23 @@ function AddEditForm(props) {
                   isRequired={true}
                   validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
-                  selectopts={frmLobSelectOpts}
+                  selectopts={frmLobOpts}
                 />
                 <FrmTextArea
                   title={"Description"}
                   name={"lobChapterDescription"}
                   value={formfield.lobChapterDescription}
                   handleChange={handleChange}
+                  isRequired={false}
+                  validationmsg={""}
+                  issubmitted={issubmitted}
+                />
+                <FrmActiveCheckbox
+                  title={"isActive"}
+                  name={"isActive"}
+                  value={formfield.isActive}
+                  handleChange={handleChange}
+                  isdisabled={false}
                   isRequired={false}
                   validationmsg={""}
                   issubmitted={issubmitted}

@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { segmentActions, countryActions } from "../../../actions";
+import {
+  segmentActions,
+  countryActions,
+  commonActions,
+} from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -18,6 +23,7 @@ function Segment({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu({ currentMenu: "Segment", isSubmenu: true }, props.menuClick);
   //initialize filter/search functionality
@@ -66,10 +72,29 @@ function Segment({ ...props }) {
     setpaginationdata(data);
   };
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.segmentID}
+            value={dataActItems.segmentID}
+            handleChange={handleItemSelect}
+            isdisabled={false}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -116,20 +141,32 @@ function Segment({ ...props }) {
       text: "Segment",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "200px" };
+      },
+    },
+
+    {
+      dataField: "countryList",
+      text: "Country",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "170px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
       dataField: "segmentDescription",
       text: "Description",
-      sort: false,
-      headerStyle: (colum, colIndex) => {
-        return { width: "350px" };
-      },
-    },
-    {
-      dataField: "countryList",
-      text: "Country",
       sort: false,
     },
   ];
@@ -140,7 +177,9 @@ function Segment({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({ RequesterUserId: userProfile.userId });
+    getAll({
+      RequesterUserId: userProfile.userId,
+    });
     getAllCountry();
   }, []);
   useEffect(() => {
@@ -148,33 +187,36 @@ function Segment({ ...props }) {
     let tempsegmentFilterOpts = [];
     let tempCountryFilterOpts = [];
     let tempCountryObj = {};
+    let initalval = {};
     segmentState.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        tempsegmentFilterOpts.push({
-          label: item.segmentName,
-          value: item.segmentID,
+      //if (item.isActive) {
+      tempdata.push(item);
+      initalval[item.segmentID] = false;
+      tempsegmentFilterOpts.push({
+        label: item.segmentName,
+        value: item.segmentID,
+      });
+      let coutrylist = item.countryList;
+      if (coutrylist) {
+        coutrylist = coutrylist.split(",");
+        coutrylist.forEach((countryItem) => {
+          let tempItem = countryItem.trim();
+          if (!tempCountryObj[tempItem]) {
+            tempCountryFilterOpts.push({
+              label: tempItem,
+              value: tempItem,
+            });
+          }
+          tempCountryObj[tempItem] = tempItem;
         });
-        let coutrylist = item.countryList;
-        if (coutrylist) {
-          coutrylist = coutrylist.split(",");
-          coutrylist.forEach((countryItem) => {
-            let tempItem = countryItem.trim();
-            if (!tempCountryObj[tempItem]) {
-              tempCountryFilterOpts.push({
-                label: tempItem,
-                value: tempItem,
-              });
-            }
-            tempCountryObj[tempItem] = tempItem;
-          });
-        }
       }
+      //}
     });
     tempsegmentFilterOpts.sort(dynamicSort("label"));
     tempCountryFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
     setsegmentFilterOpts([...tempsegmentFilterOpts]);
     setcountryFilterOpts([...tempCountryFilterOpts]);
   }, [segmentState.items]);
@@ -187,13 +229,14 @@ function Segment({ ...props }) {
 
     countryState.countryItems.forEach((item) => {
       countryselectOpts.push({
+        ...item,
         label: item.countryName.trim(),
         value: item.countryID,
       });
       tempCountryObj[item.countryID] = item.countryName.trim();
     });
     setfrmCountrySelectOpts([
-      { label: "All", value: "*" },
+      { label: "All", value: "*", isActive: true },
       ...countryselectOpts,
     ]);
 
@@ -226,8 +269,9 @@ function Segment({ ...props }) {
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ SegmentID: itemid });
-    debugger;
+    const response = await getById({
+      SegmentID: itemid,
+    });
     let selectedCountryList = [];
     if (response.segmentCountryList) {
       selectedCountryList = response.segmentCountryList.map((item) => {
@@ -318,15 +362,65 @@ function Segment({ ...props }) {
     if (!window.confirm(alertMessage.segment.deleteConfirm)) {
       return;
     }
-    let resonse = await checkIsInUse({ segmentID: itemid });
+    let resonse = await checkIsInUse({
+      segmentID: itemid,
+    });
     if (!resonse) {
-      resonse = await deleteItem({ segmentID: itemid });
+      resonse = await deleteItem({
+        segmentID: itemid,
+      });
       if (resonse) {
         getAll();
         alert(alertMessage.segment.delete);
       }
     } else {
       alert(alertMessage.segment.isInUse);
+    }
+  };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "segment",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAll();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
     }
   };
   return (
@@ -382,6 +476,9 @@ function Segment({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New Segment"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -414,5 +511,6 @@ const mapActions = {
   checkIsInUse: segmentActions.checkIsInUse,
   postItem: segmentActions.postItem,
   deleteItem: segmentActions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Segment);

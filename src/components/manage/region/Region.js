@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { regionActions } from "../../../actions";
+import { regionActions, commonActions } from "../../../actions";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
@@ -19,6 +19,7 @@ function Region({ ...props }) {
     checkRegionExist,
     checkRegionInUse,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu({ currentMenu: "Region", isSubmenu: true }, props.menuClick);
   //console.log(regionState);
@@ -122,7 +123,6 @@ function Region({ ...props }) {
         return { width: "150px" };
       },
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        debugger;
         return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
@@ -145,18 +145,17 @@ function Region({ ...props }) {
   useEffect(() => {
     let tempdata = [];
     let tempFilterOpts = [];
-    debugger;
     let initalval = {};
     regionState.items.forEach((item) => {
       //if (item.isActive) {
       let tempItem = { ...item, id: item.regionID };
-
+      initalval[tempItem.id] = false;
       tempdata.push(tempItem);
       tempFilterOpts.push({
         label: item.regionName,
         value: item.regionID,
       });
-      initalval[tempItem.id] = false;
+
       //}
     });
     tempFilterOpts.sort(dynamicSort("label"));
@@ -256,7 +255,11 @@ function Region({ ...props }) {
       alert(alertMessage.region.isInUse);
     }
   };
+
+  //added below code to set active/inactive state
   const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
   const handleItemSelect = async (e) => {
     let { name, value } = e.target;
     value = e.target.checked;
@@ -269,9 +272,32 @@ function Region({ ...props }) {
         selectedItems.splice(index, 1);
       }
     }
-    console.log(selectedItems);
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
   };
 
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "region",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialFilterState);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAllRegions();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
   return (
     <>
       <div className="page-title">Manage Region</div>
@@ -312,6 +338,9 @@ function Region({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New Region"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -341,5 +370,6 @@ const mapActions = {
   getRegionById: regionActions.getById,
   checkRegionExist: regionActions.checkRegionExist,
   checkRegionInUse: regionActions.checkRegionInUse,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Region);

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { lobActions, countryActions } from "../../../actions";
+import { lobActions, countryActions, commonActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -21,6 +22,7 @@ function Lob({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
 
   useSetNavMenu({ currentMenu: "Lob", isSubmenu: true }, props.menuClick);
@@ -66,10 +68,29 @@ function Lob({ ...props }) {
     setpaginationdata(data);
   };
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.lobid}
+            value={dataActItems.lobid}
+            handleChange={handleItemSelect}
+            isdisabled={false}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -116,7 +137,7 @@ function Lob({ ...props }) {
       text: "LoB",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "220px" };
       },
     },
     {
@@ -124,10 +145,21 @@ function Lob({ ...props }) {
       text: "Country",
       sort: false,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "180px" };
       },
       formatter: (cell, row, rowIndex, formatExtraData) => {
         return <span>{cell ? cell : "-"}</span>;
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
+      },
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
       },
     },
     {
@@ -208,33 +240,36 @@ function Lob({ ...props }) {
     let templobFilterOpts = [];
     let tempCountryFilterOpts = [];
     let tempCountryObj = {};
+    let initalval = {};
     lobState.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        templobFilterOpts.push({
-          label: item.lobName,
-          value: item.lobid,
+      // if (item.isActive) {
+      tempdata.push(item);
+      initalval[item.lobid] = false;
+      templobFilterOpts.push({
+        label: item.lobName,
+        value: item.lobid,
+      });
+      let coutrylist = item.countryList;
+      if (coutrylist) {
+        coutrylist = coutrylist.split(",");
+        coutrylist.forEach((countryItem) => {
+          let tempItem = countryItem.trim();
+          if (!tempCountryObj[tempItem]) {
+            tempCountryFilterOpts.push({
+              label: tempItem,
+              value: tempItem,
+            });
+          }
+          tempCountryObj[tempItem] = tempItem;
         });
-        let coutrylist = item.countryList;
-        if (coutrylist) {
-          coutrylist = coutrylist.split(",");
-          coutrylist.forEach((countryItem) => {
-            let tempItem = countryItem.trim();
-            if (!tempCountryObj[tempItem]) {
-              tempCountryFilterOpts.push({
-                label: tempItem,
-                value: tempItem,
-              });
-            }
-            tempCountryObj[tempItem] = tempItem;
-          });
-        }
       }
+      //}
     });
     tempCountryFilterOpts.sort(dynamicSort("label"));
     templobFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
     setlobFilterOpts([...templobFilterOpts]);
     setcountryFilterOpts([...tempCountryFilterOpts]);
   }, [lobState.items]);
@@ -247,13 +282,14 @@ function Lob({ ...props }) {
 
     countryState.countryItems.forEach((item) => {
       countryselectOpts.push({
+        ...item,
         label: item.countryName.trim(),
         value: item.countryID,
       });
       tempCountryObj[item.countryID] = item.countryName.trim();
     });
     setfrmCountrySelectOpts([
-      { label: "All", value: "*" },
+      { label: "All", value: "*", isActive: true },
       ...countryselectOpts,
     ]);
 
@@ -289,10 +325,15 @@ function Lob({ ...props }) {
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ lobid: itemid });
+    const response = await getById({
+      lobid: itemid,
+    });
     console.log(response);
     let selectedCountryList = response.lobCountryList.map((item) => {
-      return { label: item.countryName, value: item.countryID };
+      return {
+        label: item.countryName,
+        value: item.countryID,
+      };
     });
     if (selectedCountryList.length === frmCountrySelectOpts.length - 1) {
       selectedCountryList = [
@@ -386,7 +427,9 @@ function Lob({ ...props }) {
     if (!window.confirm(alertMessage.lob.deleteConfirm)) {
       return;
     }
-    let resonse = await checkIsInUse({ lobid: itemid });
+    let resonse = await checkIsInUse({
+      lobid: itemid,
+    });
     if (!resonse) {
       resonse = await deleteItem({ lobid: itemid });
       if (resonse) {
@@ -398,6 +441,51 @@ function Lob({ ...props }) {
     }
   };
 
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "lob",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAll();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
   return (
     <>
       <div className="page-title">Manage LoB</div>
@@ -449,6 +537,9 @@ function Lob({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New LoB"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -482,6 +573,7 @@ const mapActions = {
   checkIsInUse: lobActions.checkIsInUse,
   postItem: lobActions.postItem,
   deleteItem: lobActions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 
 export default connect(mapStateToProp, mapActions)(Lob);

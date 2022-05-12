@@ -919,6 +919,7 @@ function Breachlog({ ...props }) {
 
     countryState.countryItems.forEach((item) => {
       selectOpts.push({
+        ...item,
         label: item.countryName.trim(),
         value: item.countryID,
         regionId: item.regionID,
@@ -958,6 +959,7 @@ function Breachlog({ ...props }) {
     let selectOpts = [];
     regionState.regionItems.forEach((item) => {
       selectOpts.push({
+        ...item,
         label: item.regionName.trim(),
         value: item.regionID,
       });

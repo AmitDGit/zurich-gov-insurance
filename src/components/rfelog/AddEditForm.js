@@ -39,8 +39,6 @@ function AddEditForm(props) {
     isEditMode,
     setInEditMode,
     formIntialState,
-    frmCountrySelectOpts,
-    getAllUsers,
     getAllCountry,
     getallLocalLinks,
     getLookupByType,
@@ -103,16 +101,26 @@ function AddEditForm(props) {
   ]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
   useEffect(() => {
-    let selectOpts = [];
+    let tempopts = [];
     countryState.countryItems.forEach((item) => {
-      selectOpts.push({
-        label: item.countryName.trim(),
-        value: item.countryID,
-        regionId: item.regionID,
-      });
+      if (isEditMode) {
+        if (item.isActive || item.countryID === formIntialState.countryId) {
+          tempopts.push({
+            label: item.countryName.trim(),
+            value: item.countryID,
+            regionId: item.regionID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.countryName.trim(),
+          value: item.countryID,
+          regionId: item.regionID,
+        });
+      }
     });
-    selectOpts.sort(dynamicSort("label"));
-    setcountryopts([selectInitiVal, ...selectOpts]);
+    tempopts.sort(dynamicSort("label"));
+    setcountryopts([selectInitiVal, ...tempopts]);
   }, [countryState.countryItems]);
 
   const [loading, setloading] = useState(true);
@@ -178,19 +186,63 @@ function AddEditForm(props) {
       tooltipObj[item.toolTipField] = item.toolTipText;
     });
     settooltip(tooltipObj);
-
-    temporgnizationalalignment = temporgnizationalalignment.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    temprfechz = temprfechz.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    temprfeempourment = temprfeempourment.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
+    let tempopts = [];
+    temporgnizationalalignment.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.lookupID === formIntialState.organizationalAlignment
+        ) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    temporgnizationalalignment = [...tempopts];
+    tempopts = [];
+    temprfechz.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.chz) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    temprfechz = [...tempopts];
+    tempopts = [];
+    temprfeempourment.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.lookupID === formIntialState.requestForEmpowermentReason
+        ) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    temprfeempourment = [...tempopts];
     let frmstatus = [];
     tempstatus.forEach((item) => {
       let isshow = false;
@@ -271,12 +323,18 @@ function AddEditForm(props) {
   }, []);
 
   useEffect(() => {
-    let tempItems = lobState.lobItems.map((item) => ({
-      label: item.lobName,
-      value: item.lobid,
-    }));
-    tempItems.sort(dynamicSort("label"));
-    setfrmLoB([selectInitiVal, ...tempItems]);
+    let tempopts = [];
+    lobState.lobItems.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lobid === formIntialState.lobid) {
+          tempopts.push({ label: item.lobName, value: item.lobid });
+        }
+      } else if (item.isActive) {
+        tempopts.push({ label: item.lobName, value: item.lobid });
+      }
+    });
+    tempopts.sort(dynamicSort("label"));
+    setfrmLoB([selectInitiVal, ...tempopts]);
   }, [lobState.lobItems]);
 
   const handleChange = (e) => {

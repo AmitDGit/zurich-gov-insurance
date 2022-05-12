@@ -257,7 +257,10 @@ function Exemptionlog({ ...props }) {
         if (
           isShow &&
           selfilter.status !== "" &&
-          selfilter.status !== item.status
+          ((selectedExemptionLog === "zug" &&
+            selfilter.status !== item.status) ||
+            (selectedExemptionLog === "urpm" &&
+              selfilter.status !== item.globalUWStatus))
         ) {
           isShow = false;
         }
@@ -950,21 +953,21 @@ function Exemptionlog({ ...props }) {
       label: item.lookUpValue,
       value: item.lookupID,
     }));
-    tempURPMStatus = tempURPMStatus.map((item) => ({
+    /*tempURPMStatus = tempURPMStatus.map((item) => ({
       label: item.lookUpValue,
       value: item.lookupID,
-    }));
+    }));*/
     tempURPMSection = tempURPMSection.map((item) => ({
       label: item.lookUpValue,
       value: item.lookupID,
     }));
     tempZUGStatus.sort(dynamicSort("label"));
-    tempURPMStatus.sort(dynamicSort("label"));
+    //tempURPMStatus.sort(dynamicSort("label"));
     tempURPMSection.sort(dynamicSort("label"));
     setcommonfilterOpts({
       ...commonfilterOpts,
       ZUGstatusFilterOpts: [selectInitiVal, ...tempZUGStatus],
-      URPMstatusFilterOpts: [selectInitiVal, ...tempURPMStatus],
+      URPMstatusFilterOpts: [selectInitiVal, ...tempZUGStatus],
       URPMSectionFilterOps: [selectInitiVal, ...tempURPMSection],
     });
 
