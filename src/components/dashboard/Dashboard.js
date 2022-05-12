@@ -1,13 +1,10 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { regionActions } from "../../actions";
+import { appmenuActions } from "../../actions";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
 function Dashboard({ ...props }) {
-  const { getAllRegions } = props;
-  useSetNavMenu(
-    { currentMenu: "Dashboard", isSubmenu: false },
-    props.menuClick
-  );
+  const { menuClick } = props;
+  //useSetNavMenu({ currentMenu: "Dashboard", isSubmenu: false }, menuClick);
   useEffect(() => {
     //getAllRegions();
   }, []);
@@ -15,6 +12,6 @@ function Dashboard({ ...props }) {
 }
 
 const mapActions = {
-  getAllRegions: regionActions.getAll,
+  menuClick: appmenuActions.menuClick,
 };
 export default connect(null, mapActions)(Dashboard);

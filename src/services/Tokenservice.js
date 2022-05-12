@@ -1,4 +1,4 @@
-const localstorageId = "user";
+const localstorageId = "okta-token-storage";
 const getLocalRefreshToken = () => {
   const user = JSON.parse(localStorage.getItem(localstorageId));
   return user ? user.refreshToken : "";
@@ -6,7 +6,7 @@ const getLocalRefreshToken = () => {
 
 const getLocalAccessToken = () => {
   const user = JSON.parse(localStorage.getItem(localstorageId));
-  return user ? user.token : "";
+  return user ? user.accessToken.accessToken : "";
 };
 
 const updateLocalAccessToken = (token) => {

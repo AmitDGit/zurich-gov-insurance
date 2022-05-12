@@ -1,8 +1,13 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
 import TokenService from "../../services/Tokenservice";
-export const PrivateRoute = ({ component: Component, ...rest }) => {
-  let userProfile = TokenService.getUser();
+import { connect } from "react-redux";
+const PrivateRoute = ({ component: Component, ...rest }) => {
+  //let userProfile = TokenService.getUser();
+  const { userprofileState } = rest.state;
+  let userProfile = userprofileState.userProfile
+    ? userprofileState.userProfile
+    : {};
   return (
     <Route
       {...rest}
@@ -21,3 +26,9 @@ export const PrivateRoute = ({ component: Component, ...rest }) => {
     />
   );
 };
+const mapStateToProp = (state) => {
+  return {
+    state: state,
+  };
+};
+export default connect(mapStateToProp)(PrivateRoute);

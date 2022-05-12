@@ -2,7 +2,9 @@ import { useEffect } from "react";
 
 function useSetNavMenu(param, action) {
   useEffect(() => {
-    action(param);
+    if (action) {
+      action(param);
+    }
   }, []);
   return true;
 }

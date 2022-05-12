@@ -24,7 +24,7 @@ import parse from "html-react-parser";
 let pageIndex = 1;
 let totalLogCount = 0;
 function Rfelog({ ...props }) {
-  const { rfelogState, countryState, lobState } = props.state;
+  const { rfelogState, countryState, lobState, userprofileState } = props.state;
   const {
     getAll,
     getallCount,
@@ -49,6 +49,7 @@ function Rfelog({ ...props }) {
   const [logsDraftData, setlogsDraftData] = useState([]);
   useSetNavMenu({ currentMenu: "Rfelog", isSubmenu: false }, props.menuClick);
   //initialize filter/search functionality
+
   const selectInitiVal = {
     label: "Select",
     value: "",

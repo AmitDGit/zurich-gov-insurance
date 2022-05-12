@@ -22,7 +22,7 @@ import FrmInput from "../common-components/frminput/FrmInput";
 import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
-import useUserProfile from "../../customhooks/useUserProfile";
+
 let pageIndex = 1;
 let totalLogCount = 0;
 function Exemptionlog({ ...props }) {
@@ -40,6 +40,7 @@ function Exemptionlog({ ...props }) {
     getLookupByType,
     checkIsInUse,
     deleteItem,
+    userProfile,
   } = props;
 
   const [logstate, setlogstate] = useState({
@@ -50,7 +51,7 @@ function Exemptionlog({ ...props }) {
     ZUGdata: [],
     URPMdata: [],
   });
-  const userProfile = useUserProfile();
+  //const userProfile = useUserProfile();
   const [logsDraftData, setlogsDraftData] = useState({
     ZUGdraftdata: [],
     URPMdraftdata: [],

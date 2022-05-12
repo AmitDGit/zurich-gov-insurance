@@ -13,3 +13,5 @@ export * from "./breachlog.action";
 export * from "./rfelog.action";
 export * from "./common.action";
 export * from "./exemptionlog.action";
+export * from "./appmenu.action";
+export * from "./userprofile.action";

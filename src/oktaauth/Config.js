@@ -5,6 +5,8 @@ const oktaAuthConfig = {
   issuer: "https://dev-30156557.okta.com/oauth2/default",
   clientId: "0oa3rvubu3BgMry5F5d7",
   redirectUri: window.location.origin + "/login/callback",
+  postLogoutRedirectUri: window.location.origin + "/login",
+  logoutUrl: window.location.origin + "/login",
   scopes: ["openid", "profile", "email"],
 };
 
@@ -12,6 +14,8 @@ const oktaSignInConfig = {
   baseUrl: "https://dev-30156557.okta.com",
   clientId: "0oa3rvubu3BgMry5F5d7",
   redirectUri: window.location.origin + "/login/callback",
+  postLogoutRedirectUri: window.location.origin + "/login",
+  logoutUrl: window.location.origin + "/login",
   scopes: ["openid", "profile", "email"],
   authParams: {
     // If your app is configured to use the Implicit flow

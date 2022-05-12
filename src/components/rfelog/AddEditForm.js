@@ -52,7 +52,7 @@ function AddEditForm(props) {
     userProfile,
     queryparam,
   } = props;
-  const userProfiles = useUserProfile();
+  //const userProfiles = useUserProfile();
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
@@ -827,7 +827,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     isShowDelete={
                       (!isReadMode && !formfield.isSubmit) ||
-                      (!isReadMode && userProfiles.isAdminGroup)
+                      (!isReadMode && userProfile.isAdminGroup)
                     }
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}

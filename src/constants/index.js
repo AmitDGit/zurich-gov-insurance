@@ -15,3 +15,4 @@ export * from "./exemptionlog.constants";
 export * from "./znaorgnization1.constants";
 export * from "./znaorgnization2.constants";
 export * from "./znaorgnization3.constants";
+export * from "./userprofile.constants";

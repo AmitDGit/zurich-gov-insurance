@@ -15,8 +15,10 @@ import { znaorgnization3Reducer as znaorgnization3State } from "./znaorgnization
 import { breachlogReducer as breachlogState } from "./breachlog.reducer";
 import { rfelogReducer as rfelogState } from "./rfelog.reducer";
 import { exemptionlogReducer as exemptionlogState } from "./exemptionlog.reducer";
+import { userprofileReducer as userprofileState } from "./userprofile.reducer";
 const rootReducer = combineReducers({
   appmenu,
+  userprofileState,
   regionState,
   loginState,
   countryState,

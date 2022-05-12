@@ -123,7 +123,9 @@ export const regionActions = {
 
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
+  debugger;
   const response = await Axios.get(`region/getallregionlist`, param);
+  console.log(response);
   return response;
 };
 const getAllRegionsService = async (requestParam) => {
