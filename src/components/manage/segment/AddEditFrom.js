@@ -40,8 +40,8 @@ function AddEditForm(props) {
         tempotps.push(item);
       }
     });
-    setformfield(formIntialState);
     setfrmCountryOpts(tempotps);
+    setformfield(formIntialState);
   };
   const handleChange = (e) => {
     let { name, value } = e.target;

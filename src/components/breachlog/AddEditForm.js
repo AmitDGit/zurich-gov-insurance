@@ -73,6 +73,7 @@ function AddEditForm(props) {
     isReadMode,
     userProfile,
     queryparam,
+    handleDataVersion,
   } = props;
 
   //console.log(frmRegionSelectOpts);
@@ -155,6 +156,12 @@ function AddEditForm(props) {
     getAllSegment({ isActive: true });
     getAllSublob({ isActive: true });
     getallZNASegments({ isActive: true });
+    if (formIntialState.znaSegmentId) {
+      getallZNASBU({ znaSegmentId: formIntialState.znaSegmentId });
+    }
+    if (formIntialState.znasbuId) {
+      getallZNAMarketBasket({ znasbuId: formIntialState.znasbuId });
+    }
     let tempopts = [];
     frmCountrySelectOpts.forEach((item) => {
       if (isEditMode) {
@@ -202,7 +209,6 @@ function AddEditForm(props) {
     let tempBreachStatus = await getLookupByType({
       LookupType: "BreachStatus",
     });
-
     let tempToolTips = await getToolTip({ type: "BreachLogs" });
     let tooltipObj = {};
     tempToolTips.forEach((item) => {
@@ -356,7 +362,7 @@ function AddEditForm(props) {
           label: item.lookUpValue,
           value: item.lookupID,
         });
-        if (!formfield.isSubmit) {
+        if (!formIntialState.isSubmit) {
           //setformfield({ ...formfield, breachStatus: item.lookupID });
           formIntialState.breachStatus = item.lookupID;
         }
@@ -488,7 +494,6 @@ function AddEditForm(props) {
 
   useEffect(() => {
     let tempopts = [];
-    debugger;
     znaorgnization2State.org2Items.forEach((item) => {
       if (isEditMode) {
         if (item.isActive || item.znasbuId === formIntialState.znasbuId) {
@@ -834,6 +839,15 @@ function AddEditForm(props) {
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
         <div className="header-btn-container">
+          {formfield.isSubmit && (
+            <div
+              className="btn-blue"
+              onClick={() => handleDataVersion(formfield.breachLogID)}
+              style={{ marginRight: "10px" }}
+            >
+              Version History
+            </div>
+          )}
           {!isEditMode && isReadMode && (
             <div
               className="btn-blue"
@@ -1163,7 +1177,12 @@ function AddEditForm(props) {
                         </>
                       }
                       name={"nearMisses"}
-                      value={formfield.nearMisses}
+                      value={
+                        formfield.nearMisses === true ||
+                        formfield.nearMisses === false
+                          ? formfield.nearMisses
+                          : false
+                      }
                       handleChange={handleSelectChange}
                       isRequired={false}
                       isReadMode={isReadMode}

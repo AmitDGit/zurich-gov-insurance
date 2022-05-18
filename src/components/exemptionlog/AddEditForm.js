@@ -52,6 +52,7 @@ function AddEditForm(props) {
     exemptionlogsType,
     formInitialValueURPM,
     formInitialValueZUG,
+    handleDataVersion,
   } = props;
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
@@ -751,6 +752,21 @@ function AddEditForm(props) {
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
         <div className="header-btn-container">
+          {formfield.isSubmit && (
+            <div
+              className="btn-blue"
+              onClick={() =>
+                handleDataVersion(
+                  selectedExemptionLog === "zug"
+                    ? formfield.zugExemptionLogId
+                    : formfield.urpmExemptionLogId
+                )
+              }
+              style={{ marginRight: "10px" }}
+            >
+              Version History
+            </div>
+          )}
           {!isEditMode && isReadMode && (
             <div
               className="btn-blue"

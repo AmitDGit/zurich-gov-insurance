@@ -5,6 +5,7 @@ import {
   countryActions,
   lookupActions,
   lobActions,
+  commonActions,
 } from "../../actions";
 import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
@@ -21,6 +22,7 @@ import FrmInput from "../common-components/frminput/FrmInput";
 import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
+import VersionHistoryPopup from "../versionhistorypopup/VersionHistoryPopup";
 let pageIndex = 1;
 let totalLogCount = 0;
 function Rfelog({ ...props }) {
@@ -38,6 +40,7 @@ function Rfelog({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    getDataVersion,
   } = props;
 
   const [logstate, setlogstate] = useState({
@@ -73,10 +76,33 @@ function Rfelog({ ...props }) {
     "totalCount",
   ];
   const exportFieldTitles = {
-    rfeLogDetails: "RfELogDetails",
+    entryNumber: "Entry Number",
+    accountName: "Account Name",
+    organizationalAlignmentValue: "Orgnizational alignment",
+    countryName: "Country",
+    regionName: "Region",
+    underwriterName: "Underwriter",
+    chzValue: "CHZ Sustainability Desk / CHZ GI Credit Risk",
+    lobName: "LoB",
+    requestForEmpowermentReasonValue: "Request for empowerment reason",
+    rfeLogDetails: "Specific Details",
+    underwriterGrantingEmpowermentName: "Underwriter granting empowerment",
+    requestForEmpowermentCCName: "Request for empowerment CC",
+    requestForEmpowermentStatusValue: "Request for empowerment status",
+    receptionInformationDate:
+      "Date of reception of information needed by approver",
+    responseDate: "Date of response",
+    underwriterGrantingEmpowermentComments:
+      "Underwriter granting empowerment comments",
+    createdDate: "Created Date",
+    modifiedDate: "Modified Date",
+    creatorName: "Creator Name",
     rfeLogEmailLink: "Link",
   };
-  const exportDateFields = {};
+  const exportDateFields = {
+    responseDate: "responseDate",
+    receptionInformationDate: "receptionInformationDate",
+  };
   const exportHtmlFields = [
     "rfeLogDetails",
     "underwriterGrantingEmpowermentComments",
@@ -98,6 +124,7 @@ function Rfelog({ ...props }) {
       },
     ],
   });
+  const [isfilterApplied, setisfilterApplied] = useState(false);
   const [countryFilterOpts, setcountryFilterOpts] = useState([]);
   const [countryAllFilterOpts, setcountryAllFilterOpts] = useState([]);
 
@@ -133,6 +160,7 @@ function Rfelog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
+    debugger;
     if (
       selfilter.accountName.trim() !== "" ||
       selfilter.lobId !== "" ||
@@ -195,17 +223,19 @@ function Rfelog({ ...props }) {
         if (isShow && selfilter.role !== "") {
           if (
             selfilter.role === "approver" &&
-            item.underwriterGrantingEmpowerment !== userProfile.emailAddress
+            !item.underwriterGrantingEmpowerment.includes(
+              userProfile.emailAddress
+            )
           ) {
             isShow = false;
           } else if (
             selfilter.role === "underwriter" &&
-            item.underwriter !== userProfile.emailAddress
+            !item.underwriter.includes(userProfile.emailAddress)
           ) {
             isShow = false;
           } else if (
             selfilter.role === "ccuser" &&
-            item.requestForEmpowermentCC !== userProfile.emailAddress
+            !item.requestForEmpowermentCC.includes(userProfile.emailAddress)
           ) {
             isShow = false;
           }
@@ -213,42 +243,12 @@ function Rfelog({ ...props }) {
         return isShow;
       });
       setpaginationdata(tempdata);
+      setisfilterApplied(true);
     }
-
-    /*let filter = {};
-    if (selfilter.accountName.trim() !== "") {
-      filter["accountName"] = selfilter.accountName;
-    }
-    if (selfilter.lobId !== "") {
-      filter["lobId"] = selfilter.lobId;
-    }
-    if (selfilter.countryId !== "") {
-      filter["countryId"] = selfilter.countryId;
-    }
-    if (selfilter.underwriter !== "") {
-      filter["underwriter"] = selfilter.underwriter;
-    }
-    if (selfilter.requestForEmpowermentStatus !== "") {
-      filter["requestForEmpowermentStatus"] =
-        selfilter.requestForEmpowermentStatus;
-    }
-    if (selfilter.role !== "") {
-      if (selfilter.role === "all") {
-        filter["underwriter"] = "";
-        filter["underwriterGrantingEmpowerment"] = "";
-        filter["requestForEmpowermentCC"] = "";
-      } else if (selfilter.role === "approver") {
-        filter["underwriterGrantingEmpowerment"] = userProfile.emailAddress;
-      } else if (selfilter.role === "underwriter") {
-        filter["underwriter"] = userProfile.emailAddress;
-      } else if (selfilter.role === "ccuser") {
-        filter["requestForEmpowermentCC"] = userProfile.emailAddress;
-      }
-    }
-    getAllRfeItems(filter);*/
   };
   const clearFilter = () => {
     setselfilter(intialFilterState);
+    setisfilterApplied(false);
     let dataArr;
     if (sellogTabType === "draft") {
       dataArr = logsDraftData;
@@ -314,6 +314,26 @@ function Rfelog({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return {
           width: "70px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "",
+      text: "Data Version",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="versionhistory-icon"
+            onClick={() => handleDataVersion(row.rfeLogId)}
+            mode={"view"}
+          ></div>
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "100px",
           textAlign: "center",
         };
       },
@@ -586,6 +606,7 @@ function Rfelog({ ...props }) {
   useEffect(() => {
     // getAllRfeItems();
     setselfilter(intialFilterState);
+    setisfilterApplied(false);
     if (sellogTabType === "draft") {
       setpaginationdata(logsDraftData);
     } else {
@@ -808,6 +829,7 @@ function Rfelog({ ...props }) {
         window.location = "/rfelogs";
       } else {
         setselfilter(intialFilterState);
+        setisfilterApplied(false);
         let tempostItem = await getallLogs({
           rfeLogId: item.rfeLogId,
           isSubmit: item.isSubmit,
@@ -884,6 +906,7 @@ function Rfelog({ ...props }) {
         } else {
           alert(alertMessage.rfelog.draft);
         }
+        setisfilterApplied(false);
         setselfilter(intialFilterState);
         //getAllRfeItems();
         getallDraftItems();
@@ -920,6 +943,62 @@ function Rfelog({ ...props }) {
     setfilterbox(!filterbox);
   };
 
+  //version history
+  const [showVersionHistory, setshowVersionHistory] = useState(false);
+  const [versionHistoryData, setversionHistoryData] = useState([]);
+  const versionHistoryexportFieldTitles = {
+    EntryNumber: "Entry Number",
+    AccountName: "Account Name",
+    OrganizationalAlignmentValue: "Orgnizational alignment",
+    CountryName: "Country",
+    RegionName: "Region",
+    UnderwriterName: "Underwriter",
+    ChzValue: "CHZ Sustainability Desk / CHZ GI Credit Risk",
+    LobName: "LoB",
+    RequestForEmpowermentReasonValue: "Request for empowerment reason",
+    RfeLogDetails: "Specific Details",
+    UnderwriterGrantingEmpowermentName: "Underwriter granting empowerment",
+    RequestForEmpowermentCCName: "Request for empowerment CC",
+    RequestForEmpowermentStatusValue: "Request for empowerment status",
+    ReceptionInformationDate:
+      "Date of reception of information needed by approver",
+    ResponseDate: "Date of response",
+    UnderwriterGrantingEmpowermentComments:
+      "Underwriter granting empowerment comments",
+    CreatedDate: "Created Date",
+    ModifiedDate: "Modified Date",
+    CreatorName: "Creator Name",
+    RfeLogEmailLink: "Link",
+  };
+  const versionHistoryExcludeFields = {
+    EntryNumber: "entryNumber",
+    RfeLogEmailLink: "rfeLogEmailLink",
+    CreatedDate: "createdDate",
+    ModifiedDate: "modifiedDate",
+    RegionName: "regionName",
+    CreatorName: "creatorName",
+  };
+  const versionHistoryexportDateFields = {
+    ResponseDate: "responseDate",
+    ReceptionInformationDate: "receptionInformationDate",
+  };
+  const versionHistoryexportHtmlFields = [
+    "RfeLogDetails",
+    "UnderwriterGrantingEmpowermentComments",
+  ];
+  const hideVersionHistoryPopup = () => {
+    setshowVersionHistory(false);
+  };
+  const handleDataVersion = async (itemid) => {
+    let versiondata = await getDataVersion({
+      TempId: itemid,
+      LogType: "rfelogs",
+    });
+    debugger;
+    setversionHistoryData(versiondata.reverse());
+    setshowVersionHistory(true);
+  };
+
   return (
     <>
       {isshowAddPopup ? (
@@ -935,6 +1014,7 @@ function Rfelog({ ...props }) {
           userProfile={userProfile}
           setInEditMode={setInEditMode}
           queryparam={queryparam}
+          handleDataVersion={handleDataVersion}
         ></AddEditForm>
       ) : (
         <>
@@ -1032,7 +1112,7 @@ function Rfelog({ ...props }) {
             }`}
           >
             <div className="filter-btn" onClick={handleFilterBoxState}>
-              Filters
+              {isfilterApplied ? "Filters Applied" : "Filters"}
             </div>
           </div>
           {!alllogsloaded && (
@@ -1085,6 +1165,18 @@ function Rfelog({ ...props }) {
           </div>
         </>
       )}
+      {showVersionHistory ? (
+        <VersionHistoryPopup
+          versionHistoryData={versionHistoryData}
+          hidePopup={hideVersionHistoryPopup}
+          exportFieldTitles={versionHistoryexportFieldTitles}
+          exportDateFields={versionHistoryexportDateFields}
+          exportHtmlFields={versionHistoryexportHtmlFields}
+          versionHistoryExcludeFields={versionHistoryExcludeFields}
+        />
+      ) : (
+        ""
+      )}
     </>
   );
 }
@@ -1104,6 +1196,7 @@ const mapActions = {
   deleteItem: rfelogActions.deleteItem,
   getallunderwriter: rfelogActions.getallunderwriter,
   getLookupByType: lookupActions.getLookupByType,
+  getDataVersion: commonActions.getDataVersion,
 };
 
 export default connect(mapStateToProp, mapActions)(Rfelog);

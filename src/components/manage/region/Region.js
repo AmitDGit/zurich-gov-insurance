@@ -122,9 +122,6 @@ function Region({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "regionDescription",
@@ -148,7 +145,11 @@ function Region({ ...props }) {
     let initalval = {};
     regionState.items.forEach((item) => {
       //if (item.isActive) {
-      let tempItem = { ...item, id: item.regionID };
+      let tempItem = {
+        ...item,
+        id: item.regionID,
+        isActive: item.isActive ? "Active" : "Inactive",
+      };
       initalval[tempItem.id] = false;
       tempdata.push(tempItem);
       tempFilterOpts.push({

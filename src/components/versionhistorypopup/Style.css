@@ -1,0 +1,54 @@
+.popup-box.versionhistory {
+    top: 20px;
+    width: 650px;
+    left: 350px;
+    height: 610px;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+.versionhistory-container .up-arrow::after {
+    content: "";
+    position: absolute;
+    top:9px;
+    left: 24px;
+    width: 0;
+    height: 0;
+    border: solid 5px transparent;
+    background: transparent;
+    border-bottom: solid 7px #2167ad;
+    border-top-width: 0;
+    cursor: pointer;
+}
+
+.versionhistory-container .down-arrow::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: 24px;
+    width: 0;
+    height: 0;
+    border: solid 5px transparent;
+    background: transparent;
+    border-top: solid 7px #2167ad;
+    border-bottom-width: 0;
+    margin-top: 1px;
+    cursor: pointer;
+}
+.versionhistory-data-container{margin-top:15px;padding: 5px 15px;height: 500px;overflow-y: auto;}
+.versionhistory-data-container table{
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 550px;
+}
+
+.versionhistory-data-container table th{
+    text-align: left;
+}
+.versionhistory-data-container table th, .versionhistory-data-container table td{
+    vertical-align: top;
+    padding: 3px;
+}
+.versionhistory-data-container table tbody{
+
+    border-top: 15px solid #edeef0;
+}

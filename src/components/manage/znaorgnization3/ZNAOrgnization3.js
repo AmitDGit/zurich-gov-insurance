@@ -230,9 +230,6 @@ function ZNAOrgnization3({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "description",
@@ -294,6 +291,7 @@ function ZNAOrgnization3({ ...props }) {
         isActiveEnable: frmOrg2SelectOptsObj[item.znasbuId]
           ? frmOrg2SelectOptsObj[item.znasbuId]["isActive"]
           : true,
+        isActive: item.isActive ? "Active" : "Inactive",
       });
       initalval[item.marketBasketId] = false;
       temporg3FilterOpts.push({

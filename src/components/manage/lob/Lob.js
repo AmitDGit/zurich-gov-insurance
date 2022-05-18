@@ -158,9 +158,6 @@ function Lob({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "lobApproverList",
@@ -243,7 +240,10 @@ function Lob({ ...props }) {
     let initalval = {};
     lobState.items.forEach((item) => {
       // if (item.isActive) {
-      tempdata.push(item);
+      tempdata.push({
+        ...item,
+        isActive: item.isActive ? "Active" : "Inactive",
+      });
       initalval[item.lobid] = false;
       templobFilterOpts.push({
         label: item.lobName,

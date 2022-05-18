@@ -63,6 +63,16 @@ const setMasterdataActive = (requestParam) => {
     }
   };
 };
+const getDataVersion = (requestParam) => {
+  return async (dispatch) => {
+    try {
+      const response = await commonService.getDataVersionService(requestParam);
+      return response.data;
+    } catch (err) {
+      return false;
+    }
+  };
+};
 export const commonActions = {
   uploadFile,
   deleteFile,
@@ -70,6 +80,7 @@ export const commonActions = {
   getToolTip,
   sendLogNotification,
   setMasterdataActive,
+  getDataVersion,
 };
 const uploadFileService = async (requestParam) => {
   const response = await Axios.post(`common/uploadfile`, requestParam, {
@@ -102,9 +113,12 @@ const sendLogNotificationService = async (requestParam) => {
 };
 
 const setMasterdataActiveService = async (requestParam) => {
-  debugger;
   const response = await Axios.post(`common/masterstatusupdate`, requestParam);
-  console.log(response);
+  return response;
+};
+const getDataVersionService = async (requestParam) => {
+  const param = { params: requestParam };
+  const response = await Axios.get(`common/GetLogVersionHistory`, param);
   return response;
 };
 const commonService = {
@@ -114,4 +128,5 @@ const commonService = {
   getToolTipService,
   sendLogNotificationService,
   setMasterdataActiveService,
+  getDataVersionService,
 };

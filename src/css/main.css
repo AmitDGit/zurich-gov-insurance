@@ -72,6 +72,10 @@ body {
   background-color: #f3f3f3;
   line-height: 1.2;
 }
+#root{
+  max-width: 1280px;
+  margin: 0 auto;
+}
 a {
   color: #2167ad;
   text-decoration: underline;
@@ -105,7 +109,7 @@ a {
   bottom: 0px;
   left: 0px;
   right: 0px;
-  z-index: 1;
+  z-index: 10;
   display: flex;
   flex-flow: column wrap;
 }
@@ -137,6 +141,7 @@ a {
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
 }
+
 .popup-header-container {
   height: 50px;
   border-bottom: 1px solid #2167ad;
@@ -362,10 +367,9 @@ button:focus {
 .filter-btn {
   cursor: pointer;
   margin: 0;
-  width: 88px;
   line-height: 29px;
   height: 30px;
-  padding: 0px 10px;
+  padding: 0px 35px 0px 10px;
   color: #fff;
   border-radius: 0px 0px 15px 15px;
   background: #2167ad 0% 0% no-repeat padding-box;
@@ -654,6 +658,15 @@ button:not(:last-child) {
   cursor: pointer;
   background: url("../assets/trash_hover.png") center no-repeat;
 }
+.versionhistory-icon {
+  width: 100%;
+  height: 22px;
+  background: url("../assets/Version history.png") center no-repeat;
+}
+.versionhistory-icon:hover{
+  cursor: pointer;
+  background: url("../assets/Version history hover.png") center no-repeat;
+}
 .plus-icon {
   background-image: url("../assets/plus.png");
   background-position: 10px center;
@@ -733,6 +746,7 @@ button:not(:last-child) {
   border: 1px solid #add8ef;
   word-wrap: break-word;
   word-break: break-word;
+ 
 }
 .table-bordered td,
 .table-bordered th,

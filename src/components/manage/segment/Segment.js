@@ -160,9 +160,6 @@ function Segment({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "segmentDescription",
@@ -190,7 +187,10 @@ function Segment({ ...props }) {
     let initalval = {};
     segmentState.items.forEach((item) => {
       //if (item.isActive) {
-      tempdata.push(item);
+      tempdata.push({
+        ...item,
+        isActive: item.isActive ? "Active" : "Inactive",
+      });
       initalval[item.segmentID] = false;
       tempsegmentFilterOpts.push({
         label: item.segmentName,

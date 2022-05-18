@@ -176,9 +176,6 @@ function Country({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "countryDescription",
@@ -226,6 +223,7 @@ function Country({ ...props }) {
         isActiveEnable: frmRegionSelectOptObj[item.regionID]
           ? frmRegionSelectOptObj[item.regionID]["isActive"]
           : true,
+        isActive: item.isActive ? "Active" : "Inactive",
       });
       initalval[tempdata.countryID] = false;
       tempCountryFilterOpts.push({

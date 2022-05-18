@@ -5,6 +5,7 @@ import {
   countryActions,
   lookupActions,
   lobActions,
+  commonActions,
 } from "../../actions";
 import Loading from "../common-components/Loading";
 import useSetNavMenu from "../../customhooks/useSetNavMenu";
@@ -23,6 +24,7 @@ import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
 import useUserProfile from "../../customhooks/useUserProfile";
+import VersionHistoryPopup from "../versionhistorypopup/VersionHistoryPopup";
 let pageIndex = 1;
 let totalLogCount = 0;
 function Exemptionlog({ ...props }) {
@@ -40,6 +42,7 @@ function Exemptionlog({ ...props }) {
     getLookupByType,
     checkIsInUse,
     deleteItem,
+    getDataVersion,
   } = props;
 
   const [logstate, setlogstate] = useState({
@@ -112,39 +115,52 @@ function Exemptionlog({ ...props }) {
     modifiedDate: "modifiedDate",
     createdDate: "createdDate",
   };
-  const exportFieldTitles = {
+  const exportFieldTitlesZUG = {
     entryNumber: "Entry Number",
-    exemptionLogType: "Exemption Log Type",
-    section: "Section",
-    sectionSubject: "Section Subject",
-    empowermentAndFeedbackRequest: "Empowerment & Feedback Request",
-    transitionalExpireDate: "Transitional Expiring Date of Empowerment",
-    pC_URPMExemptionRequired: " P&C URPM exemption required",
-    expiringDate: "Expiring Date",
-    additionalApprovalComments: "Additional Approval Comments",
-    modifiedDate: "Modified Date",
-    countryName: "Country",
+    countryNames: "Country",
     typeOfExemptionValue: "Type of Exemption",
     typeOfBusinessValue: "Type of Business",
-    fullTransitionalValue: "Full/Transitional",
-    creatorName: "Creator Name",
-    statusValue: "Status",
-    lastModifiorName: "Last Modifier",
-    empowermentRequestedByName: "Empowerment Requested By",
-    approverName: "Approver",
-    lobChapterName: "LoB Chapter/Document",
     individualGrantedEmpowermentName: "Individual Granted Empowerment",
-    exemptionLogEmailLink: "Link",
-    countryNames: "Country",
-    createdDate: "Created Date",
+    lobChapterName: "LoB Chapter/Document",
+    section: "Section",
+    sectionSubject: "Section Subject",
     zugChapterVersion: "ZUG Chapter Version",
+    empowermentAndFeedbackRequest: "Empowerment & Feedback Request",
+    empowermentRequestedByName: "Empowerment Requested By",
+    fullTransitionalValue: "Full/Transitional",
+    transitionalExpireDate: "Transitional Expiring Date of Empowerment",
+    pC_URPMExemptionRequired: " P&C URPM exemption required",
+    approverName: "Approver",
+    statusValue: "Status",
+    expiringDate: "Expiring Date",
+    additionalApprovalComments: "Additional Approval Comments",
+    createdDate: "Created Date",
+    creatorName: "Creator Name",
+    modifiedDate: "Modified Date",
+    lastModifiorName: "Last Modifier",
+    exemptionLogType: "Exemption Log Type",
+    exemptionLogEmailLink: "Link",
+  };
+  const exportFieldTitlesURPM = {
+    entryNumber: "Entry Number",
+    countryNames: "Country",
+    typeOfExemptionValue: "Type of Exemption",
+    typeOfBusinessValue: "Type of Business",
+    individualGrantedEmpowermentName: "Individual Granted Empowerment",
+    sectionValue: "Section",
+    sectionSubject: "Section Subject",
     temporaryRequestEndDate: "End Date of Temporary Request",
     requestDetails: "Details of Request",
+    globalUWApproverName: "Global UW Approver",
+    globalUWStatusValue: "Status",
     globalUWApproverComments: "Global UW Approver comments",
     submitterName: "Submitter",
-    globalUWStatusValue: "Status",
-    globalUWApproverName: "Global UW Approver",
-    sectionValue: "Section Value",
+    createdDate: "Created Date",
+    creatorName: "Creator Name",
+    modifiedDate: "Modified Date",
+    lastModifiorName: "Last Modifier",
+    exemptionLogType: "Exemption Log Type",
+    exemptionLogEmailLink: "Link",
   };
   const exportHtmlFields = [
     "empowermentAndFeedbackRequest",
@@ -186,6 +202,7 @@ function Exemptionlog({ ...props }) {
     status: "",
   };
   const [selfilter, setselfilter] = useState(intialFilterState);
+  const [isfilterApplied, setisfilterApplied] = useState(false);
   const onSearchFilterInput = (e) => {
     const { name, value } = e.target;
     setselfilter({
@@ -311,10 +328,12 @@ function Exemptionlog({ ...props }) {
         return isShow;
       });
       setpaginationdata(tempdata);
+      setisfilterApplied(true);
     }
   };
   const clearFilter = () => {
     setselfilter(intialFilterState);
+    setisfilterApplied(false);
     let dataArr;
     if (sellogTabType === "draft") {
       dataArr =
@@ -388,7 +407,26 @@ function Exemptionlog({ ...props }) {
         };
       },
     },
-
+    {
+      dataField: "",
+      text: "Data Version",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="versionhistory-icon"
+            onClick={() => handleDataVersion(row.zugExemptionLogId)}
+            mode={"view"}
+          ></div>
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "100px",
+          textAlign: "center",
+        };
+      },
+    },
     {
       dataField: "",
       text: "Entry Number",
@@ -622,6 +660,26 @@ function Exemptionlog({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return {
           width: "70px",
+          textAlign: "center",
+        };
+      },
+    },
+    {
+      dataField: "",
+      text: "Data Version",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <div
+            className="versionhistory-icon"
+            onClick={() => handleDataVersion(row.urpmExemptionLogId)}
+            mode={"view"}
+          ></div>
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return {
+          width: "100px",
           textAlign: "center",
         };
       },
@@ -925,7 +983,7 @@ function Exemptionlog({ ...props }) {
   };
   useEffect(() => {
     setselfilter(intialFilterState);
-
+    setisfilterApplied(false);
     if (sellogTabType === "draft") {
       let dataArr =
         selectedExemptionLog === "zug"
@@ -1241,6 +1299,7 @@ function Exemptionlog({ ...props }) {
         window.location = "/exemptionlogs";
       } else {
         setselfilter(intialFilterState);
+        setisfilterApplied(false);
         //if item is submitted and in edit mode
         let logid = item[id];
         let tempostItem;
@@ -1352,6 +1411,7 @@ function Exemptionlog({ ...props }) {
           alert(alertMessage.exemptionlog.draft);
         }
         setselfilter(intialFilterState);
+        setisfilterApplied(false);
         //getAllRfeItems();
         getallDraftItems();
         hideAddPopup();
@@ -1386,7 +1446,91 @@ function Exemptionlog({ ...props }) {
   const handleFilterBoxState = () => {
     setfilterbox(!filterbox);
   };
-
+  //version history
+  const [showVersionHistory, setshowVersionHistory] = useState(false);
+  const [versionHistoryData, setversionHistoryData] = useState([]);
+  const versionHistoryexportDateFields = {
+    ExpiringDate: "expiringDate",
+    TemporaryRequestEndDate: "temporaryRequestEndDate",
+    TransitionalExpireDate: "transitionalExpireDate",
+    ModifiedDate: "modifiedDate",
+    CreatedDate: "createdDate",
+  };
+  const versionHistoryexportFieldTitlesZUG = {
+    EntryNumber: "Entry Number",
+    CountryNames: "Country",
+    TypeOfExemptionValue: "Type of Exemption",
+    TypeOfBusinessValue: "Type of Business",
+    IndividualGrantedEmpowermentName: "Individual Granted Empowerment",
+    LobChapterName: "LoB Chapter/Document",
+    Section: "Section",
+    SectionSubject: "Section Subject",
+    ZugChapterVersion: "ZUG Chapter Version",
+    EmpowermentAndFeedbackRequest: "Empowerment & Feedback Request",
+    EmpowermentRequestedByName: "Empowerment Requested By",
+    FullTransitionalValue: "Full/Transitional",
+    TransitionalExpireDate: "Transitional Expiring Date of Empowerment",
+    PC_URPMExemptionRequired: " P&C URPM exemption required",
+    ApproverName: "Approver",
+    StatusValue: "Status",
+    ExpiringDate: "Expiring Date",
+    AdditionalApprovalComments: "Additional Approval Comments",
+    CreatedDate: "Created Date",
+    CreatorName: "Creator Name",
+    ModifiedDate: "Modified Date",
+    LastModifiorName: "Last Modifier",
+    ExemptionLogType: "Exemption Log Type",
+    ExemptionLogEmailLink: "Link",
+  };
+  const versionHistoryexportFieldTitlesURPM = {
+    EntryNumber: "Entry Number",
+    CountryNames: "Country",
+    TypeOfExemptionValue: "Type of Exemption",
+    TypeOfBusinessValue: "Type of Business",
+    IndividualGrantedEmpowermentName: "Individual Granted Empowerment",
+    SectionValue: "Section",
+    SectionSubject: "Section Subject",
+    TemporaryRequestEndDate: "End Date of Temporary Request",
+    RequestDetails: "Details of Request",
+    GlobalUWApproverName: "Global UW Approver",
+    GlobalUWStatusValue: "Status",
+    GlobalUWApproverComments: "Global UW Approver comments",
+    SubmitterName: "Submitter",
+    CreatedDate: "Created Date",
+    CreatorName: "Creator Name",
+    ModifiedDate: "Modified Date",
+    LastModifiorName: "Last Modifier",
+    ExemptionLogType: "Exemption Log Type",
+    ExemptionLogEmailLink: "Link",
+  };
+  const versionHistoryexportHtmlFields = [
+    "EmpowermentAndFeedbackRequest",
+    "AdditionalApprovalComments",
+    "GlobalUWApproverComments",
+    "RequestDetails",
+  ];
+  const versionHistoryExcludeFields = {
+    EntryNumber: "entryNumber",
+    ExemptionLogType: "exemptionLogType",
+    CreatedDate: "createdDate",
+    CreatorName: "creatorName",
+    ModifiedDate: "modifiedDate",
+    LastModifiorName: "lastModifiorName",
+    ExemptionLogEmailLink: "exemptionLogEmailLink",
+    SubmitterName: "submitterName",
+  };
+  const hideVersionHistoryPopup = () => {
+    setshowVersionHistory(false);
+  };
+  const handleDataVersion = async (itemid) => {
+    let versiondata = await getDataVersion({
+      TempId: itemid,
+      LogType: selectedExemptionLog,
+    });
+    debugger;
+    setversionHistoryData(versiondata.reverse());
+    setshowVersionHistory(true);
+  };
   return (
     <div className="exemptionlog">
       {isshowAddPopup ? (
@@ -1407,6 +1551,7 @@ function Exemptionlog({ ...props }) {
           exemptionlogsType={exemptionlogsType}
           formInitialValueZUG={formInitialValueZUG}
           formInitialValueURPM={formInitialValueURPM}
+          handleDataVersion={handleDataVersion}
         ></AddEditForm>
       ) : (
         <>
@@ -1494,7 +1639,7 @@ function Exemptionlog({ ...props }) {
             }`}
           >
             <div className="filter-btn" onClick={handleFilterBoxState}>
-              Filters
+              {isfilterApplied ? "Filters Applied" : "Filters"}
             </div>
           </div>
           {!alllogsloaded && (
@@ -1565,7 +1710,11 @@ function Exemptionlog({ ...props }) {
                       : exportExcludeFieldsURPM
                   }
                   exportDateFields={exportDateFields}
-                  exportFieldTitles={exportFieldTitles}
+                  exportFieldTitles={
+                    selectedExemptionLog === "zug"
+                      ? exportFieldTitlesZUG
+                      : exportFieldTitlesURPM
+                  }
                   exportHtmlFields={exportHtmlFields}
                   exportCapitalField={exportCapitalField}
                 />
@@ -1573,6 +1722,22 @@ function Exemptionlog({ ...props }) {
             )}
           </div>
         </>
+      )}
+      {showVersionHistory ? (
+        <VersionHistoryPopup
+          versionHistoryData={versionHistoryData}
+          hidePopup={hideVersionHistoryPopup}
+          exportFieldTitles={
+            selectedExemptionLog === "zug"
+              ? versionHistoryexportFieldTitlesZUG
+              : versionHistoryexportFieldTitlesURPM
+          }
+          exportDateFields={versionHistoryexportDateFields}
+          exportHtmlFields={versionHistoryexportHtmlFields}
+          versionHistoryExcludeFields={versionHistoryExcludeFields}
+        />
+      ) : (
+        ""
       )}
     </div>
   );
@@ -1595,6 +1760,7 @@ const mapActions = {
   getAllCountry: countryActions.getAllCountry,
   getAlllob: lobActions.getAlllob,
   getLookupByType: lookupActions.getLookupByType,
+  getDataVersion: commonActions.getDataVersion,
 };
 
 export default connect(mapStateToProp, mapActions)(Exemptionlog);

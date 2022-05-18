@@ -144,9 +144,6 @@ function ZNAOrgnization1({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "description",
@@ -171,7 +168,10 @@ function ZNAOrgnization1({ ...props }) {
     let initalval = {};
     znaorgnization1State.items.forEach((item) => {
       // if (item.isActive) {
-      tempdata.push(item);
+      tempdata.push({
+        ...item,
+        isActive: item.isActive ? "Active" : "Inactive",
+      });
       initalval[item.znaSegmentId] = false;
       tempOrg1FilterOpts.push({
         label: item.znaSegmentName,

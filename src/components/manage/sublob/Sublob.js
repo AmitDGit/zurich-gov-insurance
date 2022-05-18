@@ -170,9 +170,6 @@ function Sublob({ ...props }) {
       headerStyle: (colum, colIndex) => {
         return { width: "150px" };
       },
-      formatter: (cell, row, rowIndex, formatExtraData) => {
-        return <span>{row.isActive ? "Active" : "Inactive"}</span>;
-      },
     },
     {
       dataField: "subLOBDescription",
@@ -236,6 +233,7 @@ function Sublob({ ...props }) {
         isActiveEnable: frmLobSelectOptsObj[item.lobid]
           ? frmLobSelectOptsObj[item.lobid]["isActive"]
           : true,
+        isActive: item.isActive ? "Active" : "Inactive",
       });
       initalval[tempdata.subLOBID] = false;
       tempsublobFilterOpts.push({

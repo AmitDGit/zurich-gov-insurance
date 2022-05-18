@@ -23,13 +23,13 @@ function AddEditForm(props) {
     frmuserType,
     frmuserTypeObj,
     countrymapping,
-    countryAllOpts,
     userState,
     getAllUsers,
     userroles,
   } = props;
 
-  const [countryopts, setcountryopts] = useState(frmCountrySelectOpts);
+  const [regionopts, setregionopts] = useState([]);
+  const [countryopts, setcountryopts] = useState([]);
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
 
@@ -46,6 +46,49 @@ function AddEditForm(props) {
       value: true,
     },
   ]);
+  useEffect(() => {
+    fnOnInit();
+  }, []);
+
+  const fnOnInit = () => {
+    let tempopts = [];
+    let selectedlist = formIntialState.regionList;
+    frmRegionSelectOpts.forEach((item) => {
+      if (isEditMode) {
+        let isselected = false;
+        selectedlist.forEach((region) => {
+          if (item.regionID === region.value) {
+            isselected = true;
+          }
+        });
+        if (item.isActive || isselected) {
+          tempopts.push(item);
+        }
+      } else if (item.isActive) {
+        tempopts.push(item);
+      }
+    });
+    setregionopts(tempopts);
+    tempopts = [];
+    selectedlist = formIntialState.countryList;
+    frmCountrySelectOpts.forEach((item) => {
+      if (isEditMode) {
+        let isselected = false;
+        selectedlist.forEach((country) => {
+          if (item.countryID === country.value) {
+            isselected = true;
+          }
+        });
+        if (item.isActive || isselected) {
+          tempopts.push(item);
+        }
+      } else if (item.isActive) {
+        tempopts.push(item);
+      }
+    });
+    setcountryopts(tempopts);
+    setformfield(formIntialState);
+  };
   const handleChange = (e) => {
     let { name, value } = e.target;
     if (e.target.type === "checkbox") {
@@ -88,6 +131,9 @@ function AddEditForm(props) {
   }, [formfield.regionList]);
 
   const mapCountryRegion = () => {
+    if (!formfield.regionList) {
+      return;
+    }
     let tempmapObj = countrymapping.filter((item) => {
       for (let i = 0; i < formfield.regionList.length; i++) {
         let selectedRegion = formfield.regionList[i];
@@ -97,10 +143,23 @@ function AddEditForm(props) {
       }
     });
     let countryopts = [];
+    let selectedlist = formIntialState.countryList;
     if (tempmapObj.length) {
       for (let i = 0; i < tempmapObj.length; i++) {
         tempmapObj[i].country.forEach((item) => {
-          countryopts.push({ label: item.label, value: item.value });
+          let isfound = false;
+          selectedlist.forEach((country) => {
+            if (item.countryID === country.value) {
+              isfound = true;
+            }
+          });
+          if (isEditMode) {
+            if (item.isActive || isfound) {
+              countryopts.push({ label: item.label, value: item.value });
+            }
+          } else if (item.isActive) {
+            countryopts.push({ label: item.label, value: item.value });
+          }
         });
       }
     }
@@ -223,12 +282,12 @@ function AddEditForm(props) {
                 <FrmMultiselect
                   title={"Region"}
                   name={"regionList"}
-                  value={formfield.regionList}
+                  value={formfield.regionList ? formfield.regionList : []}
                   handleChange={handleMultiSelectChange}
                   isRequired={true}
                   validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
-                  selectopts={frmRegionSelectOpts}
+                  selectopts={regionopts}
                 />
               ) : (
                 ""
@@ -237,7 +296,7 @@ function AddEditForm(props) {
                 <FrmMultiselect
                   title={"Country"}
                   name={"countryList"}
-                  value={formfield.countryList}
+                  value={formfield.countryList ? formfield.countryList : []}
                   handleChange={handleMultiSelectChange}
                   isRequired={true}
                   validationmsg={"Mandatory field"}
