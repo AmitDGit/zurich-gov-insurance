@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { lookupActions } from "../../../actions";
+import { lookupActions, commonActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import FrmInlineInput from "../../common-components/frminlineinput/FrmInlineInput";
 function Lookup({ ...props }) {
@@ -17,8 +18,8 @@ function Lookup({ ...props }) {
     postLookupItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
-  console.log(lookupState);
   useSetNavMenu({ currentMenu: "Lookup", isSubmenu: true }, props.menuClick);
   const [logtypeFilterOpts, setlogtypeFilterOpts] = useState([]);
   const intialfilterval = {
@@ -34,7 +35,9 @@ function Lookup({ ...props }) {
   };
   const handleFilterSearch = async () => {
     if (selfilter.logtype !== "") {
-      getAllLookupByLogType({ LogType: selfilter.logtype });
+      getAllLookupByLogType({
+        LogType: selfilter.logtype,
+      });
     } else {
       setdata([]);
       setlookuptypes([]);
@@ -42,11 +45,14 @@ function Lookup({ ...props }) {
   };
   useEffect(() => {
     if (selfilter.logtype !== "") {
-      getAllLookupByLogType({ LogType: selfilter.logtype });
+      getAllLookupByLogType({
+        LogType: selfilter.logtype,
+      });
     } else {
       setdata([]);
       setlookuptypes([]);
     }
+    setisActiveEnable(false);
   }, [selfilter.logtype]);
 
   const clearFilter = () => {
@@ -58,12 +64,16 @@ function Lookup({ ...props }) {
   const [breachlookupTypes, setbreachlookupTypes] = useState([]);
   const [rfelogData, setrfelogData] = useState({});
   const [exemptionlogData, setexemptionlogData] = useState({});
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [lookuptyps, setlookuptypes] = useState([]);
 
   const [issubmitted, setissubmitted] = useState(false);
   useEffect(() => {
-    getLogTypes({ LookupType: "logs", RequesterUserId: userProfile.userId });
+    getLogTypes({
+      LookupType: "logs",
+      RequesterUserId: userProfile.userId,
+    });
   }, []);
 
   useEffect(() => {
@@ -86,7 +96,7 @@ function Lookup({ ...props }) {
   useEffect(() => {
     let templookuptypes = [];
     let tempObj = {};
-
+    let initalval = {};
     lookupState.lookupitems.sort(dynamicSort("lookUpValue"));
     lookupState.lookupitems.forEach((item) => {
       if (
@@ -99,6 +109,7 @@ function Lookup({ ...props }) {
         });
       }
       tempObj[item["lookUpType"]] = item["lookUpType"];
+      initalval[item.lookupID] = false;
     });
     templookuptypes.sort(dynamicSort("name"));
     setbreachlookupTypes(templookuptypes);
@@ -106,13 +117,20 @@ function Lookup({ ...props }) {
     //if (selfilter.logtype === "1") {
     setdata(lookupState.lookupitems);
     setlookuptypes(templookuptypes);
+    setdataActItems(initalval);
     // }
   }, [lookupState.lookupitems]);
-  const [isAddItem, setAddItem] = useState({ type: false, nature: false });
+  const [isAddItem, setAddItem] = useState({
+    type: false,
+    nature: false,
+  });
 
   const [formfield, setformfield] = useState({});
   const handleAdd = (param) => {
-    setAddItem({ ...isAddItem, [param.lookUpType]: true });
+    setAddItem({
+      ...isAddItem,
+      [param.lookUpType]: true,
+    });
   };
   const handleEdit = (param) => {
     const tempData = [...data];
@@ -147,9 +165,11 @@ function Lookup({ ...props }) {
           lookUpValue: formfield[param.lookUpType],
         });
       }
-
+      debugger;
       if (response) {
-        getAllLookupByLogType({ LogType: selfilter.logtype });
+        getAllLookupByLogType({
+          LogType: selfilter.logtype,
+        });
         if (param.lookupID) {
           alert(alertMessage.lookup.update);
         } else {
@@ -173,9 +193,13 @@ function Lookup({ ...props }) {
       lookUpType: param.lookUpType,
     });
     if (!resonse) {
-      resonse = await deleteItem({ lookupID: param.lookupID });
+      resonse = await deleteItem({
+        lookupID: param.lookupID,
+      });
       if (resonse) {
-        getAllLookupByLogType({ LogType: selfilter.logtype });
+        getAllLookupByLogType({
+          LogType: selfilter.logtype,
+        });
         alert(alertMessage.lookup.delete);
       }
     } else {
@@ -199,7 +223,59 @@ function Lookup({ ...props }) {
     });
     setdata([...tempData]);
   };
-  const pageFilterStyle = { justifyContent: "flex-start" };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    let tempItems = [...selItemsList];
+    if (value && !tempItems.includes(name)) {
+      tempItems.push(name);
+      //setselItemsList([...tempItems, name]);
+    } else {
+      const index = tempItems.indexOf(name);
+      if (index > -1) {
+        tempItems.splice(index, 1);
+      }
+    }
+    if (tempItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...tempItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "lookup",
+      IsActive: state,
+    });
+    if (response) {
+      //setselfilter(intialfilterval);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAllLookupByLogType({
+        LogType: selfilter.logtype,
+      });
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
+  const pageFilterStyle = {
+    justifyContent: "flex-start",
+  };
   const tableiconclmStyle = { width: "70px" };
   return (
     <>
@@ -233,34 +309,60 @@ function Lookup({ ...props }) {
         ) : data.length ? (
           <div className="lookup-content-container">
             <div className="lookup-type">
-              {lookuptyps.map((lookuptype) => {
+              {lookuptyps.map((lookuptype, index) => {
                 return (
                   <>
                     <div className="lookup-title-header">
                       <div className="title">{lookuptype.name}</div>
-                      <div
-                        className={`btn-blue`}
-                        onClick={() =>
-                          handleAdd({
-                            lookUpType: lookuptype.type,
-                            lookupID: "",
-                          })
-                        }
-                      >
-                        Add
+                      <div className="btn-container">
+                        {index === 0 && (
+                          <>
+                            <div
+                              className={`btn-blue ${
+                                isActiveEnable ? "" : "disable"
+                              }`}
+                              onClick={() => setMasterdataActiveState(true)}
+                            >
+                              Active
+                            </div>
+                            <div
+                              className={`btn-blue ${
+                                isActiveEnable ? "" : "disable"
+                              }`}
+                              onClick={() => setMasterdataActiveState(false)}
+                            >
+                              Inactive
+                            </div>
+                          </>
+                        )}
+
+                        <div
+                          className={`btn-blue`}
+                          onClick={() =>
+                            handleAdd({
+                              lookUpType: lookuptype.type,
+                              lookupID: "",
+                            })
+                          }
+                        >
+                          Add
+                        </div>
                       </div>
                     </div>
                     <table className="table">
                       <thead>
                         <tr>
+                          <th style={{ width: "40px" }}></th>
                           <th style={tableiconclmStyle}>Edit</th>
                           <th style={tableiconclmStyle}>Delete</th>
-                          <th>Value</th>
+                          <th style={{ width: "250px" }}>Value</th>
+                          <th>Active/Inactive</th>
                         </tr>
                       </thead>
                       <tbody>
                         {isAddItem[lookuptype.type] ? (
                           <tr>
+                            <td></td>
                             <td
                               style={tableiconclmStyle}
                               className="save-icon"
@@ -299,6 +401,14 @@ function Lookup({ ...props }) {
                         {data.map((item) => {
                           return lookuptype.type === item.lookUpType ? (
                             <tr>
+                              <td>
+                                <FrmActiveCheckbox
+                                  name={item.lookupID}
+                                  value={dataActItems.lookupID}
+                                  handleChange={handleItemSelect}
+                                  isdisabled={false}
+                                />
+                              </td>
                               <td
                                 style={tableiconclmStyle}
                                 className={`${
@@ -344,6 +454,7 @@ function Lookup({ ...props }) {
                                   item.lookUpValue
                                 )}
                               </td>
+                              <td>{item.isActive ? "Active" : "Inactive"}</td>
                             </tr>
                           ) : (
                             ""
@@ -376,5 +487,6 @@ const mapActions = {
   checkIsInUse: lookupActions.checkIsInUse,
   postLookupItem: lookupActions.postLookupItem,
   deleteItem: lookupActions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Lookup);

@@ -314,6 +314,7 @@ function User({ ...props }) {
 
     countryState.countryItems.forEach((item) => {
       selectOpts.push({
+        ...item,
         label: item.countryName.trim(),
         value: item.countryID,
       });
@@ -326,6 +327,7 @@ function User({ ...props }) {
           region: item.regionID,
           country: [
             {
+              ...item,
               label: item.countryName,
               value: item.countryID,
             },
@@ -335,6 +337,7 @@ function User({ ...props }) {
         tempCountryMapping.forEach((countryitem) => {
           if (countryitem.region === item.regionID) {
             countryitem.country.push({
+              ...item,
               label: item.countryName,
               value: item.countryID,
             });
@@ -358,6 +361,7 @@ function User({ ...props }) {
     let selectFilterOpts = [];
     regionState.regionItems.forEach((item) => {
       selectOpts.push({
+        ...item,
         label: item.regionName.trim(),
         value: item.regionID,
       });

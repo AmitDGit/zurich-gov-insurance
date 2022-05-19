@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FrmInput from "../../common-components/frminput/FrmInput";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import Popup from "../../common-components/Popup";
 
@@ -18,7 +19,10 @@ function AddEditForm(props) {
   const [issubmitted, setissubmitted] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
     setformfield({ ...formfield, [name]: value });
   };
   const handleSelectChange = (name, value) => {
@@ -47,7 +51,7 @@ function AddEditForm(props) {
         <div className="popup-formitems">
           <form onSubmit={handleSubmit} id="myForm">
             <FrmInput
-              title={"Organization 1"}
+              title={"ZNA Organization 1"}
               name={"znaSegmentName"}
               value={formfield.znaSegmentName}
               type={"text"}
@@ -62,6 +66,16 @@ function AddEditForm(props) {
               name={"description"}
               value={formfield.description}
               handleChange={handleChange}
+              isRequired={false}
+              validationmsg={""}
+              issubmitted={issubmitted}
+            />
+            <FrmActiveCheckbox
+              title={"isActive"}
+              name={"isActive"}
+              value={formfield.isActive}
+              handleChange={handleChange}
+              isdisabled={false}
               isRequired={false}
               validationmsg={""}
               issubmitted={issubmitted}

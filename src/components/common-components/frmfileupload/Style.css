@@ -84,7 +84,14 @@
   justify-content: space-between;
   margin-bottom: 5px;
 }
-
+.file-details-container{
+  display: flex;
+  justify-content: space-between;
+}
 .file-name {
   margin-right: 5px;
+  width:300px;
+}
+.file-date{
+  width:150px;
 }

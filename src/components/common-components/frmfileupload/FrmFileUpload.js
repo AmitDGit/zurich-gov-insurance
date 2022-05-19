@@ -138,17 +138,17 @@ function FrmFileUpload(props) {
             .reverse()
             .map((item) => (
               <div key={item.filename} className="file-name-container">
-                <div>
-                  <span
+                <div className="file-details-container">
+                  <div
                     className="file-name link"
                     onClick={() => downloadfile(item.fileurl)}
                   >
                     {" "}
                     {item.filename}
-                  </span>
-                  <span className="">
-                    {/*item.uploaddate && formatDate(item.uploaddate)*/}
-                  </span>
+                  </div>
+                  <div className="file-date">
+                    {item.uploaddate && `Date: ${formatDate(item.uploaddate)}`}
+                  </div>
                   {/*<a href={item.fileurl} target="_blank">
                     {item.filename}
             </a>*/}

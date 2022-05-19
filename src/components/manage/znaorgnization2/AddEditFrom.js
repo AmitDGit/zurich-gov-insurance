@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FrmInput from "../../common-components/frminput/FrmInput";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import Popup from "../../common-components/Popup";
 
@@ -15,11 +16,34 @@ function AddEditForm(props) {
     frmOrg1SelectOpts,
   } = props;
 
-  const [formfield, setformfield] = useState(formIntialState);
+  const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
-
+  const [frmOrg1Opts, setfrmOrg1Opts] = useState([]);
+  useEffect(() => {
+    fnOnInit();
+  }, []);
+  const fnOnInit = () => {
+    let tempotps = [];
+    frmOrg1SelectOpts.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.znaSegmentId === formIntialState.znaSegmentId
+        ) {
+          tempotps.push(item);
+        }
+      } else if (item.isActive) {
+        tempotps.push(item);
+      }
+    });
+    setfrmOrg1Opts(tempotps);
+    setformfield(formIntialState);
+  };
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
     setformfield({ ...formfield, [name]: value });
   };
   const handleSelectChange = (name, value) => {
@@ -48,7 +72,7 @@ function AddEditForm(props) {
         <div className="popup-formitems">
           <form onSubmit={handleSubmit} id="myForm">
             <FrmInput
-              title={"Organization 2"}
+              title={"ZNA Organization 2"}
               name={"sbuName"}
               value={formfield.sbuName}
               type={"text"}
@@ -58,20 +82,30 @@ function AddEditForm(props) {
               issubmitted={issubmitted}
             />
             <FrmSelect
-              title={"Organization 1"}
+              title={"ZNA Organization 1"}
               name={"znaSegmentId"}
               value={formfield.znaSegmentId}
               handleChange={handleSelectChange}
               isRequired={true}
               validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
-              selectopts={frmOrg1SelectOpts}
+              selectopts={frmOrg1Opts}
             />
             <FrmTextArea
               title={"Description"}
               name={"description"}
               value={formfield.description}
               handleChange={handleChange}
+              isRequired={false}
+              validationmsg={""}
+              issubmitted={issubmitted}
+            />
+            <FrmActiveCheckbox
+              title={"isActive"}
+              name={"isActive"}
+              value={formfield.isActive}
+              handleChange={handleChange}
+              isdisabled={!formfield.isActiveEnable}
               isRequired={false}
               validationmsg={""}
               issubmitted={issubmitted}

@@ -52,6 +52,7 @@ function AddEditForm(props) {
     exemptionlogsType,
     formInitialValueURPM,
     formInitialValueZUG,
+    handleDataVersion,
   } = props;
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState(formIntialState);
@@ -109,16 +110,33 @@ function AddEditForm(props) {
   const [mandatoryFields, setmandatoryFields] = useState([]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
   useEffect(() => {
-    let selectOpts = [];
+    let tempopts = [];
+    let selectedItems = formIntialState.countryList;
     countryState.countryItems.forEach((item) => {
-      selectOpts.push({
-        label: item.countryName.trim(),
-        value: item.countryID,
-        regionId: item.regionID,
-      });
+      if (isEditMode) {
+        let isfound = false;
+        selectedItems.forEach((country) => {
+          if (item.countryID === country.value) {
+            isfound = true;
+          }
+        });
+        if (item.isActive || isfound) {
+          tempopts.push({
+            label: item.countryName.trim(),
+            value: item.countryID,
+            regionId: item.regionID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.countryName.trim(),
+          value: item.countryID,
+          regionId: item.regionID,
+        });
+      }
     });
-    selectOpts.sort(dynamicSort("label"));
-    setcountryopts([...selectOpts]);
+    tempopts.sort(dynamicSort("label"));
+    setcountryopts([...tempopts]);
   }, [countryState.countryItems]);
 
   const [logStatus, setlogStatus] = useState({});
@@ -220,23 +238,57 @@ function AddEditForm(props) {
       tooltipObj[item.toolTipField] = item.toolTipText;
     });
     settooltip(tooltipObj);
-    tempTypeOfExemption = tempTypeOfExemption.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempTypeOfBusiness = tempTypeOfBusiness.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempFullTransitional = tempFullTransitional.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempURPMSection = tempURPMSection.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
+    let tempopts = [];
+    tempTypeOfExemption.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.lookupID === formIntialState.typeOfExemption
+        ) {
+          tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+        }
+      } else if (item.isActive) {
+        tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+      }
+    });
+    tempTypeOfExemption = [...tempopts];
+    tempopts = [];
+    tempTypeOfBusiness.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.typeOfBusiness) {
+          tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+        }
+      } else if (item.isActive) {
+        tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+      }
+    });
+    tempTypeOfBusiness = [...tempopts];
+    tempopts = [];
 
+    tempFullTransitional.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.lookupID === formIntialState.fullTransitional
+        ) {
+          tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+        }
+      } else if (item.isActive) {
+        tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+      }
+    });
+    tempFullTransitional = [...tempopts];
+    tempopts = [];
+    tempURPMSection = tempURPMSection.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.section) {
+          tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+        }
+      } else if (item.isActive) {
+        tempopts.push({ label: item.lookUpValue, value: item.lookupID });
+      }
+    });
+    tempURPMSection = [...tempopts];
     let frmstatus = [];
     const statusArray =
       selectedExemptionLog === "zug" ? tempZUGStatus : tempURPMStatus;
@@ -292,17 +344,6 @@ function AddEditForm(props) {
     //setDefaultLogStatus();
   }, [userroles, isEditMode]);
 
-  /* useEffect(() => {
-    if (selectedExemptionLog === "zug") {
-      setmandatoryFields([...ZUGMandatoryFields]);
-    } else {
-      setmandatoryFields([...URPMMandatoryFields]);
-    }
-    let logstatus =
-      selectedExemptionLog === "zug" ? exemption_status : urpmlog_status;
-    setlogStatus(logstatus);
-  }, [selectedExemptionLog]);*/
-
   useEffect(() => {
     if (!formfield.status) {
       return;
@@ -316,36 +357,6 @@ function AddEditForm(props) {
     }
     setmandatoryFields([...ZUGMandatoryFields, ...tempmandatoryfields]);
   }, [formfield.status, formfield.fullTransitional]);
-
-  /*  useEffect(() => {
-    const statusArray =
-      selectedExemptionLog === "zug" ? [...frmZUGStatus] : [...frmURPMStatus];
-    let tempstatus = [];
-    statusArray.forEach((item) => {
-      let isshow = false;
-
-      //status pending
-      if (item.lookupID === logStatus.Pending) {
-        if (!formfield.isSubmit || formfield.status === logStatus.Pending) {
-          isshow = true;
-        }
-      }
-      //status more information needed
-      if (item.lookupID !== logStatus.Pending && formfield.isSubmit) {
-        isshow = true;
-      }
-      if (isshow) {
-        tempstatus.push({
-          label: item.lookUpValue,
-          value: item.lookupID,
-        });
-      }
-    });
-    if (tempstatus.length) {
-      setfrmstatus([...tempstatus]);
-    }
-    //setDefaultLogStatus();
-  }, [logStatus]);*/
 
   useEffect(() => {
     if (frmstatus.length) {
@@ -392,12 +403,25 @@ function AddEditForm(props) {
   }, []);
 
   useEffect(() => {
-    let tempItems = lobchapterState.lobChapterItems.map((item) => ({
-      label: item.lobChapterName,
-      value: item.lobChapterID,
-    }));
-    tempItems.sort(dynamicSort("label"));
-    setfrmLoBChapter([selectInitiVal, ...tempItems]);
+    let tempopts = [];
+
+    lobchapterState.lobChapterItems.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lobChapterID === formIntialState.lobChapter) {
+          tempopts.push({
+            label: item.lobChapterName,
+            value: item.lobChapterID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lobChapterName,
+          value: item.lobChapterID,
+        });
+      }
+    });
+    tempopts.sort(dynamicSort("label"));
+    setfrmLoBChapter([selectInitiVal, ...tempopts]);
   }, [lobchapterState.lobChapterItems]);
 
   const handleChange = (e) => {
@@ -728,6 +752,21 @@ function AddEditForm(props) {
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
         <div className="header-btn-container">
+          {formfield.isSubmit && (
+            <div
+              className="btn-blue"
+              onClick={() =>
+                handleDataVersion(
+                  selectedExemptionLog === "zug"
+                    ? formfield.zugExemptionLogId
+                    : formfield.urpmExemptionLogId
+                )
+              }
+              style={{ marginRight: "10px" }}
+            >
+              Version History
+            </div>
+          )}
           {!isEditMode && isReadMode && (
             <div
               className="btn-blue"

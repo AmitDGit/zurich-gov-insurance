@@ -11,6 +11,9 @@ function PaginationData(props) {
     data,
     datatotalcount,
     showAddPopup,
+    isShowActiveBtns,
+    setMasterdataActiveState,
+    ActiveBtnsState,
     defaultSorted,
     buttonTitle,
     id,
@@ -113,6 +116,26 @@ function PaginationData(props) {
                     />
                   ) : (
                     ""
+                  )}
+                  {isShowActiveBtns && (
+                    <div className="btn-container">
+                      <div
+                        className={`btn-blue ${
+                          ActiveBtnsState ? "" : "disable"
+                        }`}
+                        onClick={() => setMasterdataActiveState(true)}
+                      >
+                        Active
+                      </div>
+                      <div
+                        className={`btn-blue ${
+                          ActiveBtnsState ? "" : "disable"
+                        }`}
+                        onClick={() => setMasterdataActiveState(false)}
+                      >
+                        Inactive
+                      </div>
+                    </div>
                   )}
                   <div
                     className="btn-blue plus-icon"

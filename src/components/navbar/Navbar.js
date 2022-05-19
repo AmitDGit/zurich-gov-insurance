@@ -9,6 +9,7 @@ function Navbar({ ...props }) {
   const [loggeduserrole, setloggeduserrole] = useState("");
   // const [roleadmin, setroleadmin] = useState(false);
   const userProfiles = useUserProfile();
+
   /*useEffect(() => {
     let loggeduserrole = userProfile ? userProfile.userRoles[0].roleId : "";
     let roleadmin = false;

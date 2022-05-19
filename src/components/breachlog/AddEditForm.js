@@ -58,8 +58,6 @@ function AddEditForm(props) {
     formIntialState,
     frmCountrySelectOpts,
     frmRegionSelectOpts,
-    countrymapping,
-    countryAllOpts,
     getAllUsers,
     getLookupByType,
     getToolTip,
@@ -75,6 +73,7 @@ function AddEditForm(props) {
     isReadMode,
     userProfile,
     queryparam,
+    handleDataVersion,
   } = props;
 
   //console.log(frmRegionSelectOpts);
@@ -89,10 +88,12 @@ function AddEditForm(props) {
   const emeaRegionValue = REGION_EMEA;
   const znaRegionValue = REGION_ZNA;
   const howdetectedtur = HOW_DETECTED_TUR;
-  const [formfield, setformfield] = useState(formIntialState);
+  const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
+  const [frmCountryOptsAll, setfrmCountryOptsAll] = useState([]);
   const [regionopts, setregionopts] = useState([]);
+  const [frmRegionOptsAll, setfrmRegionOptsAll] = useState([]);
   const [isdisabled, setisdisabled] = useState(false);
   const [yesnoopts, setyesnoopts] = useState([
     {
@@ -145,14 +146,48 @@ function AddEditForm(props) {
   ]);
   const [mandatoryFields, setmandatoryFields] = useState([]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
+  const [loading, setloading] = useState(true);
   useEffect(() => {
-    setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
-    setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
-    setmandatoryFields(...commonMandatoryFields, regionMandotoryFields);
+    fnOnInit();
   }, []);
 
-  const [loading, setloading] = useState(true);
-  useEffect(async () => {
+  const fnOnInit = async () => {
+    getAlllob({ isActive: true });
+    getAllSegment({ isActive: true });
+    getAllSublob({ isActive: true });
+    getallZNASegments({ isActive: true });
+    if (formIntialState.znaSegmentId) {
+      getallZNASBU({ znaSegmentId: formIntialState.znaSegmentId });
+    }
+    if (formIntialState.znasbuId) {
+      getallZNAMarketBasket({ znasbuId: formIntialState.znasbuId });
+    }
+    let tempopts = [];
+    frmCountrySelectOpts.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.countryID === formIntialState.countryId) {
+          tempopts.push(item);
+        }
+      } else if (item.isActive) {
+        tempopts.push(item);
+      }
+    });
+    setfrmCountryOptsAll(tempopts);
+    setcountryopts([selectInitiVal, ...tempopts]);
+    tempopts = [];
+    frmRegionSelectOpts.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.regionID === formIntialState.regionId) {
+          tempopts.push(item);
+        }
+      } else if (item.isActive) {
+        tempopts.push(item);
+      }
+    });
+    setfrmRegionOptsAll(tempopts);
+    setregionopts([selectInitiVal, ...tempopts]);
+    setmandatoryFields(...commonMandatoryFields, regionMandotoryFields);
+
     let tempSeverity = await getLookupByType({
       LookupType: "BreachClassification",
     });
@@ -174,51 +209,134 @@ function AddEditForm(props) {
     let tempBreachStatus = await getLookupByType({
       LookupType: "BreachStatus",
     });
-
     let tempToolTips = await getToolTip({ type: "BreachLogs" });
     let tooltipObj = {};
     tempToolTips.forEach((item) => {
       tooltipObj[item.toolTipField] = item.toolTipText;
     });
     settooltip(tooltipObj);
-
-    tempSeverity = tempSeverity.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempTypeOfBreach = tempTypeOfBreach.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempRootCauseBreach = tempRootCauseBreach.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempNatureOfBreach = tempNatureOfBreach.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempRangeFinImpact = tempRangeFinImpact.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
-    tempHowDetected = tempHowDetected.map((item) => ({
-      label: item.lookUpValue,
-      value: item.lookupID,
-    }));
+    tempopts = [];
+    tempSeverity.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.classification) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    tempSeverity = [...tempopts];
+    tempopts = [];
+    tempTypeOfBreach.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.typeOfBreach) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    tempTypeOfBreach = [...tempopts];
+    tempopts = [];
+    tempRootCauseBreach.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.lookupID === formIntialState.rootCauseOfTheBreach
+        ) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    tempRootCauseBreach = [...tempopts];
+    tempopts = [];
+    tempNatureOfBreach.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.natureOfBreach) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    tempNatureOfBreach = [...tempopts];
+    tempopts = [];
+    tempRangeFinImpact.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.lookupID === formIntialState.rangeOfFinancialImpact
+        ) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    tempRangeFinImpact = [...tempopts];
+    tempopts = [];
+    tempHowDetected = tempHowDetected.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lookupID === formIntialState.howDetected) {
+          tempopts.push({
+            label: item.lookUpValue,
+            value: item.lookupID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lookUpValue,
+          value: item.lookupID,
+        });
+      }
+    });
+    tempHowDetected = [...tempopts];
+    tempopts = [];
     let frmbreachstatus = [];
     tempBreachStatus.forEach((item) => {
       let isshow = false;
       //draft status -
-      if (!formfield.isSubmit) {
+      if (!formIntialState.isSubmit) {
         if (item.lookupID === breachlog_status.Pending) {
           isshow = true;
         }
       }
       //open status
       if (
-        formfield.breachStatus === breachlog_status.Pending &&
-        formfield.isSubmit
+        formIntialState.breachStatus === breachlog_status.Pending &&
+        formIntialState.isSubmit
       ) {
         if (
           item.lookupID === breachlog_status.Pending ||
@@ -229,8 +347,8 @@ function AddEditForm(props) {
       }
       //close status && reopen status
       if (
-        formfield.breachStatus === breachlog_status.Close ||
-        formfield.breachStatus === breachlog_status.Reopen
+        formIntialState.breachStatus === breachlog_status.Close ||
+        formIntialState.breachStatus === breachlog_status.Reopen
       ) {
         if (
           item.lookupID === breachlog_status.Reopen ||
@@ -244,8 +362,9 @@ function AddEditForm(props) {
           label: item.lookUpValue,
           value: item.lookupID,
         });
-        if (!formfield.isSubmit) {
-          setformfield({ ...formfield, breachStatus: item.lookupID });
+        if (!formIntialState.isSubmit) {
+          //setformfield({ ...formfield, breachStatus: item.lookupID });
+          formIntialState.breachStatus = item.lookupID;
         }
       }
     });
@@ -255,64 +374,110 @@ function AddEditForm(props) {
     setfrmRootCauseBreach([selectInitiVal, ...tempRootCauseBreach]);
     setfrmNatureOfBreach([selectInitiVal, ...tempNatureOfBreach]);
     setfrmRangeFinImpact([selectInitiVal, ...tempRangeFinImpact]);
-
     setfrmHowDetected([selectInitiVal, ...tempHowDetected]);
-
     setfrmBreachStatus([selectInitiVal, ...frmbreachstatus]);
+    setformfield(formIntialState);
     setloading(false);
-  }, []);
+  };
 
   useEffect(() => {
-    getAlllob({ isActive: true });
-    getAllSegment({ isActive: true });
-    getAllSublob({ isActive: true });
-    getallZNASegments({ isActive: true });
-  }, []);
-
-  useEffect(() => {
-    let tempItems = segmentState.segmentItems.map((item) => ({
-      label: item.segmentName,
-      value: item.segmentID,
-      country: item.countryList,
-    }));
-    tempItems.sort(dynamicSort("label"));
-    setfrmSegmentOpts([selectInitiVal, ...tempItems]);
-    setfrmSegmentOptsAll(tempItems);
+    let tempopts = [];
+    segmentState.segmentItems.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.segmentID === formIntialState.customerSegment
+        ) {
+          tempopts.push({
+            ...item,
+            label: item.segmentName,
+            value: item.segmentID,
+            country: item.countryList,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          ...item,
+          label: item.segmentName,
+          value: item.segmentID,
+          country: item.countryList,
+        });
+      }
+    });
+    tempopts.sort(dynamicSort("label"));
+    setfrmSegmentOpts([selectInitiVal, ...tempopts]);
+    setfrmSegmentOptsAll(tempopts);
   }, [segmentState.segmentItems]);
 
   useEffect(() => {
-    let tempItems = lobState.lobItems.map((item) => ({
-      label: item.lobName,
-      value: item.lobid,
-    }));
-    tempItems.sort(dynamicSort("label"));
-    setfrmLoB([selectInitiVal, ...tempItems]);
+    let tempopts = [];
+    lobState.lobItems.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lobid === formIntialState.lobid) {
+          tempopts.push({ ...item, label: item.lobName, value: item.lobid });
+        }
+      } else if (item.isActive) {
+        tempopts.push({ ...item, label: item.lobName, value: item.lobid });
+      }
+    });
+    tempopts.sort(dynamicSort("label"));
+    setfrmLoB([selectInitiVal, ...tempopts]);
   }, [lobState.lobItems]);
 
   useEffect(() => {
-    let tempItems = sublobState.sublobitems.map((item) => ({
-      label: item.subLOBName,
-      value: item.subLOBID,
-      lob: item.lobid,
-    }));
-    tempItems.sort(dynamicSort("label"));
-    setfrmSublobAll(tempItems);
+    let tempopts = [];
+    sublobState.sublobitems.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.subLOBID === formIntialState.sublobid) {
+          tempopts.push({
+            ...item,
+            label: item.subLOBName,
+            value: item.subLOBID,
+            lob: item.lobid,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          ...item,
+          label: item.subLOBName,
+          value: item.subLOBID,
+          lob: item.lobid,
+        });
+      }
+    });
+    tempopts.sort(dynamicSort("label"));
+    setfrmSublobAll(tempopts);
 
-    if (formfield.lobid) {
-      let sublobopts = tempItems.filter((item) => item.lob === formfield.lobid);
+    if (formIntialState.lobid) {
+      let sublobopts = tempopts.filter(
+        (item) => item.lob === formIntialState.lobid
+      );
       setfrmSublob([...sublobopts]);
     }
   }, [sublobState.sublobitems]);
 
   useEffect(() => {
-    let tempItems = znaorgnization1State.org1Items.map((item) => {
-      return {
-        label: item.znaSegmentName,
-        value: item.znaSegmentId,
-      };
+    let tempopts = [];
+    znaorgnization1State.org1Items.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.znaSegmentId === formIntialState.znaSegmentId
+        ) {
+          tempopts.push({
+            label: item.znaSegmentName,
+            value: item.znaSegmentId,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.znaSegmentName,
+          value: item.znaSegmentId,
+        });
+      }
     });
-    tempItems.sort(dynamicSort("label"));
-    setfrmZNASegmentOpts([selectInitiVal, ...tempItems]);
+    tempopts.sort(dynamicSort("label"));
+    setfrmZNASegmentOpts([selectInitiVal, ...tempopts]);
   }, [znaorgnization1State.org1Items]);
 
   useEffect(() => {
@@ -328,25 +493,48 @@ function AddEditForm(props) {
   }, [formfield.znasbuId]);
 
   useEffect(() => {
-    let tempItems = znaorgnization2State.org2Items.map((item) => {
-      return {
-        label: item.sbuName,
-        value: item.znasbuId,
-      };
+    let tempopts = [];
+    znaorgnization2State.org2Items.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.znasbuId === formIntialState.znasbuId) {
+          tempopts.push({
+            label: item.sbuName,
+            value: item.znasbuId,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.sbuName,
+          value: item.znasbuId,
+        });
+      }
     });
-    tempItems.sort(dynamicSort("label"));
-    setfrmZNASBUOpts([...tempItems]);
+    tempopts.sort(dynamicSort("label"));
+    setfrmZNASBUOpts([...tempopts]);
   }, [znaorgnization2State.org2Items]);
 
   useEffect(() => {
-    let tempItems = znaorgnization3State.org3Items.map((item) => {
-      return {
-        label: item.marketBasketName,
-        value: item.marketBasketId,
-      };
+    let tempopts = [];
+    znaorgnization3State.org3Items.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.marketBasketId === formIntialState.marketBasketId
+        ) {
+          tempopts.push({
+            label: item.marketBasketName,
+            value: item.marketBasketId,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.marketBasketName,
+          value: item.marketBasketId,
+        });
+      }
     });
-    tempItems.sort(dynamicSort("label"));
-    setfrmZNAMarketBasketOpts([...tempItems]);
+    tempopts.sort(dynamicSort("label"));
+    setfrmZNAMarketBasketOpts([...tempopts]);
   }, [znaorgnization3State.org3Items]);
 
   const handleChange = (e) => {
@@ -365,7 +553,7 @@ function AddEditForm(props) {
     //map country and region fields
 
     if (name === "regionId" && value !== "") {
-      let countryopts = frmCountrySelectOpts.filter(
+      let countryopts = frmCountryOptsAll.filter(
         (item) => item.regionId === value
       );
       setcountryopts([selectInitiVal, ...countryopts]);
@@ -375,8 +563,8 @@ function AddEditForm(props) {
         countryId: "",
       });
     } else if (name === "regionId" && value === "") {
-      setcountryopts([selectInitiVal, ...frmCountrySelectOpts]);
-      setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
+      setcountryopts([selectInitiVal, ...frmCountryOptsAll]);
+      setregionopts([selectInitiVal, ...frmRegionOptsAll]);
       setformfield({
         ...formfield,
         [name]: value,
@@ -384,8 +572,8 @@ function AddEditForm(props) {
       });
     }
     if (name === "countryId" && value !== "") {
-      let country = frmCountrySelectOpts.filter((item) => item.value === value);
-      let regionOpts = frmRegionSelectOpts.filter(
+      let country = frmCountryOptsAll.filter((item) => item.value === value);
+      let regionOpts = frmRegionOptsAll.filter(
         (item) => item.value === country[0].regionId
       );
       let segmentOpts = frmSegmentOptsAll.filter((item) => {
@@ -406,7 +594,7 @@ function AddEditForm(props) {
         customerSegment: "",
       });
     } else if (name === "countryId" && value === "") {
-      setregionopts([selectInitiVal, ...frmRegionSelectOpts]);
+      setregionopts([selectInitiVal, ...frmRegionOptsAll]);
       setfrmSegmentOpts([selectInitiVal, ...frmSegmentOptsAll]);
       setformfield({
         ...formfield,
@@ -651,6 +839,15 @@ function AddEditForm(props) {
       <div className="addedit-header-container">
         <div className="addedit-header-title">{title}</div>
         <div className="header-btn-container">
+          {formfield.isSubmit && (
+            <div
+              className="btn-blue"
+              onClick={() => handleDataVersion(formfield.breachLogID)}
+              style={{ marginRight: "10px" }}
+            >
+              Version History
+            </div>
+          )}
           {!isEditMode && isReadMode && (
             <div
               className="btn-blue"
@@ -980,7 +1177,12 @@ function AddEditForm(props) {
                         </>
                       }
                       name={"nearMisses"}
-                      value={formfield.nearMisses}
+                      value={
+                        formfield.nearMisses === true ||
+                        formfield.nearMisses === false
+                          ? formfield.nearMisses
+                          : false
+                      }
                       handleChange={handleSelectChange}
                       isRequired={false}
                       isReadMode={isReadMode}

@@ -54,6 +54,7 @@ const getAlllob = () => {
     try {
       const response = await lobService.getAlllobService(requestParams);
       dispatch(success(response.data));
+      return response.data;
     } catch (err) {
       dispatch(failure(err));
     }

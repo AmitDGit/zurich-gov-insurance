@@ -49,6 +49,7 @@ const getAllOrgnization = (requestParam) => {
         requestParams
       );
       dispatch(success(response.data));
+      return response.data;
     } catch (err) {
       dispatch(failure(err));
     }
