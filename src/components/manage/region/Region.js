@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { regionActions } from "../../../actions";
+import { regionActions, commonActions } from "../../../actions";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import AddEditForm from "./AddEditForm";
 import Loading from "../../common-components/Loading";
 import PaginationData from "../../common-components/PaginationData";
@@ -18,6 +19,7 @@ function Region({ ...props }) {
     checkRegionExist,
     checkRegionInUse,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu({ currentMenu: "Region", isSubmenu: true }, props.menuClick);
   //console.log(regionState);
@@ -43,9 +45,28 @@ function Region({ ...props }) {
   };
 
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.id}
+            value={dataActItems.id}
+            handleChange={handleItemSelect}
+            isdisabled={false}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -91,7 +112,15 @@ function Region({ ...props }) {
       text: "Region",
       sort: true,
       headerStyle: (colum, colIndex) => {
-        return { width: "250px" };
+        return { width: "180px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
       },
     },
     {
@@ -113,26 +142,28 @@ function Region({ ...props }) {
   useEffect(() => {
     let tempdata = [];
     let tempFilterOpts = [];
+    let initalval = {};
     regionState.items.forEach((item) => {
-      if (item.isActive) {
-        let tempItem = {
-          id: item.regionID,
-          regionName: item.regionName,
-          regionDescription: item.regionDescription,
-          editaction: "",
-          deleteaction: "",
-        };
-        tempdata.push(tempItem);
-        tempFilterOpts.push({
-          label: item.regionName,
-          value: item.regionID,
-        });
-      }
+      //if (item.isActive) {
+      let tempItem = {
+        ...item,
+        id: item.regionID,
+        isActive: item.isActive ? "Active" : "Inactive",
+      };
+      initalval[tempItem.id] = false;
+      tempdata.push(tempItem);
+      tempFilterOpts.push({
+        label: item.regionName,
+        value: item.regionID,
+      });
+
+      //}
     });
     tempFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
     setregionFilterOpts([...tempFilterOpts]);
+    setdataActItems(initalval);
   }, [regionState.items]);
 
   /* Add Edit Delete functionality & show popup*/
@@ -156,13 +187,11 @@ function Region({ ...props }) {
     const response = await getRegionById({ regionID: itemid });
     setisEditMode(true);
     setformIntialState({
-      regionID: response.regionID,
-      regionName: response.regionName,
+      ...response,
       regionDescription: response.regionDescription
         ? response.regionDescription
         : "",
       requesterUserId: response.requesterUserId ? response.requesterUserId : "",
-      isActive: response.isActive,
     });
     seteditmodeRegionName(response.regionName);
     showAddPopup();
@@ -227,6 +256,49 @@ function Region({ ...props }) {
       alert(alertMessage.region.isInUse);
     }
   };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({ ...dataActItems, [name]: value });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "region",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialFilterState);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAllRegions();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
+    }
+  };
   return (
     <>
       <div className="page-title">Manage Region</div>
@@ -267,6 +339,9 @@ function Region({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New Region"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -296,5 +371,6 @@ const mapActions = {
   getRegionById: regionActions.getById,
   checkRegionExist: regionActions.checkRegionExist,
   checkRegionInUse: regionActions.checkRegionInUse,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Region);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Popup from "../common-components/Popup";
 import { rfelogActions } from "../../actions";
 function Rfelocallog(props) {
-  const { title, locallinks, hidePopup } = props;
+  const { title, locallinks, hidePopup, openLocalLink } = props;
   return (
     <Popup {...props}>
       <div className="popup-box medium">
@@ -17,13 +17,12 @@ function Rfelocallog(props) {
             <ul>
               {locallinks.map((item) => (
                 <li>
-                  <a
-                    href={`${item.link}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <span
+                    className="link"
+                    onClick={() => openLocalLink(item.link)}
                   >
                     {item.country}
-                  </a>
+                  </span>
                 </li>
               ))}
             </ul>

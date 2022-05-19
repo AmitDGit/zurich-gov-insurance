@@ -3,6 +3,7 @@ import FrmInput from "../../common-components/frminput/FrmInput";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import FrmMultiselect from "../../common-components/frmmultiselect/FrmMultiselect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import Popup from "../../common-components/Popup";
 import { connect } from "react-redux";
 import { lobActions } from "../../../actions";
@@ -23,9 +24,37 @@ function AddEditForm(props) {
   const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [selectedTab, setselectedTab] = useState("tab1");
+  const [frmCountryOpts, setfrmCountryOpts] = useState([]);
+  useEffect(() => {
+    fnOnInit();
+  }, []);
 
+  const fnOnInit = () => {
+    let tempotps = [];
+    let selectedcountrylist = formIntialState.countryList;
+    frmCountrySelectOpts.forEach((item) => {
+      if (isEditMode) {
+        let isselected = false;
+        selectedcountrylist.forEach((country) => {
+          if (item.countryID === country.value) {
+            isselected = true;
+          }
+        });
+        if (item.isActive || isselected) {
+          tempotps.push(item);
+        }
+      } else if (item.isActive) {
+        tempotps.push(item);
+      }
+    });
+    setfrmCountryOpts(tempotps);
+    setformfield(formIntialState);
+  };
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
     setformfield({ ...formfield, [name]: value });
   };
   const handleMultiSelectChange = (name, value) => {
@@ -101,13 +130,23 @@ function AddEditForm(props) {
                   isRequired={true}
                   validationmsg={"Mandatory field"}
                   issubmitted={issubmitted}
-                  selectopts={frmCountrySelectOpts}
+                  selectopts={frmCountryOpts}
                 />
                 <FrmTextArea
                   title={"Description"}
                   name={"lobDescription"}
                   value={formfield.lobDescription}
                   handleChange={handleChange}
+                  isRequired={false}
+                  validationmsg={""}
+                  issubmitted={issubmitted}
+                />
+                <FrmActiveCheckbox
+                  title={"isActive"}
+                  name={"isActive"}
+                  value={formfield.isActive}
+                  handleChange={handleChange}
+                  isdisabled={false}
                   isRequired={false}
                   validationmsg={""}
                   issubmitted={issubmitted}

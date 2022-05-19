@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { lobchapterActions, lobActions } from "../../../actions";
+import { lobchapterActions, lobActions, commonActions } from "../../../actions";
 import Loading from "../../common-components/Loading";
 import useSetNavMenu from "../../../customhooks/useSetNavMenu";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import PaginationData from "../../common-components/PaginationData";
 import { alertMessage, dynamicSort } from "../../../helpers";
 import AddEditForm from "./AddEditFrom";
@@ -19,9 +20,13 @@ function Lobchapter({ ...props }) {
     postItem,
     deleteItem,
     userProfile,
+    setMasterdataActive,
   } = props;
   useSetNavMenu(
-    { currentMenu: "Lobchapter", isSubmenu: true },
+    {
+      currentMenu: "Lobchapter",
+      isSubmenu: true,
+    },
     props.menuClick
   );
   //initialize filter/search functionality
@@ -70,10 +75,29 @@ function Lobchapter({ ...props }) {
     setpaginationdata(data);
   };
   //set pagination data and functionality
+  const [dataActItems, setdataActItems] = useState({});
   const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
 
   const columns = [
+    {
+      dataField: "checkbox",
+      text: "",
+      formatter: (cell, row, rowIndex, formatExtraData) => {
+        return (
+          <FrmActiveCheckbox
+            name={row.lobChapterID}
+            value={dataActItems.lobChapterID}
+            handleChange={handleItemSelect}
+            isdisabled={false}
+          />
+        );
+      },
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "40px", textAlign: "center" };
+      },
+    },
     {
       dataField: "editaction",
       text: "Edit",
@@ -129,6 +153,14 @@ function Lobchapter({ ...props }) {
       sort: false,
       headerStyle: (colum, colIndex) => {
         return { width: "200px" };
+      },
+    },
+    {
+      dataField: "isActive",
+      text: "Active/Inactive",
+      sort: false,
+      headerStyle: (colum, colIndex) => {
+        return { width: "150px" };
       },
     },
     {
@@ -202,7 +234,9 @@ function Lobchapter({ ...props }) {
     },
   ];
   useEffect(() => {
-    getAll({ RequesterUserId: userProfile.userId });
+    getAll({
+      RequesterUserId: userProfile.userId,
+    });
     getAllLob();
   }, []);
   useEffect(() => {
@@ -210,34 +244,40 @@ function Lobchapter({ ...props }) {
     let templobchapterFilterOpts = [];
     let templobFilterOpts = [];
     let tempLobObj = {};
+    let initalval = {};
     lobchapterState.items.forEach((item) => {
-      if (item.isActive) {
-        tempdata.push(item);
-        templobchapterFilterOpts.push({
-          label: item.lobChapterName,
-          value: item.lobChapterID,
-        });
-        let coutrylist = item.lobList;
+      // if (item.isActive) {
+      tempdata.push({
+        ...item,
+        isActive: item.isActive ? "Active" : "Inactive",
+      });
+      initalval[item.lobChapterID] = false;
+      templobchapterFilterOpts.push({
+        label: item.lobChapterName,
+        value: item.lobChapterID,
+      });
+      let coutrylist = item.lobList;
 
-        if (coutrylist) {
-          coutrylist = coutrylist.split(",");
-          coutrylist.forEach((lobItem) => {
-            let tempItem = lobItem.trim();
-            if (!tempLobObj[tempItem]) {
-              templobFilterOpts.push({
-                label: tempItem,
-                value: tempItem,
-              });
-            }
-            tempLobObj[tempItem] = tempItem;
-          });
-        }
+      if (coutrylist) {
+        coutrylist = coutrylist.split(",");
+        coutrylist.forEach((lobItem) => {
+          let tempItem = lobItem.trim();
+          if (!tempLobObj[tempItem]) {
+            templobFilterOpts.push({
+              label: tempItem,
+              value: tempItem,
+            });
+          }
+          tempLobObj[tempItem] = tempItem;
+        });
       }
+      //}
     });
     templobchapterFilterOpts.sort(dynamicSort("label"));
     templobFilterOpts.sort(dynamicSort("label"));
     setdata([...tempdata]);
     setpaginationdata([...tempdata]);
+    setdataActItems(initalval);
     setlobchapterFilterOpts([...templobchapterFilterOpts]);
     setlobFilterOpts([...templobFilterOpts]);
   }, [lobchapterState.items]);
@@ -251,12 +291,17 @@ function Lobchapter({ ...props }) {
     let tempLobObj = {};
     lobState.lobItems.forEach((item) => {
       LobSelectOpts.push({
+        ...item,
         label: item.lobName.trim(),
         value: item.lobid,
       });
       tempLobObj[item.lobid] = item.lobName.trim();
     });
-    setfrmLobSelectOpts([{ label: "All", value: "*" }, ...LobSelectOpts]);
+    LobSelectOpts.sort(dynamicSort("label"));
+    setfrmLobSelectOpts([
+      { label: "All", value: "*", isActive: true },
+      ...LobSelectOpts,
+    ]);
     setlobObj(tempLobObj);
   }, [lobState.lobItems]);
 
@@ -286,10 +331,18 @@ function Lobchapter({ ...props }) {
   const [editmodeName, seteditmodeName] = useState("");
   const handleEdit = async (e) => {
     let itemid = e.target.getAttribute("rowid");
-    const response = await getById({ lobChapterID: itemid });
-    let selectedlobList = response.lobDataList.map((item) => {
-      return { label: item.lobName, value: item.lobid };
+    const response = await getById({
+      lobChapterID: itemid,
     });
+    let selectedlobList = [];
+    if (response.lobDataList) {
+      selectedlobList = response.lobDataList.map((item) => {
+        return {
+          label: item.lobName,
+          value: item.lobid,
+        };
+      });
+    }
     if (selectedlobList.length === frmLobSelectOpts.length - 1) {
       selectedlobList = [...frmLobSelectOpts];
     }
@@ -381,15 +434,65 @@ function Lobchapter({ ...props }) {
     if (!window.confirm(alertMessage.lobchapter.deleteConfirm)) {
       return;
     }
-    let resonse = await checkIsInUse({ lobChapterID: itemid });
+    let resonse = await checkIsInUse({
+      lobChapterID: itemid,
+    });
     if (!resonse) {
-      resonse = await deleteItem({ lobChapterID: itemid });
+      resonse = await deleteItem({
+        lobChapterID: itemid,
+      });
       if (resonse) {
         getAll();
         alert(alertMessage.lobchapter.delete);
       }
     } else {
       alert(alertMessage.lobchapter.isInUse);
+    }
+  };
+
+  //added below code to set active/inactive state
+  const selectedItems = [];
+  const [selItemsList, setselItemsList] = useState([]);
+  const [isActiveEnable, setisActiveEnable] = useState(false);
+  const handleItemSelect = async (e) => {
+    let { name, value } = e.target;
+    value = e.target.checked;
+    setdataActItems({
+      ...dataActItems,
+      [name]: value,
+    });
+    if (value && !selectedItems.includes(name)) {
+      selectedItems.push(name);
+    } else {
+      const index = selectedItems.indexOf(name);
+      if (index > -1) {
+        selectedItems.splice(index, 1);
+      }
+    }
+    if (selectedItems.length) {
+      setisActiveEnable(true);
+      setselItemsList([...selectedItems]);
+    } else {
+      setisActiveEnable(false);
+    }
+  };
+
+  const setMasterdataActiveState = async (state) => {
+    let response = await setMasterdataActive({
+      TempId: selItemsList.join(","),
+      MasterType: "lobchapter",
+      IsActive: state,
+    });
+    if (response) {
+      setselfilter(intialfilterval);
+      setselItemsList([]);
+      setisActiveEnable(false);
+      getAll();
+      if (state) {
+        alert(alertMessage.commonmsg.masterdataActive);
+      } else {
+        alert(alertMessage.commonmsg.masterdataInActive);
+      }
     }
   };
   return (
@@ -445,6 +548,9 @@ function Lobchapter({ ...props }) {
             showAddPopup={showAddPopup}
             defaultSorted={defaultSorted}
             buttonTitle={"New LoB Chapter"}
+            setMasterdataActiveState={setMasterdataActiveState}
+            isShowActiveBtns={true}
+            ActiveBtnsState={isActiveEnable}
           />
         )}
       </div>
@@ -477,5 +583,6 @@ const mapActions = {
   checkIsInUse: lobchapterActions.checkIsInUse,
   postItem: lobchapterActions.postItem,
   deleteItem: lobchapterActions.deleteItem,
+  setMasterdataActive: commonActions.setMasterdataActive,
 };
 export default connect(mapStateToProp, mapActions)(Lobchapter);

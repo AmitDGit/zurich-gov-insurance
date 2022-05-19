@@ -33,15 +33,12 @@ const getAllRegions = (requestParam) => {
     return { type: regionConstants.GETALLREGION_FAILURE, payload: error };
   };
   const requestParams = requestParam ? requestParam : {};
-  /*const requestParams = {
-    PageIndex: 1,
-    PageSize: 50,
-  };*/
 
   return async (dispatch) => {
     try {
       const response = await regionService.getAllRegionsService(requestParams);
       dispatch(success(response.data));
+      return response.data;
     } catch (err) {
       dispatch(failure(err));
     }
@@ -123,6 +120,7 @@ export const regionActions = {
 
 const getAllService = async (requestParam) => {
   const param = { params: requestParam };
+  debugger;
   const response = await Axios.get(`region/getallregionlist`, param);
   return response;
 };

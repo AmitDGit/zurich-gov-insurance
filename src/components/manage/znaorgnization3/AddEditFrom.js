@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FrmInput from "../../common-components/frminput/FrmInput";
 import FrmSelect from "../../common-components/frmselect/FrmSelect";
+import FrmActiveCheckbox from "../../common-components/frmactivecheckbox/FrmActiveCheckbox";
 import FrmTextArea from "../../common-components/frmtextarea/FrmTextArea";
 import Popup from "../../common-components/Popup";
 import { dynamicSort } from "../../../helpers";
@@ -16,36 +17,87 @@ function AddEditForm(props) {
     frmOrg1SelectOpts,
     frmOrg2SelectOpts,
   } = props;
-  const [frmOgr2Opts, setfrmOgr2Opts] = useState(frmOrg2SelectOpts);
-  const [formfield, setformfield] = useState(formIntialState);
+  const [frmOgr1Opts, setfrmOgr1Opts] = useState([]);
+  const [frmOgr2Opts, setfrmOgr2Opts] = useState([]);
+  const [frmOgr2OptsAll, setfrmOgr2OptsAll] = useState([]);
+  const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
-
+  useEffect(() => {
+    fnOnInit();
+  }, []);
+  const fnOnInit = () => {
+    let tempotps = [];
+    frmOrg1SelectOpts.forEach((item) => {
+      if (isEditMode) {
+        if (
+          item.isActive ||
+          item.znaSegmentId === formIntialState.znaSegmentId
+        ) {
+          tempotps.push(item);
+        }
+      } else if (item.isActive) {
+        tempotps.push(item);
+      }
+    });
+    setfrmOgr1Opts(tempotps);
+    tempotps = [];
+    frmOrg2SelectOpts.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.znasbuId === formIntialState.znasbuId) {
+          tempotps.push(item);
+        }
+      } else if (item.isActive) {
+        tempotps.push(item);
+      }
+    });
+    setfrmOgr2OptsAll(tempotps);
+    debugger;
+    if (formIntialState.znaSegmentId) {
+      let tempopts = tempotps.filter(
+        (item) => item.znaSegmentId === formIntialState.znaSegmentId
+      );
+      tempopts.sort(dynamicSort("label"));
+      setfrmOgr2Opts(tempopts);
+    } else {
+      setfrmOgr2Opts([]);
+    }
+    setformfield(formIntialState);
+  };
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
     setformfield({ ...formfield, [name]: value });
   };
   const handleSelectChange = (name, value) => {
     if (name === "znaSegmentId") {
       setformfield({ ...formfield, znasbuId: "", [name]: value });
+      if (value) {
+        let tempopts = frmOgr2OptsAll.filter(
+          (item) => item.znaSegmentId === value
+        );
+        tempopts.sort(dynamicSort("label"));
+        setfrmOgr2Opts(tempopts);
+      } else {
+        setfrmOgr2Opts([]);
+      }
     } else {
       setformfield({ ...formfield, [name]: value });
     }
   };
-  useEffect(() => {
-    setfrmOgr2Opts(frmOrg2SelectOpts);
-  }, []);
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (formfield.znaSegmentId) {
-      let tempopts = frmOrg2SelectOpts.filter(
+      let tempopts = frmOgr2OptsAll.filter(
         (item) => item.znaSegmentId === formfield.znaSegmentId
       );
       tempopts.sort(dynamicSort("label"));
       setfrmOgr2Opts(tempopts);
     } else {
-      setfrmOgr2Opts(frmOrg2SelectOpts);
+      setfrmOgr2Opts([]);
     }
-  }, [formfield.znaSegmentId]);
+  }, [formfield.znaSegmentId]);*/
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -70,7 +122,7 @@ function AddEditForm(props) {
         <div className="popup-formitems">
           <form onSubmit={handleSubmit} id="myForm">
             <FrmInput
-              title={"Organization 3"}
+              title={"ZNA Organization 3"}
               name={"marketBasketName"}
               value={formfield.marketBasketName}
               type={"text"}
@@ -80,17 +132,17 @@ function AddEditForm(props) {
               issubmitted={issubmitted}
             />
             <FrmSelect
-              title={"Organization 1"}
+              title={"ZNA Organization 1"}
               name={"znaSegmentId"}
               value={formfield.znaSegmentId}
               handleChange={handleSelectChange}
-              isRequired={false}
+              isRequired={true}
               validationmsg={"Mandatory field"}
               issubmitted={issubmitted}
-              selectopts={frmOrg1SelectOpts}
+              selectopts={frmOgr1Opts}
             />
             <FrmSelect
-              title={"Organization 2"}
+              title={"ZNA Organization 2"}
               name={"znasbuId"}
               value={formfield.znasbuId}
               handleChange={handleSelectChange}
@@ -104,6 +156,16 @@ function AddEditForm(props) {
               name={"description"}
               value={formfield.description}
               handleChange={handleChange}
+              isRequired={false}
+              validationmsg={""}
+              issubmitted={issubmitted}
+            />
+            <FrmActiveCheckbox
+              title={"isActive"}
+              name={"isActive"}
+              value={formfield.isActive}
+              handleChange={handleChange}
+              isdisabled={!formfield.isActiveEnable}
               isRequired={false}
               validationmsg={""}
               issubmitted={issubmitted}
