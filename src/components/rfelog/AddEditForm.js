@@ -27,7 +27,7 @@ import FrmRichTextEditor from "../common-components/frmrichtexteditor/FrmRichTex
 import { alertMessage, dynamicSort, formatDate } from "../../helpers";
 import PeoplePickerPopup from "./PeoplePickerPopup";
 import Rfelocallog from "./Rfelocallog";
-import useUserProfile from "../../customhooks/useUserProfile";
+
 function AddEditForm(props) {
   const { lobState, userState, countryState } = props.state;
   const {
@@ -51,7 +51,6 @@ function AddEditForm(props) {
     queryparam,
     handleDataVersion,
   } = props;
-  const userProfiles = useUserProfile();
   const selectInitiVal = { label: "Select", value: "" };
   const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
@@ -85,6 +84,7 @@ function AddEditForm(props) {
     isadmin: false,
     issuperadmin: false,
     iscc: false,
+    isroleloaded: false,
   });
 
   const [mandatoryFields, setmandatoryFields] = useState([
@@ -109,6 +109,7 @@ function AddEditForm(props) {
       isadmin: false,
       issuperadmin: false,
       iscc: false,
+      isroleloaded: true,
     };
     if (formIntialState.isSubmit) {
       if (
@@ -132,7 +133,7 @@ function AddEditForm(props) {
       ) {
         tempuserroles.iscc = true;
       }
-      if (userProfile.isAdmin) {
+      if (userProfile.isAdminGroup) {
         tempuserroles.isadmin = true;
       }
       if (userProfile.userRoles[0].roleName === "SuperAdmin") {
@@ -143,13 +144,19 @@ function AddEditForm(props) {
   }, []);
 
   useEffect(async () => {
-    fnOnInit();
+    if (userroles.isroleloaded) {
+      fnOnInit();
+    }
   }, [userroles]);
 
   const fnOnInit = async () => {
     let tempopts = [];
     let tempcountryItems = [];
-    if (userroles.isapprover || userroles.iscc) {
+    if (
+      userroles.isapprover ||
+      userroles.iscc ||
+      (formIntialState.isSubmit && userroles.isunderwriter)
+    ) {
       tempcountryItems = await getAllCountry();
     } else {
       tempcountryItems = await getAllCountry({ IsLog: true });
@@ -275,6 +282,8 @@ function AddEditForm(props) {
           formIntialState.requestForEmpowermentStatus === rfelog_status.Pending
         ) {
           isshow = true;
+        } else {
+          isshow = true;
         }
       }
       //status more information needed
@@ -298,7 +307,6 @@ function AddEditForm(props) {
     setfrmrfeempourment([selectInitiVal, ...temprfeempourment]);
     setfrmstatus([...frmstatus]);
     setloading(false);
-
     if (formIntialState.isSubmit) {
       if (userroles.isapprover || userroles.issuperadmin) {
         setisstatusdisabled(false);
@@ -543,6 +551,8 @@ function AddEditForm(props) {
         if (isEditMode) {
           if (
             (userroles.isadmin || userroles.isunderwriter) &&
+            !userroles.isapprover &&
+            !userroles.issuperadmin &&
             formfield.requestForEmpowermentStatus ===
               rfelog_status.More_information_needed
           ) {
@@ -858,7 +868,7 @@ function AddEditForm(props) {
                     maxDate={moment().toDate()}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={isfrmdisabled}
+                    isdisabled={isfrmdisabled || isstatusdisabled}
                   />
                 </div>
                 <div className="col-md-3">
@@ -877,7 +887,7 @@ function AddEditForm(props) {
                     maxDate={moment().toDate()}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={isfrmdisabled}
+                    isdisabled={isfrmdisabled || isstatusdisabled}
                   />
                 </div>
               </div>
@@ -898,7 +908,7 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     isShowDelete={
                       (!isReadMode && !formfield.isSubmit) ||
-                      (!isReadMode && userProfiles.isAdminGroup)
+                      (!isReadMode && userProfile.isAdminGroup)
                     }
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}

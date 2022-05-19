@@ -23,7 +23,6 @@ import FrmInput from "../common-components/frminput/FrmInput";
 import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
-import useUserProfile from "../../customhooks/useUserProfile";
 import VersionHistoryPopup from "../versionhistorypopup/VersionHistoryPopup";
 let pageIndex = 1;
 let totalLogCount = 0;
@@ -42,6 +41,7 @@ function Exemptionlog({ ...props }) {
     getLookupByType,
     checkIsInUse,
     deleteItem,
+    userProfile,
     getDataVersion,
   } = props;
 
@@ -53,7 +53,7 @@ function Exemptionlog({ ...props }) {
     ZUGdata: [],
     URPMdata: [],
   });
-  const userProfile = useUserProfile();
+
   const [logsDraftData, setlogsDraftData] = useState({
     ZUGdraftdata: [],
     URPMdraftdata: [],
@@ -359,14 +359,14 @@ function Exemptionlog({ ...props }) {
       formatter: (cell, row, rowIndex, formatExtraData) => {
         let isedit = true;
         let loggeduser = userProfile.emailAddress;
-        if (
+        /*if (
           row.requestForEmpowermentCC &&
           row.underwriterGrantingEmpowerment &&
           row.requestForEmpowermentCC.indexOf(loggeduser) !== -1 &&
           row.underwriterGrantingEmpowerment.indexOf(loggeduser) < 0
         ) {
           isedit = false;
-        }
+        }*/
         return isedit ? (
           <div
             className={`edit-icon`}
@@ -1206,6 +1206,7 @@ function Exemptionlog({ ...props }) {
         urpmExemptionLogId: itemid,
       });
     }
+
     if (response) {
       /* let selectedcountryList = [];
      let countrylist = await getAllCountry();
@@ -1462,10 +1463,10 @@ function Exemptionlog({ ...props }) {
     TypeOfExemptionValue: "Type of Exemption",
     TypeOfBusinessValue: "Type of Business",
     IndividualGrantedEmpowermentName: "Individual Granted Empowerment",
-    LobChapterName: "LoB Chapter/Document",
+    LOBChapterName: "LoB Chapter/Document",
     Section: "Section",
     SectionSubject: "Section Subject",
-    ZugChapterVersion: "ZUG Chapter Version",
+    ZUGChapterVersion: "ZUG Chapter Version",
     EmpowermentAndFeedbackRequest: "Empowerment & Feedback Request",
     EmpowermentRequestedByName: "Empowerment Requested By",
     FullTransitionalValue: "Full/Transitional",
@@ -1527,8 +1528,8 @@ function Exemptionlog({ ...props }) {
       TempId: itemid,
       LogType: selectedExemptionLog,
     });
-    debugger;
-    setversionHistoryData(versiondata.reverse());
+
+    setversionHistoryData(versiondata);
     setshowVersionHistory(true);
   };
   return (
@@ -1735,6 +1736,7 @@ function Exemptionlog({ ...props }) {
           exportDateFields={versionHistoryexportDateFields}
           exportHtmlFields={versionHistoryexportHtmlFields}
           versionHistoryExcludeFields={versionHistoryExcludeFields}
+          isDraft={sellogTabType === "draft" ? true : false}
         />
       ) : (
         ""

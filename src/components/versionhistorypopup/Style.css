@@ -6,11 +6,11 @@
     border-top-right-radius: 15px;
     border-bottom-right-radius: 15px;
 }
-.versionhistory-container .up-arrow::after {
+.versionhistory-container .sort.up-arrow::after {
     content: "";
-    position: absolute;
-    top:9px;
-    left: 24px;
+    position: relative;
+    top:-12px;
+    left: 3px;
     width: 0;
     height: 0;
     border: solid 5px transparent;
@@ -20,11 +20,11 @@
     cursor: pointer;
 }
 
-.versionhistory-container .down-arrow::after {
+.versionhistory-container .sort.down-arrow::after {
     content: "";
-    position: absolute;
-    top: 7px;
-    left: 24px;
+    position: relative;
+    top: 10px;
+    left: 3px;
     width: 0;
     height: 0;
     border: solid 5px transparent;
@@ -42,7 +42,11 @@
 }
 
 .versionhistory-data-container table th{
+    position: relative;
     text-align: left;
+}
+.versionhistory-data-container table th div{
+    display: inline-block;
 }
 .versionhistory-data-container table th, .versionhistory-data-container table td{
     vertical-align: top;

@@ -23,6 +23,7 @@ import {} from "../../constants";
 import CustomToolTip from "../common-components/tooltip/CustomToolTip";
 import parse from "html-react-parser";
 import VersionHistoryPopup from "../versionhistorypopup/VersionHistoryPopup";
+
 let pageIndex = 1;
 let totalLogCount = 0;
 function Rfelog({ ...props }) {
@@ -160,7 +161,6 @@ function Rfelog({ ...props }) {
     }
   };
   const handleFilterSearch = () => {
-    debugger;
     if (
       selfilter.accountName.trim() !== "" ||
       selfilter.lobId !== "" ||
@@ -268,15 +268,14 @@ function Rfelog({ ...props }) {
       dataField: "editaction",
       text: "Edit",
       formatter: (cell, row, rowIndex, formatExtraData) => {
-        let isedit = true;
+        let isedit = false;
         let loggeduser = userProfile.emailAddress;
         if (
-          row.requestForEmpowermentCC &&
-          row.underwriterGrantingEmpowerment &&
-          row.requestForEmpowermentCC.indexOf(loggeduser) !== -1 &&
-          row.underwriterGrantingEmpowerment.indexOf(loggeduser) < 0
+          row.underwriterGrantingEmpowerment.indexOf(loggeduser) !== -1 ||
+          row.underwriter.indexOf(loggeduser) !== -1 ||
+          userProfile.isAdminGroup
         ) {
-          isedit = false;
+          isedit = true;
         }
         return isedit ? (
           <div
@@ -994,8 +993,7 @@ function Rfelog({ ...props }) {
       TempId: itemid,
       LogType: "rfelogs",
     });
-    debugger;
-    setversionHistoryData(versiondata.reverse());
+    setversionHistoryData(versiondata);
     setshowVersionHistory(true);
   };
 
@@ -1173,6 +1171,7 @@ function Rfelog({ ...props }) {
           exportDateFields={versionHistoryexportDateFields}
           exportHtmlFields={versionHistoryexportHtmlFields}
           versionHistoryExcludeFields={versionHistoryExcludeFields}
+          isDraft={sellogTabType === "draft" ? true : false}
         />
       ) : (
         ""

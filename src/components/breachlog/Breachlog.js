@@ -363,6 +363,7 @@ function Breachlog({ ...props }) {
   //const [data, setdata] = useState([]);
   const [paginationdata, setpaginationdata] = useState([]);
   const [exportData, setexportData] = useState([{ columns: [], data: [] }]);
+
   const columns = [
     {
       dataField: "duedate-priority",
@@ -751,6 +752,7 @@ function Breachlog({ ...props }) {
   const [logTypes, setlogTypes] = useState([]);
   const [sellogTabType, setsellogTabType] = useState("");
   useEffect(() => {
+    debugger;
     if (showDraft) {
       let tempStatus = [
         { label: "All", value: "all" },
@@ -1009,6 +1011,7 @@ function Breachlog({ ...props }) {
     const response = await getById({
       breachLogID: itemid,
     });
+    debugger;
     if (mode === "edit" && response.isSubmit) {
       setisEditMode(true);
     }
@@ -1069,6 +1072,7 @@ function Breachlog({ ...props }) {
     setisEditMode(false);
   };
   const postItemHandler = async (item) => {
+    debugger;
     let tempfullPathArr = item.breachAttachmentList.map(
       (item) => item.filePath
     );
@@ -1151,10 +1155,10 @@ function Breachlog({ ...props }) {
     CountryName: "Country",
     RegionName: "Region",
     CustomerSegmentName: "Customer Segment",
-    ZnaSegmentName: "ZNA Segment",
-    SbuName: "ZNA SBU",
+    ZNASegmentName: "ZNA Segment",
+    SBUName: "ZNA SBU",
     MarketBasketName: "ZNA Market Basket",
-    LobName: "LoB",
+    LOBName: "LoB",
     SubLOBName: "Sub LoB",
     ClassificationValue: "Classification",
     TypeOfBreachValue: "Type Of Breach",
@@ -1167,12 +1171,12 @@ function Breachlog({ ...props }) {
     FinancialImpactDescription: "Financial impact description",
     HowDetectedValue: "How detected",
     NearMisses: "Near Misses",
-    UwrInvolved: "UWr involved",
+    UWRInvolved: "UWr involved",
     BusinessDivision: "Business Division",
     Office: "office",
     PolicyName: "Policy name",
     PolicyNumber: "Policy number",
-    TurNumber: "UQA Review ID",
+    TURNumber: "UQA Review ID",
     ActionResponsibleName: "Action Responsible",
     DueDate: "Due Date",
     OriginalDueDate: "Original Due Date",
@@ -1207,7 +1211,7 @@ function Breachlog({ ...props }) {
       LogType: "breachlogs",
     });
     debugger;
-    setversionHistoryData(versiondata.reverse());
+    setversionHistoryData(versiondata);
     setshowVersionHistory(true);
 
     /* //below code is to show data in new window/tab
@@ -1557,6 +1561,7 @@ function Breachlog({ ...props }) {
           exportDateFields={versionHistoryexportDateFields}
           exportHtmlFields={versionHistoryexportHtmlFields}
           versionHistoryExcludeFields={versionHistoryExcludeFields}
+          isDraft={sellogTabType === "draft" ? true : false}
         />
       ) : (
         ""
