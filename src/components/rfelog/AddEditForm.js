@@ -848,7 +848,12 @@ function AddEditForm(props) {
                     isReadMode={isReadMode}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={!isReadMode && isfrmdisabled}
+                    isdisabled={
+                      isfrmdisabled ||
+                      isstatusdisabled ||
+                      formfield.requestForEmpowermentStatus ===
+                        rfelog_status.Pending
+                    }
                   />
                 </div>
               </div>
@@ -868,7 +873,12 @@ function AddEditForm(props) {
                     maxDate={moment().toDate()}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={isfrmdisabled || isstatusdisabled}
+                    isdisabled={
+                      isfrmdisabled ||
+                      isstatusdisabled ||
+                      formfield.requestForEmpowermentStatus ===
+                        rfelog_status.Pending
+                    }
                   />
                 </div>
                 <div className="col-md-3">
@@ -887,7 +897,12 @@ function AddEditForm(props) {
                     maxDate={moment().toDate()}
                     validationmsg={"Mandatory field"}
                     issubmitted={issubmitted}
-                    isdisabled={isfrmdisabled || isstatusdisabled}
+                    isdisabled={
+                      isfrmdisabled ||
+                      isstatusdisabled ||
+                      formfield.requestForEmpowermentStatus ===
+                        rfelog_status.Pending
+                    }
                   />
                 </div>
               </div>

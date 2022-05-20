@@ -47,4 +47,5 @@ export const EXEMPTION_CONSTANT = {
   TypeExemption_Individual: "B1C499F6-E7B2-4E79-BF41-2AC00FDB5C09",
   TypeExemption_Portfolio: "7652D39F-48DB-447C-824E-F36F58F06463",
   FullTransitional_Transitional: "EF084F52-7CD4-48CC-80F4-0128AB9EB8AD",
+  Full_Transitional: "203B34BD-2536-47E1-BCB5-BF1D18E361AB",
 };

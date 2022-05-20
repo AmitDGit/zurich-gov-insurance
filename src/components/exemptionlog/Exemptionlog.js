@@ -1374,6 +1374,7 @@ function Exemptionlog({ ...props }) {
         modifiedByID: userProfile.userId,
       });
     }
+    debugger;
     if (response) {
       let compeletedfieldname =
         selectedExemptionLog === "zug" ? "ZUGLoadedAll" : "URPMLoadedAll";
@@ -1701,9 +1702,7 @@ function Exemptionlog({ ...props }) {
                       ? "ExmptionLogCIReport"
                       : "ExmptionLogURPMReport"
                   }
-                  buttonTitle={
-                    selectedExemptionLog === "zug" ? "New CI" : "New URPM"
-                  }
+                  buttonTitle={selectedExemptionLog === "zug" ? "New" : "New"}
                   hidesearch={true}
                   exportExcludeFields={
                     selectedExemptionLog === "zug"

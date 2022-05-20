@@ -21,6 +21,7 @@ function FrmFileUpload(props) {
   const [selectedfile, setselectedfile] = useState();
   const [filename, setfilename] = useState("");
   const [files, setfiles] = useState([]);
+  const maxFileSize = 150;
   useEffect(() => {
     let tempfiles = [];
     if (uploadedfiles && uploadedfiles.length) {
@@ -52,8 +53,22 @@ function FrmFileUpload(props) {
   }, [uploadedfiles]);
 
   const onfileselect = (e) => {
+    debugger;
     let _this = e.target;
     let fileName = "";
+    if (_this.files) {
+      for (let i = 0; i < _this.files.length; i++) {
+        let file = _this.files[i];
+        let filesize = bytesToMBSize(file.size);
+        if (filesize > maxFileSize) {
+          alert(
+            `You can not upload file of size more than 150 MB. The file ${file.name} has size ${filesize} MB.\nPlease select another file.`
+          );
+          document.getElementById("file").value = null;
+          return;
+        }
+      }
+    }
     setselectedfile(_this.files);
     if (_this.files && _this.files.length > 1) {
       fileName = (_this.getAttribute("data-multiple-caption") || "").replace(
@@ -69,6 +84,9 @@ function FrmFileUpload(props) {
     }
   };
   const onfileuploadhandler = () => {
+    if (!selectedfile) {
+      return;
+    }
     handleFileUpload(name, selectedfile);
     setfilename("");
     setselectedfile("");
@@ -76,6 +94,12 @@ function FrmFileUpload(props) {
   };
   const deleteAttachment = (id, fileurl) => {
     handleFileDelete(id, fileurl);
+  };
+  const bytesToMBSize = (bytes) => {
+    /*var sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    if (bytes == 0) return "0 Byte";
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));*/
+    return Math.round(bytes / Math.pow(1024, 2), 2);
   };
   return (
     <div

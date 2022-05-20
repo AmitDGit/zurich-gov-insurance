@@ -53,6 +53,8 @@
     padding: 3px;
 }
 .versionhistory-data-container table tbody{
-
-    border-top: 15px solid #edeef0;
+    border-top: 20px solid #edeef0;
+}
+.versionhistory-data-container table tbody tr:last-child {
+    /*border-bottom: 1px solid #2167ad;*/
 }

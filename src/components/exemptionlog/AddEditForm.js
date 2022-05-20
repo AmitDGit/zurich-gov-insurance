@@ -55,7 +55,7 @@ function AddEditForm(props) {
     handleDataVersion,
   } = props;
   const selectInitiVal = { label: "Select", value: "" };
-  const [formfield, setformfield] = useState(formIntialState);
+  const [formfield, setformfield] = useState({});
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
   const [isfrmdisabled, setisfrmdisabled] = useState(false);
@@ -82,6 +82,7 @@ function AddEditForm(props) {
   const exemptionType_Portfolio = EXEMPTION_CONSTANT.TypeExemption_Portfolio;
   const fullTransitional_Transitional =
     EXEMPTION_CONSTANT.FullTransitional_Transitional;
+  const full_Transitional = EXEMPTION_CONSTANT.Full_Transitional;
   const [userroles, setuserroles] = useState({
     issubmitter: false,
     isapprover: false,
@@ -98,6 +99,8 @@ function AddEditForm(props) {
     "lobChapter",
     "approver",
     "status",
+    "section",
+    "empowermentAndFeedbackRequest",
   ];
   const URPMMandatoryFields = [
     "countryID",
@@ -106,6 +109,7 @@ function AddEditForm(props) {
     "globalUWApprover",
     "globalUWStatus",
     "temporaryRequestEndDate",
+    "section",
   ];
   const [mandatoryFields, setmandatoryFields] = useState([]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
@@ -328,7 +332,6 @@ function AddEditForm(props) {
     tempTypeOfBusiness.sort(dynamicSort("label"));
     tempFullTransitional.sort(dynamicSort("label"));
     tempURPMSection.sort(dynamicSort("label"));
-
     setfrmTypeOfExemption([selectInitiVal, ...tempTypeOfExemption]);
     setfrmTypeOfBusiness([selectInitiVal, ...tempTypeOfBusiness]);
     setfrmFullTransitional([selectInitiVal, ...tempFullTransitional]);
@@ -365,7 +368,7 @@ function AddEditForm(props) {
   }, [frmstatus]);
 
   const setDefaultLogStatus = () => {
-    if (formfield.isSubmit) {
+    if (formIntialState.isSubmit) {
       if (userroles.isapprover || userroles.issuperadmin) {
         setisstatusdisabled(false);
       } else if (
@@ -379,18 +382,20 @@ function AddEditForm(props) {
         //setisapprovermode(true);
       }
       setformfield({
-        ...formfield,
+        ...formIntialState,
       });
     } else {
       if (selectedExemptionLog === "zug") {
+        formIntialState.fullTransitional = full_Transitional;
+        debugger;
         setformfield({
-          ...formfield,
+          ...formIntialState,
           status: exemption_status.Pending,
           globalUWStatus: "",
         });
       } else {
         setformfield({
-          ...formfield,
+          ...formIntialState,
           status: "",
           globalUWStatus: exemption_status.Pending,
         });
@@ -736,10 +741,13 @@ function AddEditForm(props) {
   const setExemptionlogtype = (value) => {
     setExemLogTypeFn(value);
     if (value === "zug") {
+      formInitialValueZUG.fullTransitional = full_Transitional;
+      formInitialValueZUG.status = exemption_status.Pending;
       setformfield({
         ...formInitialValueZUG,
       });
     } else {
+      formInitialValueURPM.globalUWStatus = exemption_status.Pending;
       setformfield({
         ...formInitialValueURPM,
       });
@@ -902,7 +910,7 @@ function AddEditForm(props) {
                       type={"text"}
                       handleChange={handleChange}
                       isReadMode={isReadMode}
-                      isRequired={false}
+                      isRequired={true}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
                     />
@@ -912,7 +920,7 @@ function AddEditForm(props) {
                       name={"section"}
                       value={formfield.section}
                       handleChange={handleSelectChange}
-                      isRequired={false}
+                      isRequired={true}
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       isToolTip={false}
@@ -983,11 +991,11 @@ function AddEditForm(props) {
                 <div className="col-md-12">
                   {selectedExemptionLog === "zug" ? (
                     <FrmRichTextEditor
-                      title={"Empowerment & Feedback Request"}
+                      title={"Empowerment request details"}
                       name={"empowermentAndFeedbackRequest"}
                       value={formfield.empowermentAndFeedbackRequest}
                       handleChange={handleSelectChange}
-                      isRequired={false}
+                      isRequired={true}
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
