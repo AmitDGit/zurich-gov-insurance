@@ -52,7 +52,7 @@ function AddEditForm(props) {
     handleDataVersion,
   } = props;
   const selectInitiVal = { label: "Select", value: "" };
-  const [formfield, setformfield] = useState({});
+  const [formfield, setformfield] = useState(formIntialState);
   const [issubmitted, setissubmitted] = useState(false);
   const [countryopts, setcountryopts] = useState([]);
   const [isfrmdisabled, setisfrmdisabled] = useState(false);
