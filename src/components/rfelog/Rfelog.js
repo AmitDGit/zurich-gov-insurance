@@ -952,10 +952,10 @@ function Rfelog({ ...props }) {
     CountryName: "Country",
     RegionName: "Region",
     UnderwriterName: "Underwriter",
-    ChzValue: "CHZ Sustainability Desk / CHZ GI Credit Risk",
-    LobName: "LoB",
+    CHZValue: "CHZ Sustainability Desk / CHZ GI Credit Risk",
+    LOBName: "LoB",
     RequestForEmpowermentReasonValue: "Request for empowerment reason",
-    RfeLogDetails: "Specific Details",
+    RFELogDetails: "Specific Details",
     UnderwriterGrantingEmpowermentName: "Underwriter granting empowerment",
     RequestForEmpowermentCCName: "Request for empowerment CC",
     RequestForEmpowermentStatusValue: "Request for empowerment status",
@@ -982,7 +982,7 @@ function Rfelog({ ...props }) {
     ReceptionInformationDate: "receptionInformationDate",
   };
   const versionHistoryexportHtmlFields = [
-    "RfeLogDetails",
+    "RFELogDetails",
     "UnderwriterGrantingEmpowermentComments",
   ];
   const hideVersionHistoryPopup = () => {
