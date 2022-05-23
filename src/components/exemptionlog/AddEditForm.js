@@ -9,11 +9,7 @@ import FrmMultiselect from "../common-components/frmmultiselect/FrmMultiselect";
 import Loading from "../common-components/Loading";
 import moment from "moment";
 import "./Style.css";
-import {
-  EXEMPTION_ZUG_LOG_STATUS,
-  EXEMPTION_URPM_LOG_STATUS,
-  EXEMPTION_CONSTANT,
-} from "../../constants";
+import { EXEMPTION_LOG_STATUS, EXEMPTION_CONSTANT } from "../../constants";
 import {
   userActions,
   lookupActions,
@@ -65,17 +61,15 @@ function AddEditForm(props) {
   const [frmTypeOfBusiness, setfrmTypeOfBusiness] = useState([]);
   const [frmFullTransitional, setfrmFullTransitional] = useState([]);
   const [frmURPMSection, setfrmURPMSection] = useState([]);
-  const [frmZUGStatus, setfrmZUGStatus] = useState([]);
-  const [frmURPMStatus, setfrmURPMStatus] = useState([]);
   const [frmstatus, setfrmstatus] = useState([]);
   const [tooltip, settooltip] = useState({});
   const exemption_status = {
-    Pending: EXEMPTION_ZUG_LOG_STATUS.Pending,
-    Empowerment_granted: EXEMPTION_ZUG_LOG_STATUS.Empowerment_granted,
-    Empowerment_not_granted: EXEMPTION_ZUG_LOG_STATUS.Empowerment_not_granted,
-    More_Information_Needed: EXEMPTION_ZUG_LOG_STATUS.More_Information_Needed,
-    Withdrawn: EXEMPTION_ZUG_LOG_STATUS.Withdrawn,
-    No_longer_required: EXEMPTION_ZUG_LOG_STATUS.No_longer_required,
+    Pending: EXEMPTION_LOG_STATUS.Pending,
+    Empowerment_granted: EXEMPTION_LOG_STATUS.Empowerment_granted,
+    Empowerment_not_granted: EXEMPTION_LOG_STATUS.Empowerment_not_granted,
+    More_Information_Needed: EXEMPTION_LOG_STATUS.More_Information_Needed,
+    Withdrawn: EXEMPTION_LOG_STATUS.Withdrawn,
+    No_longer_required: EXEMPTION_LOG_STATUS.No_longer_required,
   };
 
   const exemptionType_Individual = EXEMPTION_CONSTANT.TypeExemption_Individual;
@@ -113,35 +107,6 @@ function AddEditForm(props) {
   ];
   const [mandatoryFields, setmandatoryFields] = useState([]);
   const [fileuploadloader, setfileuploadloader] = useState(false);
-  useEffect(() => {
-    let tempopts = [];
-    let selectedItems = formIntialState.countryList;
-    countryState.countryItems.forEach((item) => {
-      if (isEditMode) {
-        let isfound = false;
-        selectedItems.forEach((country) => {
-          if (item.countryID === country.value) {
-            isfound = true;
-          }
-        });
-        if (item.isActive || isfound) {
-          tempopts.push({
-            label: item.countryName.trim(),
-            value: item.countryID,
-            regionId: item.regionID,
-          });
-        }
-      } else if (item.isActive) {
-        tempopts.push({
-          label: item.countryName.trim(),
-          value: item.countryID,
-          regionId: item.regionID,
-        });
-      }
-    });
-    tempopts.sort(dynamicSort("label"));
-    setcountryopts([...tempopts]);
-  }, [countryState.countryItems]);
 
   const [logStatus, setlogStatus] = useState({});
 
@@ -166,29 +131,31 @@ function AddEditForm(props) {
       isgrantedempowrment: false,
       isroleloaded: true,
     };
-    if (formfield.isSubmit) {
+    if (formIntialState.isSubmit) {
       if (
-        formfield.individualGrantedEmpowerment &&
-        formfield.individualGrantedEmpowerment.indexOf(
+        formIntialState.individualGrantedEmpowerment &&
+        formIntialState.individualGrantedEmpowerment.indexOf(
           userProfile.emailAddress
         ) !== -1
       ) {
         tempuserroles.isgrantedempowrment = true;
       }
       if (
-        (formfield.approver &&
-          formfield.approver.indexOf(userProfile.emailAddress) !== -1) ||
-        (formfield.globalUWApprover &&
-          formfield.globalUWApprover.indexOf(userProfile.emailAddress) !== -1)
+        (formIntialState.approver &&
+          formIntialState.approver.indexOf(userProfile.emailAddress) !== -1) ||
+        (formIntialState.globalUWApprover &&
+          formIntialState.globalUWApprover.indexOf(userProfile.emailAddress) !==
+            -1)
       ) {
         tempuserroles.isapprover = true;
       }
       if (
-        (formfield.empowermentRequestedBy &&
-          formfield.empowermentRequestedBy.indexOf(userProfile.emailAddress) !==
-            -1) ||
-        (formfield.submitter &&
-          formfield.submitter.indexOf(userProfile.emailAddress) !== -1)
+        (formIntialState.empowermentRequestedBy &&
+          formIntialState.empowermentRequestedBy.indexOf(
+            userProfile.emailAddress
+          ) !== -1) ||
+        (formIntialState.submitter &&
+          formIntialState.submitter.indexOf(userProfile.emailAddress) !== -1)
       ) {
         tempuserroles.issubmitter = true;
       }
@@ -201,25 +168,52 @@ function AddEditForm(props) {
     }
     setuserroles({ ...userroles, ...tempuserroles });
   }, []);
-  useEffect(async () => {
-    if (!userroles.isroleloaded) {
-      return;
+
+  useEffect(() => {
+    if (userroles.isroleloaded) {
+      fnOnInit();
     }
-    if (userroles.isapprover || userroles.isgrantedempowrment) {
+  }, [userroles]);
+
+  const fnOnInit = async () => {
+    if (
+      userroles.isapprover ||
+      userroles.isgrantedempowrment ||
+      (formIntialState.isSubmit && userroles.issubmitter)
+    ) {
       getAllCountry();
     } else {
       let countrylist = await getAllCountry({ IsLog: true });
-      if (userProfile.isCountryAdmin && !formfield.isSubmit) {
+      if (userProfile.isCountryAdmin && !formIntialState.isSubmit) {
         countrylist = countrylist.map((item) => ({
           label: item.countryName,
           value: item.countryID,
         }));
-        setformfield({
-          ...formfield,
-          countryList: countrylist,
-        });
+        formIntialState.countryList = countrylist;
       }
     }
+    let tempopts = [];
+
+    let lobChapterItems = await getAlllobChapter({ isActive: true });
+
+    lobChapterItems.forEach((item) => {
+      if (isEditMode) {
+        if (item.isActive || item.lobChapterID === formIntialState.lobChapter) {
+          tempopts.push({
+            label: item.lobChapterName,
+            value: item.lobChapterID,
+          });
+        }
+      } else if (item.isActive) {
+        tempopts.push({
+          label: item.lobChapterName,
+          value: item.lobChapterID,
+        });
+      }
+    });
+    tempopts.sort(dynamicSort("label"));
+    setfrmLoBChapter([selectInitiVal, ...tempopts]);
+    tempopts = [];
     let tempTypeOfExemption = await getLookupByType({
       LookupType: "EXMPTypeOfExemption",
     });
@@ -242,7 +236,7 @@ function AddEditForm(props) {
       tooltipObj[item.toolTipField] = item.toolTipText;
     });
     settooltip(tooltipObj);
-    let tempopts = [];
+
     tempTypeOfExemption.forEach((item) => {
       if (isEditMode) {
         if (
@@ -304,22 +298,46 @@ function AddEditForm(props) {
     statusArray.forEach((item) => {
       let isshow = false;
       //status pending
-      if (item.lookupID === exemption_status.Pending) {
-        if (
-          !formfield.isSubmit ||
-          formfield.status === exemption_status.Pending ||
-          formfield.globalUWStatus === exemption_status.Pending
-        ) {
+      if (!formIntialState.isSubmit) {
+        if (item.lookupID === exemption_status.Pending) {
           isshow = true;
         }
+      } else if (formIntialState.isSubmit) {
+        if (userroles.isapprover || userroles.issuperadmin) {
+          isshow = true;
+        } else {
+          if (
+            item.lookupID === formIntialState.status ||
+            item.lookupID === formIntialState.globalUWStatus
+          ) {
+            isshow = true;
+          }
+          if (
+            (formIntialState.status === exemption_status.Pending ||
+              formIntialState.globalUWStatus === exemption_status.Pending ||
+              formIntialState.status === exemption_status.Empowerment_granted ||
+              formIntialState.globalUWStatus ===
+                exemption_status.Empowerment_granted) &&
+            item.lookupID === exemption_status.Withdrawn
+          ) {
+            isshow = true;
+          }
+          if (
+            (formIntialState.status === exemption_status.Empowerment_granted ||
+              formIntialState.globalUWStatus ===
+                exemption_status.Empowerment_granted) &&
+            item.lookupID === exemption_status.No_longer_required
+          ) {
+            isshow = true;
+          }
+        }
       }
-      //status more information needed
-      if (item.lookupID !== exemption_status.Pending && formfield.isSubmit) {
+      /*if (
+        item.lookupID !== exemption_status.Pending &&
+        formIntialState.isSubmit
+      ) {
         isshow = true;
-        /* if (userroles.isapprover || userroles.issuperadmin) {
-          
-        }*/
-      }
+      }*/
 
       if (isshow) {
         frmstatus.push({
@@ -336,30 +354,12 @@ function AddEditForm(props) {
     setfrmTypeOfBusiness([selectInitiVal, ...tempTypeOfBusiness]);
     setfrmFullTransitional([selectInitiVal, ...tempFullTransitional]);
     setfrmURPMSection([selectInitiVal, ...tempURPMSection]);
-    setfrmZUGStatus([selectInitiVal, ...tempZUGStatus]);
-    setfrmURPMStatus([selectInitiVal, ...tempURPMStatus]);
 
     if (frmstatus.length) {
       setfrmstatus([...frmstatus]);
     }
-
     setloading(false);
-    //setDefaultLogStatus();
-  }, [userroles, isEditMode]);
-
-  useEffect(() => {
-    if (!formfield.status) {
-      return;
-    }
-    let tempmandatoryfields = [];
-    if (formfield.status === exemption_status.No_longer_required) {
-      tempmandatoryfields.push("expiringDate");
-    }
-    if (formfield.fullTransitional == fullTransitional_Transitional) {
-      tempmandatoryfields.push("transitionalExpireDate");
-    }
-    setmandatoryFields([...ZUGMandatoryFields, ...tempmandatoryfields]);
-  }, [formfield.status, formfield.fullTransitional]);
+  };
 
   useEffect(() => {
     if (frmstatus.length) {
@@ -372,11 +372,15 @@ function AddEditForm(props) {
       if (userroles.isapprover || userroles.issuperadmin) {
         setisstatusdisabled(false);
       } else if (
-        userroles.isadmin ||
-        userroles.issubmitter ||
-        userroles.isgrantedempowrment
+        (userroles.isadmin ||
+          userroles.issubmitter ||
+          userroles.isgrantedempowrment) &&
+        formIntialState.status !== exemption_status.Empowerment_granted &&
+        formIntialState.status !== exemption_status.Pending
       ) {
-        if (!isReadMode) setisstatusdisabled(true);
+        if (!isReadMode) {
+          setisstatusdisabled(true);
+        }
       }
       if (userroles.isapprover && !userroles.issuperadmin && !isReadMode) {
         //setisapprovermode(true);
@@ -385,9 +389,8 @@ function AddEditForm(props) {
         ...formIntialState,
       });
     } else {
+      formIntialState.fullTransitional = full_Transitional;
       if (selectedExemptionLog === "zug") {
-        formIntialState.fullTransitional = full_Transitional;
-        debugger;
         setformfield({
           ...formIntialState,
           status: exemption_status.Pending,
@@ -404,30 +407,48 @@ function AddEditForm(props) {
   };
 
   useEffect(() => {
-    getAlllobChapter({ isActive: true });
-  }, []);
-
-  useEffect(() => {
     let tempopts = [];
-
-    lobchapterState.lobChapterItems.forEach((item) => {
+    let selectedItems = formIntialState.countryList;
+    countryState.countryItems.forEach((item) => {
       if (isEditMode) {
-        if (item.isActive || item.lobChapterID === formIntialState.lobChapter) {
+        let isfound = false;
+        selectedItems.forEach((country) => {
+          if (item.countryID === country.value) {
+            isfound = true;
+          }
+        });
+        if (item.isActive || isfound) {
           tempopts.push({
-            label: item.lobChapterName,
-            value: item.lobChapterID,
+            label: item.countryName.trim(),
+            value: item.countryID,
+            regionId: item.regionID,
           });
         }
       } else if (item.isActive) {
         tempopts.push({
-          label: item.lobChapterName,
-          value: item.lobChapterID,
+          label: item.countryName.trim(),
+          value: item.countryID,
+          regionId: item.regionID,
         });
       }
     });
     tempopts.sort(dynamicSort("label"));
-    setfrmLoBChapter([selectInitiVal, ...tempopts]);
-  }, [lobchapterState.lobChapterItems]);
+    setcountryopts([...tempopts]);
+  }, [countryState.countryItems]);
+
+  useEffect(() => {
+    if (!formfield.status) {
+      return;
+    }
+    let tempmandatoryfields = [];
+    if (formfield.status === exemption_status.No_longer_required) {
+      tempmandatoryfields.push("expiringDate");
+    }
+    if (formfield.fullTransitional == fullTransitional_Transitional) {
+      tempmandatoryfields.push("transitionalExpireDate");
+    }
+    setmandatoryFields([...ZUGMandatoryFields, ...tempmandatoryfields]);
+  }, [formfield.status, formfield.fullTransitional]);
 
   const handleChange = (e) => {
     let { name, value } = e.target;
@@ -747,6 +768,7 @@ function AddEditForm(props) {
         ...formInitialValueZUG,
       });
     } else {
+      formInitialValueURPM.fullTransitional = full_Transitional;
       formInitialValueURPM.globalUWStatus = exemption_status.Pending;
       setformfield({
         ...formInitialValueURPM,
@@ -813,7 +835,7 @@ function AddEditForm(props) {
                   <FrmMultiselect
                     title={"Country"}
                     name={"countryList"}
-                    value={formfield.countryList}
+                    value={formfield.countryList ? formfield.countryList : []}
                     handleChange={handleMultiSelectChange}
                     isRequired={true}
                     isReadMode={isReadMode}
@@ -965,24 +987,6 @@ function AddEditForm(props) {
                 ) : (
                   ""
                 )}
-
-                {selectedExemptionLog !== "zug" && (
-                  <div className="col-md-3">
-                    <FrmDatePicker
-                      title={"End Date of Temporary Request"}
-                      name={"temporaryRequestEndDate"}
-                      value={formfield.temporaryRequestEndDate}
-                      type={"date"}
-                      handleChange={handleDateSelectChange}
-                      isRequired={true}
-                      isReadMode={isReadMode}
-                      minDate={""}
-                      validationmsg={"Mandatory field"}
-                      issubmitted={issubmitted}
-                      isdisabled={isfrmdisabled}
-                    />
-                  </div>
-                )}
               </div>
               <div
                 className={`row ${selectedExemptionLog !== "zug" &&
@@ -1016,8 +1020,8 @@ function AddEditForm(props) {
                   )}
                 </div>
               </div>
-              {selectedExemptionLog === "zug" && (
-                <div className="row border-bottom">
+              <div className="row border-bottom">
+                {selectedExemptionLog === "zug" ? (
                   <div className="col-md-3">
                     <FrmInput
                       title={<>Empowerment Requested By</>}
@@ -1036,41 +1040,61 @@ function AddEditForm(props) {
                       issubmitted={issubmitted}
                     />
                   </div>
+                ) : (
                   <div className="col-md-3">
-                    <FrmSelect
-                      title={<>Full/Transitional</>}
+                    <FrmInput
+                      title={<>Empowerment Requested By</>}
                       titlelinespace={true}
-                      name={"fullTransitional"}
-                      value={formfield.fullTransitional}
-                      handleChange={handleSelectChange}
-                      isRequired={false}
+                      name={"submitter"}
+                      value={formfield.submitter}
+                      type={"text"}
+                      handleChange={handleChange}
+                      handleClick={(e) =>
+                        handleshowpeoplepicker("submitter", e)
+                      }
                       isReadMode={isReadMode}
+                      isRequired={true}
+                      isdisabled={isfrmdisabled}
                       validationmsg={"Mandatory field"}
-                      isToolTip={false}
                       issubmitted={issubmitted}
-                      selectopts={frmFullTransitional}
+                    />
+                  </div>
+                )}
+                <div className="col-md-3">
+                  <FrmSelect
+                    title={<>Full/Transitional</>}
+                    titlelinespace={true}
+                    name={"fullTransitional"}
+                    value={formfield.fullTransitional}
+                    handleChange={handleSelectChange}
+                    isRequired={false}
+                    isReadMode={isReadMode}
+                    validationmsg={"Mandatory field"}
+                    isToolTip={false}
+                    issubmitted={issubmitted}
+                    selectopts={frmFullTransitional}
+                    isdisabled={isfrmdisabled}
+                  />
+                </div>
+                {formfield.fullTransitional ==
+                  fullTransitional_Transitional && (
+                  <div className="col-md-3">
+                    <FrmDatePicker
+                      title={"Transitional Expiring Date of Empowerment"}
+                      name={"transitionalExpireDate"}
+                      value={formfield.transitionalExpireDate}
+                      type={"date"}
+                      handleChange={handleDateSelectChange}
+                      isRequired={true}
+                      isReadMode={isReadMode}
+                      minDate={""}
+                      validationmsg={"Mandatory field"}
+                      issubmitted={issubmitted}
                       isdisabled={isfrmdisabled}
                     />
                   </div>
-                  {formfield.fullTransitional ==
-                    fullTransitional_Transitional && (
-                    <div className="col-md-3">
-                      <FrmDatePicker
-                        title={"Transitional Expiring Date of Empowerment"}
-                        name={"transitionalExpireDate"}
-                        value={formfield.transitionalExpireDate}
-                        type={"date"}
-                        handleChange={handleDateSelectChange}
-                        isRequired={true}
-                        isReadMode={isReadMode}
-                        minDate={""}
-                        validationmsg={"Mandatory field"}
-                        issubmitted={issubmitted}
-                        isdisabled={isfrmdisabled}
-                      />
-                    </div>
-                  )}
-
+                )}
+                {selectedExemptionLog === "zug" && (
                   <div className="col-md-3">
                     <FrmToggleSwitch
                       title={
@@ -1091,8 +1115,8 @@ function AddEditForm(props) {
                       isdisabled={isfrmdisabled}
                     />
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             <div class="frm-container-bggray">
               <div className="row">
@@ -1113,7 +1137,7 @@ function AddEditForm(props) {
                     />
                   ) : (
                     <FrmInput
-                      title={"Global UW Approver"}
+                      title={"Approver"}
                       name={"globalUWApproverName"}
                       value={formfield.globalUWApproverName}
                       type={"text"}
@@ -1144,7 +1168,7 @@ function AddEditForm(props) {
                     />
                   ) : (
                     <FrmSelect
-                      title={<>Global UW Status</>}
+                      title={<>Status</>}
                       name={"globalUWStatus"}
                       value={formfield.globalUWStatus}
                       handleChange={handleSelectChange}
@@ -1175,6 +1199,25 @@ function AddEditForm(props) {
                       />
                     </div>
                   )}
+                {selectedExemptionLog !== "zug" &&
+                  formfield.globalUWStatus ===
+                    exemption_status.No_longer_required && (
+                    <div className="col-md-3">
+                      <FrmDatePicker
+                        title={"End Date of Temporary Request"}
+                        name={"temporaryRequestEndDate"}
+                        value={formfield.temporaryRequestEndDate}
+                        type={"date"}
+                        handleChange={handleDateSelectChange}
+                        isRequired={true}
+                        isReadMode={isReadMode}
+                        minDate={""}
+                        validationmsg={"Mandatory field"}
+                        issubmitted={issubmitted}
+                        isdisabled={isfrmdisabled}
+                      />
+                    </div>
+                  )}
               </div>
 
               <div className="row border-bottom">
@@ -1189,11 +1232,14 @@ function AddEditForm(props) {
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
-                      isdisabled={!isReadMode && isfrmdisabled}
+                      isdisabled={
+                        (!isReadMode && isfrmdisabled) ||
+                        (!userroles.isapprover && !userroles.issuperadmin)
+                      }
                     />
                   ) : (
                     <FrmRichTextEditor
-                      title={"Global UW Approver comments"}
+                      title={"Additional Approval Comments"}
                       name={"globalUWApproverComments"}
                       value={formfield.globalUWApproverComments}
                       handleChange={handleSelectChange}
@@ -1201,7 +1247,10 @@ function AddEditForm(props) {
                       isReadMode={isReadMode}
                       validationmsg={"Mandatory field"}
                       issubmitted={issubmitted}
-                      isdisabled={!isReadMode && isfrmdisabled}
+                      isdisabled={
+                        (!isReadMode && isfrmdisabled) ||
+                        (!userroles.isapprover && !userroles.issuperadmin)
+                      }
                     />
                   )}
                 </div>

@@ -14,7 +14,7 @@ export const RFE_LOG_STATUS = {
   Empowerment_not_granted: "FA04DC3E-028E-43FB-820A-B8FAFE7E44F9",
   Withdrawn: "F2623BCB-50B7-467B-AF06-E4A5ECFB29A4",
 };
-export const EXEMPTION_ZUG_LOG_STATUS = {
+export const EXEMPTION_LOG_STATUS = {
   Pending: "D87A3F87-9007-4033-BE60-32B1C2F572DC-Manual",
   Empowerment_granted: "D87A3F87-9008-4033-BE60-32B1C2F572DC-Manual",
   Empowerment_not_granted: "D87A3F87-9009-4033-BE60-32B1C2F572DC-Manual",
@@ -22,14 +22,14 @@ export const EXEMPTION_ZUG_LOG_STATUS = {
   Withdrawn: "D87A3F87-9011-4033-BE60-32B1C2F572DC-Manual",
   No_longer_required: "D87A3F87-9012-4033-BE60-32B1C2F572DC-Manual",
 };
-export const EXEMPTION_URPM_LOG_STATUS = {
+/*export const EXEMPTION_URPM_LOG_STATUS = {
   Pending: "D87A3F87-9007-4033-BE60-32B1C2F572DC-Manual",
   Empowerment_granted: "D87A3F87-9008-4033-BE60-32B1C2F572DC-Manual",
   Empowerment_not_granted: "D87A3F87-9009-4033-BE60-32B1C2F572DC-Manual",
   More_Information_Needed: "D87A3F87-9010-4033-BE60-32B1C2F572DC-Manual",
   Withdrawn: "D87A3F87-9011-4033-BE60-32B1C2F572DC-Manual",
   No_longer_required: "D87A3F87-9012-4033-BE60-32B1C2F572DC-Manual",
-};
+};*/
 export const USER_ROLE = {
   superAdmin: "1",
   globalAdmin: "2",

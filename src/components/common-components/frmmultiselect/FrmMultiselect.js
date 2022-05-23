@@ -13,7 +13,6 @@ function FrmMultiselect(props) {
     selectopts,
     isReadMode,
   } = props;
-
   const [selectedItems, setselectedItems] = useState(value);
   useEffect(() => {
     setselectedItems(value);
@@ -74,7 +73,9 @@ function FrmMultiselect(props) {
         ""
       )}
       <div className="multi-selected-opts-container">
-        {selectopts.length && selectedItems.length === selectopts.length ? (
+        {selectopts &&
+        selectopts.length &&
+        selectedItems.length === selectopts.length ? (
           <div className="multi-selected-opts" key={selectopts[0].value}>
             <div>{selectopts[0].label}</div>
             {!isReadMode && (

@@ -1206,7 +1206,6 @@ function Exemptionlog({ ...props }) {
         urpmExemptionLogId: itemid,
       });
     }
-
     if (response) {
       /* let selectedcountryList = [];
      let countrylist = await getAllCountry();
@@ -1374,7 +1373,6 @@ function Exemptionlog({ ...props }) {
         modifiedByID: userProfile.userId,
       });
     }
-    debugger;
     if (response) {
       let compeletedfieldname =
         selectedExemptionLog === "zug" ? "ZUGLoadedAll" : "URPMLoadedAll";
